@@ -1,11 +1,11 @@
 server:
-    port: ${SERVER_PORT}
+    port: ${SERVER_PORT:8081}
 
 spring:
     datasource:
-        url: ${DATABASE_URL}
-        username: ${PEDIDOS_DB_USER}
-        password: ${PEDIDOS_DB_PASS}
+        url: ${DATABASE_URL:jdbc:postgresql://localhost:5431/pedidos}
+        username: ${PEDIDOS_DB_USER:user}
+        password: ${PEDIDOS_DB_PASS:pass}
     application:
         name: pedidos-service
     jpa:

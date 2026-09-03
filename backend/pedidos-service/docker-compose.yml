@@ -11,5 +11,5 @@ services:
       volumes:
         - pedidos-data:/var/lib/postgresql/data
 
-    volumnes:
-      pedidos-data:
+volumes:
+  pedidos-data:
