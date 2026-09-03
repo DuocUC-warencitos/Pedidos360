@@ -1,0 +1,15 @@
+services:
+    pedidos-db:
+      image: ${POSTGRES_VERSION:-postgres:15}
+      container_name: mascotas-db
+      environment:
+        POSTGRES_DB: ${PEDIDOS_DB_NAME:-pedidos}
+        POSTGRES_USER: ${PEDIDOS_DB_USER:-user}
+        POSTGRES_PASSWORD: ${PEDIDOS_DB_PASS:-pass}
+      ports:
+        - "${PEDIDOS_DB_PORT:-5431}:${PEDIDOS_DB_INTERNAL_PORT:-5432}"
+      volumes:
+        - pedidos-data:/var/lib/postgresql/data
+
+    volumnes:
+      pedidos-data:
