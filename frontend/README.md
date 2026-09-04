@@ -1,63 +1,46 @@
-# Pedidos360
+# DSY1107 — Semana 04 — Sesión 3 — Frontend Angular 21 + MSAL
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.2.22.
+Este frontend parte del proyecto probado de la Sesión 1 y contiene incorporados los avances de las Sesiones 2 y 3:
 
-## Development server
+- Login/logout mediante Microsoft Entra ID.
+- `handleRedirectObservable({ navigateToLoginRequestUrl: false })`.
+- Espera de `InteractionStatus.None`.
+- `ChangeDetectorRef.markForCheck()` para Angular 21 zoneless.
+- Scope `Pedidos.Read`.
+- `MsalGuard` para `/protegido`.
+- `MsalInterceptor` para `http://localhost:8080/*`.
+- Obtención de Access Token.
+- `HttpClient` para consultar `GET /api/pedidos`.
 
-To start a local development server, run:
+## 1. Configuración obligatoria
 
-```bash
-ng serve
-```
+Editar:
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+`src/environments/environment.ts`
 
-## Code scaffolding
+Reemplazar:
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+- `PEGAR_AQUI_CLIENT_ID_FRONTEND`
+- `PEGAR_AQUI_TENANT_ID`
+- `PEGAR_AQUI_CLIENT_ID_API`
 
-```bash
-ng generate component component-name
-```
+En Microsoft Entra ID debe existir en la App Registration del frontend la Redirect URI SPA:
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+`http://localhost:4200`
 
-```bash
-ng generate --help
-```
+La App Registration de la API debe exponer:
 
-## Building
+`api://<CLIENT_ID_API>/Pedidos.Read`
 
-To build the project run:
+El frontend debe tener permiso delegado sobre ese scope.
 
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+## 2. Ejecutar
 
 ```bash
-ng test
+npm install
+npm start
 ```
 
-## Running end-to-end tests
+Abrir `http://localhost:4200`.
 
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
-
-## para hacer commit y push
-git config --global user.email "you@example.com"
-git config --global user.name "Your Name"
+> `node_modules`, `.angular/cache`, `dist` y `.git` fueron excluidos intencionalmente del ZIP.

@@ -1,156 +1,254 @@
+import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+
 import {
+  ChangeDetectorRef,
   Component,
-  Inject,
-  OnInit,
-  PLATFORM_ID
+  OnDestroy,
+  OnInit
 } from '@angular/core';
 
-import { isPlatformBrowser } from '@angular/common';
-import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
+import {
+  RouterLink,
+  RouterOutlet
+} from '@angular/router';
 
-import { MsalService } from '@azure/msal-angular';
+import {
+  MsalBroadcastService,
+  MsalService
+} from '@azure/msal-angular';
+
 import {
   AccountInfo,
-  AuthenticationResult
+  AuthenticationResult,
+  InteractionStatus
 } from '@azure/msal-browser';
+
+import { Subject } from 'rxjs';
+
+import {
+  filter,
+  takeUntil
+} from 'rxjs/operators';
+
+import { environment }
+  from '../environments/environment';
 
 @Component({
   selector: 'app-root',
-  standalone: true,
-  imports: [CommonModule, RouterOutlet],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+
+  imports: [
+    CommonModule,
+    RouterLink,
+    RouterOutlet
+  ],
+
+  templateUrl: './app.html',
+  styleUrl: './app.css'
 })
-export class App implements OnInit {
+export class App
+  implements OnInit, OnDestroy {
 
   user: AccountInfo | null = null;
 
+  accessTokenPreview = '';
+
+  respuestaApi: unknown = null;
+
+  private readonly destroying$ =
+    new Subject<void>();
+
   constructor(
-    private msalService: MsalService,
-    @Inject(PLATFORM_ID) private platformId: Object
+    private authService: MsalService,
+    private msalBroadcastService:
+      MsalBroadcastService,
+    private cdr: ChangeDetectorRef,
+    private http: HttpClient
   ) {}
 
-  async ngOnInit(): Promise<void> {
+  ngOnInit(): void {
 
-    // MSAL solamente debe ejecutarse en el navegador
-    if (!isPlatformBrowser(this.platformId)) {
-      return;
-    }
+    // Procesa el regreso desde Microsoft Entra ID.
+    this.authService
+      .handleRedirectObservable({
+        navigateToLoginRequestUrl: false
+      })
+      .subscribe({
 
-    try {
-
-      console.log('Inicializando MSAL...');
-
-      await this.msalService.instance.initialize();
-
-      console.log('MSAL inicializado');
-
-      this.msalService.handleRedirectObservable().subscribe({
-        next: (result: AuthenticationResult | null) => {
-
-          console.log('Resultado MSAL:', result);
+        next: (
+          result:
+            AuthenticationResult | null
+        ) => {
 
           if (result?.account) {
 
-            console.log('Cuenta recibida:', result.account);
-
-            this.msalService.instance.setActiveAccount(
-              result.account
-            );
+            this.authService.instance
+              .setActiveAccount(
+                result.account
+              );
           }
-
-          this.checkUser();
         },
 
         error: (error) => {
+
           console.error(
-            'Error procesando redirect de MSAL:',
+            'Error MSAL:',
             error
           );
         }
       });
 
-      // Comprobar si ya había una sesión guardada
-      this.checkUser();
+    // Angular 21 + MSAL: esperar hasta que finalice la interacción
+    // antes de consultar/actualizar la cuenta activa.
+    this.msalBroadcastService
+      .inProgress$
+      .pipe(
 
-    } catch (error) {
+        filter(
+          (
+            status:
+              InteractionStatus
+          ) =>
+            status ===
+            InteractionStatus.None
+        ),
 
-      console.error(
-        'Error inicializando MSAL:',
-        error
-      );
+        takeUntil(
+          this.destroying$
+        )
+      )
+      .subscribe(() => {
+
+        this.actualizarUsuario();
+
+      });
+  }
+
+  private actualizarUsuario(): void {
+
+    let activeAccount =
+      this.authService.instance
+        .getActiveAccount();
+
+    const accounts =
+      this.authService.instance
+        .getAllAccounts();
+
+    if (
+      !activeAccount &&
+      accounts.length > 0
+    ) {
+
+      activeAccount =
+        accounts[0];
+
+      this.authService.instance
+        .setActiveAccount(
+          activeAccount
+        );
     }
+
+    this.user =
+      activeAccount ?? null;
+
+    // Necesario para reflejar explícitamente cambios de estado
+    // en la aplicación Angular 21 zoneless utilizada en el laboratorio.
+    this.cdr.markForCheck();
   }
 
   login(): void {
 
-    console.log('Iniciando login...');
+    this.authService
+      .loginRedirect({
+        scopes: [
+          'openid',
+          'profile',
+          'email'
+        ]
+      });
+  }
 
-    this.msalService.loginRedirect({
-      scopes: [
-        'openid',
-        'profile',
-        'email',
-        'User.Read'
-      ]
-    });
+  obtenerAccessToken(): void {
+
+    const account =
+      this.authService.instance
+        .getActiveAccount();
+
+    if (!account) {
+      return;
+    }
+
+    this.authService
+      .acquireTokenSilent({
+        account,
+        scopes: [
+          environment.msal.apiScope
+        ]
+      })
+      .subscribe({
+
+        next: (result) => {
+
+          this.accessTokenPreview =
+            result.accessToken
+              .substring(0, 90)
+            + '...';
+
+          this.cdr.markForCheck();
+        },
+
+        error: () => {
+
+          this.authService
+            .acquireTokenRedirect({
+              scopes: [
+                environment.msal.apiScope
+              ]
+            });
+        }
+      });
+  }
+
+  consultarPedidos(): void {
+
+    this.respuestaApi = null;
+
+    this.http.get(
+      `${environment.apiBaseUrl}/api/pedidos`
+    )
+      .subscribe({
+
+        next: (respuesta) => {
+
+          this.respuestaApi = respuesta;
+          this.cdr.markForCheck();
+        },
+
+        error: (error) => {
+
+          this.respuestaApi = {
+            status: error.status,
+            mensaje:
+              'Solicitud rechazada'
+          };
+
+          this.cdr.markForCheck();
+        }
+      });
   }
 
   logout(): void {
 
-    this.msalService.logoutRedirect({
-      postLogoutRedirectUri: 'http://localhost:4200/'
-    });
+    this.authService
+      .logoutRedirect({
+        postLogoutRedirectUri:
+          'http://localhost:4200'
+      });
   }
 
-  private checkUser(): void {
+  ngOnDestroy(): void {
 
-    const activeAccount =
-      this.msalService.instance.getActiveAccount();
-
-    console.log('Cuenta activa:', activeAccount);
-
-    if (activeAccount) {
-
-      this.user = activeAccount;
-
-      console.log(
-        'Usuario autenticado:',
-        this.user
-      );
-
-      return;
-    }
-
-    const accounts =
-      this.msalService.instance.getAllAccounts();
-
-    console.log(
-      'Cuentas encontradas:',
-      accounts
-    );
-
-    if (accounts.length > 0) {
-
-      this.msalService.instance.setActiveAccount(
-        accounts[0]
-      );
-
-      this.user = accounts[0];
-
-      console.log(
-        'Usuario establecido:',
-        this.user
-      );
-
-    } else {
-
-      this.user = null;
-
-      console.log(
-        'No hay ningún usuario autenticado'
-      );
-    }
+    this.destroying$.next();
+    this.destroying$.complete();
   }
 }

@@ -1,0 +1,105 @@
+* {
+  box-sizing: border-box;
+}
+
+:host {
+  display: block;
+  min-height: 100vh;
+  font-family: Consolas, 'Courier New', monospace;
+  background: #f5f7fa;
+  color: #1f2937;
+}
+
+.contenedor {
+  width: min(960px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 32px 0 56px;
+}
+
+.encabezado,
+.tarjeta {
+  background: #ffffff;
+  border: 1px solid #d5dbe3;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.encabezado {
+  border-top: 6px solid #1f4e79;
+}
+
+.etiqueta {
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+h1,
+h2,
+h3 {
+  margin-top: 0;
+}
+
+h1 {
+  color: #1f4e79;
+}
+
+h2 {
+  color: #e66c00;
+}
+
+h3 {
+  color: #548235;
+}
+
+.datos {
+  padding: 8px 0;
+}
+
+.acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 18px 0;
+}
+
+button,
+.boton {
+  appearance: none;
+  border: 0;
+  border-radius: 7px;
+  background: #1f4e79;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  padding: 10px 14px;
+  text-decoration: none;
+}
+
+button:hover,
+.boton:hover {
+  filter: brightness(1.08);
+}
+
+.secundario {
+  background: #5d6874;
+}
+
+.resultado {
+  background: #f2f2f2;
+  border-left: 5px solid #548235;
+  padding: 16px;
+  margin-top: 16px;
+  overflow-wrap: anywhere;
+}
+
+code,
+pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.protegida {
+  border-left: 5px solid #548235;
+}

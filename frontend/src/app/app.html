@@ -1,0 +1,65 @@
+<main class="contenedor">
+
+  <header class="encabezado">
+    <p class="etiqueta">DSY1107 · Semana 04 · Sesión 3</p>
+    <h1>MSAL + Angular + Spring Security</h1>
+    <p>Integración Frontend ↔ Backend con Access Token JWT</p>
+  </header>
+
+  <section *ngIf="!user" class="tarjeta">
+    <h2>Usuario no autenticado</h2>
+    <p>
+      Inicia sesión con Microsoft Entra ID para continuar.
+    </p>
+
+    <button (click)="login()">
+      Iniciar sesión con Microsoft
+    </button>
+  </section>
+
+  <section *ngIf="user" class="tarjeta">
+
+    <h2>Sesión iniciada correctamente</h2>
+
+    <div class="datos">
+      <p><strong>Nombre:</strong> {{ user.name }}</p>
+      <p><strong>Cuenta:</strong> {{ user.username }}</p>
+      <p><strong>Tenant:</strong> {{ user.tenantId }}</p>
+    </div>
+
+    <div class="acciones">
+      <button (click)="obtenerAccessToken()">
+        Obtener Access Token
+      </button>
+
+      <a class="boton enlace" routerLink="/protegido">
+        Ir a ruta protegida
+      </a>
+
+      <button (click)="consultarPedidos()">
+        Consultar API protegida
+      </button>
+
+      <button class="secundario" (click)="logout()">
+        Cerrar sesión
+      </button>
+    </div>
+
+    <div *ngIf="accessTokenPreview" class="resultado">
+      <h3>Access Token — vista parcial</h3>
+      <code>{{ accessTokenPreview }}</code>
+      <p>
+        Se muestra solo una parte del token con fines de laboratorio.
+      </p>
+    </div>
+
+    <div *ngIf="respuestaApi" class="resultado">
+      <h3>Respuesta de la API</h3>
+      <pre>{{ respuestaApi | json }}</pre>
+    </div>
+
+  </section>
+
+  <router-outlet></router-outlet>
+
+</main>
