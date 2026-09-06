@@ -1,11 +1,12 @@
 server:
-    port: ${SERVER_PORT:8081}
+    port: 8081
 
 spring:
     datasource:
-        url: ${DATABASE_URL:jdbc:postgresql://localhost:5431/pedidos}
-        username: ${PEDIDOS_DB_USER:user}
-        password: ${PEDIDOS_DB_PASS:pass}
+        url: jdbc:postgresql://aws-0-us-east-1.pooler.supabase.com:6543/postgres?ssl=true&sslmode=require&pgbouncer=true
+        username: postgres.myunbjgdvtkkvgaqemwz
+        password: oeyA3CqStCq0LwHx
+        driver-class-name: org.postgresql.Driver
     application:
         name: pedidos-service
     jpa:
@@ -13,3 +14,4 @@ spring:
             ddl-auto: update
         show-sql: false
         open-in-view: false
+        database-platform: org.hibernate.dialect.PostgreSQLDialect
