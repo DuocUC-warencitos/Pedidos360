@@ -16,35 +16,35 @@
 
     <div class="datos">
         <p>
-        <strong>Nombre:</strong>
-        {{ user()?.name }}
+            <strong>Nombre:</strong>
+            {{ user()?.name }}
         </p>
         <p>
-        <strong>Cuenta:</strong>
-        {{ user()?.username }}
+            <strong>Cuenta:</strong>
+            {{ user()?.username }}
         </p>
         <p>
-        <strong>Tenant:</strong>
-        {{ user()?.tenantId }}
+            <strong>Tenant:</strong>
+            {{ user()?.tenantId }}
         </p>
     </div>
 
     <div class="acciones">
         <button (click)="obtenerAccessToken()">
-        Obtener Access Token
+            Obtener Access Token
         </button>
         <a
-        class="boton enlace"
-        routerLink="/protegido">
-        Ir a ruta protegida
+            class="boton enlace"
+            routerLink="/example/protegido">
+            Ir a ruta protegida
         </a>
         <button (click)="consultarPedidos()">
         Consultar API protegida
         </button>
         <button
-        class="secundario"
-        (click)="logout()">
-        Cerrar sesión
+            class="secundario"
+            (click)="logout()">
+            Cerrar sesión
         </button>
     </div>
 
