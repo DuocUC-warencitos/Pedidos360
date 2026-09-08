@@ -27,13 +27,15 @@ public class PedidoController
     private final IMapper<PedidoResponse, Pedido> pedidoResponseMapper;
 
     @PostMapping
-    public ResponseEntity<Pedido> save(@RequestBody List<PedidoProductoRequest> request)
+    public ResponseEntity<PedidoResponse> save(@RequestBody List<PedidoProductoRequest> request)
     {
         var productos = request.stream()
             .map(pedidoProductoRequestMapper::map)
             .toList();
 
-        return ResponseEntity.ok(pedidoService.save(productos));
+        var pedido = pedidoService.save(productos);
+
+        return ResponseEntity.ok(pedidoResponseMapper.map(pedido));
     }
 
     @GetMapping
