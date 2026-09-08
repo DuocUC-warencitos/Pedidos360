@@ -1,16 +1,22 @@
 server:
-    port: ${SERVER_PORT:8080}
+  port: ${SERVER_PORT:8080}
 
 spring:
-    application:
-        name: pedidos-gateway
-    security:
-        oauth2:
-            resourceserver:
-                jwt:
-                    issuer-uri: ${JWT_ISSUER_URI}
-    cloud:
-        gateway:
-            server:
-                webflux:
-                    routes:
+  application:
+    name: pedidos-gateway
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${JWT_ISSUER_URI:https://login.microsoftonline.com/1f3a849e-c198-4ff7-b67c-d17f15cbc152/v2.0}
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: pedidos-service
+              uri: http://localhost:8081
+              predicates:
+                - Path=/api/v1/pedidos/**

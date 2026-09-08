@@ -31,6 +31,16 @@
       "projectName": "pedidos-service",
       "args": "",
       "envFile": "${workspaceFolder}/.env"
+    },
+    {
+      "type": "java",
+      "name": "Spring Boot-PedidosGatewayApplication<pedidos-gateway>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "io.github.roony11_1.pedidos_gateway.PedidosGatewayApplication",
+      "projectName": "pedidos-gateway",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
     }
   ]
 }

@@ -18,20 +18,32 @@ public class PedidoService
     private final PedidoRepository pedidoRepository;
 
     @Transactional
-    public Pedido save(List<PedidoProducto> productos)
+    public Pedido save(List<PedidoProducto> productos) 
     {
+
         var pedido = new Pedido();
 
         productos.forEach(pedido::addProducto);
 
         pedido.setEstadoPedido(EstadoPedido.CREADO);
 
-        return pedidoRepository.save(pedido);
+        var saved = pedidoRepository.save(pedido);
+
+        var pedidoCompleto = pedidoRepository.findByIdWithProductos(saved.getId())
+            .orElseThrow();
+
+        return pedidoCompleto;
     }
 
     @Transactional(readOnly = true)
     public List<Pedido> findAll()
     {
         return pedidoRepository.findAllWithProductos();
+    }
+
+    @Transactional
+    public void deleteAll()
+    {
+        pedidoRepository.deleteAll();
     }
 }

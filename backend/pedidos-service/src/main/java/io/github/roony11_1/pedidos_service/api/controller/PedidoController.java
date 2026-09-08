@@ -2,7 +2,9 @@ package io.github.roony11_1.pedidos_service.api.controller;
 
 import java.util.List;
 
+import org.apache.catalina.connector.Response;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,13 +29,15 @@ public class PedidoController
     private final IMapper<PedidoResponse, Pedido> pedidoResponseMapper;
 
     @PostMapping
-    public ResponseEntity<Pedido> save(@RequestBody List<PedidoProductoRequest> request)
+    public ResponseEntity<PedidoResponse> save(@RequestBody List<PedidoProductoRequest> request)
     {
         var productos = request.stream()
             .map(pedidoProductoRequestMapper::map)
             .toList();
 
-        return ResponseEntity.ok(pedidoService.save(productos));
+        var pedido = pedidoService.save(productos);
+
+        return ResponseEntity.ok(pedidoResponseMapper.map(pedido));
     }
 
     @GetMapping
@@ -44,5 +48,13 @@ public class PedidoController
             .toList();
 
         return ResponseEntity.ok(pedidos);
+    }
+
+    @DeleteMapping("/all")
+    public ResponseEntity<Void> deleteAll()
+    {
+        pedidoService.deleteAll();
+
+        return ResponseEntity.ok().build();
     }
 }
