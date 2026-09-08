@@ -32,7 +32,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
 
     provideHttpClient(
-      withInterceptorsFromDi()
+      // withInterceptorsFromDi() Agregar cuando configuremos bien el msal con el backend -- el backend a conectar sera el AWS GATEWAY
     ),
     {
       provide: AUTHENTICATION_PROVIDER,
