@@ -1,0 +1,35 @@
+.home {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+.hero {
+  max-width: 650px;
+}
+.hero h2 {
+  font-size: 42px;
+  margin-bottom: 16px;
+  color: #1f4e79;
+}
+.hero p {
+  font-size: 18px;
+  margin-bottom: 32px;
+}
+.acciones {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+.boton {
+  padding: 12px 22px;
+  border-radius: 8px;
+  background: #1f4e79;
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+}
+.boton.secundario {
+  background: #6b7280;
+}
