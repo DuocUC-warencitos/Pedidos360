@@ -1,0 +1,78 @@
+import { Component, inject } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+
+import { PedidosService } from './pedidos.service';
+import { PedidoProducto } from './pedidos.type';
+
+@Component({
+  selector: 'app-pedidos',
+  standalone: true,
+  imports: [FormsModule],
+  templateUrl: './pedidos.html',
+  styleUrl: './pedidos.css'
+})
+export class Pedidos {
+
+  private pedidosService = inject(PedidosService);
+
+  nombreProducto: string = '';
+  cantidad: number = 1;
+
+  productos: PedidoProducto[] = [];
+
+  agregarProducto(): void {
+
+    if (this.nombreProducto.trim() === '') {
+      alert('Ingrese un producto');
+      return;
+    }
+
+    if (this.cantidad <= 0) {
+      alert('La cantidad debe ser mayor a 0');
+      return;
+    }
+
+    const producto: PedidoProducto = {
+      nombreProducto: this.nombreProducto.trim(),
+      cantidad: this.cantidad
+    };
+
+    this.productos.push(producto);
+
+    this.nombreProducto = '';
+    this.cantidad = 1;
+  }
+
+  eliminarProducto(index: number): void {
+    this.productos.splice(index, 1);
+  }
+
+  guardarPedido(): void {
+
+    if (this.productos.length === 0) {
+      alert('Agregue al menos un producto al pedido');
+      return;
+    }
+
+    this.pedidosService.crearPedido(this.productos)
+      .subscribe({
+        next: (pedido) => {
+
+          console.log('Pedido creado:', pedido);
+
+          alert('Pedido creado correctamente');
+
+          this.productos = [];
+          this.nombreProducto = '';
+          this.cantidad = 1;
+        },
+
+        error: (error) => {
+
+          console.error('Error al crear el pedido:', error);
+
+          alert('No se pudo crear el pedido');
+        }
+      });
+  }
+}

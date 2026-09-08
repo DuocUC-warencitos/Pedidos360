@@ -13,5 +13,12 @@ export const routes: Routes =
     loadChildren: () =>
       import('./features/example/example.routes')
         .then(m => m.exampleRoutes)
+  },
+  {
+    path:'pedidos',
+    loadChildren:()=>
+      import('./features/pedidos/pedidos.routes')
+        .then(m=>m.pedidos_routes)
   }
+
 ];
