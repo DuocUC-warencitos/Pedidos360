@@ -24,6 +24,8 @@ import {
   MSALInstanceFactory,
   MSALInterceptorConfigFactory
 } from './msal-config';
+import { AUTHENTICATION_PROVIDER } from './core/auth/authenticationProvider';
+import { MsalAuthenticationProvider } from './core/auth/providers/msalAuthenticationProvider';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -32,7 +34,10 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(
       withInterceptorsFromDi()
     ),
-
+    {
+      provide: AUTHENTICATION_PROVIDER,
+      useClass: MsalAuthenticationProvider
+    },
     {
       provide: MSAL_INSTANCE,
       useFactory: MSALInstanceFactory

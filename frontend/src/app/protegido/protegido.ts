@@ -16,4 +16,5 @@ import { Component } from '@angular/core';
     </section>
   `
 })
+
 export class Protegido {}

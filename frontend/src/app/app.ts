@@ -1,254 +1,80 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+import { Component } from '@angular/core';
 
-import {
-  ChangeDetectorRef,
-  Component,
-  OnDestroy,
-  OnInit
-} from '@angular/core';
+import { RouterLink, RouterOutlet } from '@angular/router';
 
-import {
-  RouterLink,
-  RouterOutlet
-} from '@angular/router';
+import { environment } from '../environments/environment';
 
-import {
-  MsalBroadcastService,
-  MsalService
-} from '@azure/msal-angular';
-
-import {
-  AccountInfo,
-  AuthenticationResult,
-  InteractionStatus
-} from '@azure/msal-browser';
-
-import { Subject } from 'rxjs';
-
-import {
-  filter,
-  takeUntil
-} from 'rxjs/operators';
-
-import { environment }
-  from '../environments/environment';
+import { AuthService } from './core/auth/auth.service';
 
 @Component({
   selector: 'app-root',
-
-  imports: [
-    CommonModule,
-    RouterLink,
-    RouterOutlet
-  ],
-
+  imports: [CommonModule, RouterLink, RouterOutlet],
   templateUrl: './app.html',
-  styleUrl: './app.css'
+  styleUrl: './app.css',
 })
-export class App
-  implements OnInit, OnDestroy {
-
-  user: AccountInfo | null = null;
-
+export class App 
+{
   accessTokenPreview = '';
 
   respuestaApi: unknown = null;
 
-  private readonly destroying$ =
-    new Subject<void>();
-
   constructor(
-    private authService: MsalService,
-    private msalBroadcastService:
-      MsalBroadcastService,
-    private cdr: ChangeDetectorRef,
-    private http: HttpClient
-  ) {}
+    private readonly authService: AuthService,
+    private readonly http: HttpClient) 
+  {
 
-  ngOnInit(): void {
-
-    // Procesa el regreso desde Microsoft Entra ID.
-    this.authService
-      .handleRedirectObservable({
-        navigateToLoginRequestUrl: false
-      })
-      .subscribe({
-
-        next: (
-          result:
-            AuthenticationResult | null
-        ) => {
-
-          if (result?.account) {
-
-            this.authService.instance
-              .setActiveAccount(
-                result.account
-              );
-          }
-        },
-
-        error: (error) => {
-
-          console.error(
-            'Error MSAL:',
-            error
-          );
-        }
-      });
-
-    // Angular 21 + MSAL: esperar hasta que finalice la interacción
-    // antes de consultar/actualizar la cuenta activa.
-    this.msalBroadcastService
-      .inProgress$
-      .pipe(
-
-        filter(
-          (
-            status:
-              InteractionStatus
-          ) =>
-            status ===
-            InteractionStatus.None
-        ),
-
-        takeUntil(
-          this.destroying$
-        )
-      )
-      .subscribe(() => {
-
-        this.actualizarUsuario();
-
-      });
   }
 
-  private actualizarUsuario(): void {
-
-    let activeAccount =
-      this.authService.instance
-        .getActiveAccount();
-
-    const accounts =
-      this.authService.instance
-        .getAllAccounts();
-
-    if (
-      !activeAccount &&
-      accounts.length > 0
-    ) {
-
-      activeAccount =
-        accounts[0];
-
-      this.authService.instance
-        .setActiveAccount(
-          activeAccount
-        );
-    }
-
-    this.user =
-      activeAccount ?? null;
-
-    // Necesario para reflejar explícitamente cambios de estado
-    // en la aplicación Angular 21 zoneless utilizada en el laboratorio.
-    this.cdr.markForCheck();
+  get user() 
+  {
+    return this.authService.user;
   }
 
-  login(): void {
-
-    this.authService
-      .loginRedirect({
-        scopes: [
-          'openid',
-          'profile',
-          'email'
-        ]
-      });
+  login(): void 
+  {
+    this.authService.login();
   }
 
-  obtenerAccessToken(): void {
-
-    const account =
-      this.authService.instance
-        .getActiveAccount();
-
-    if (!account) {
-      return;
-    }
-
-    this.authService
-      .acquireTokenSilent({
-        account,
-        scopes: [
-          environment.msal.apiScope
-        ]
-      })
-      .subscribe({
-
-        next: (result) => {
-
-          this.accessTokenPreview =
-            result.accessToken
-              .substring(0, 90)
-            + '...';
-
-          this.cdr.markForCheck();
-        },
-
-        error: () => {
-
-          this.authService
-            .acquireTokenRedirect({
-              scopes: [
-                environment.msal.apiScope
-              ]
-            });
-        }
-      });
+  obtenerAccessToken(): void 
+  {
+    this.authService.getAccesToken().subscribe(
+    {
+      next: (token) => 
+      {
+        this.accessTokenPreview = token.substring(0, 90) + '...';
+      },
+      error: (error) => 
+      {
+        console.error(error);
+      },
+    });
   }
 
-  consultarPedidos(): void {
-
+  consultarPedidos(): void 
+  {
     this.respuestaApi = null;
 
-    this.http.get(
-      `${environment.apiBaseUrl}/api/pedidos`
-    )
-      .subscribe({
-
-        next: (respuesta) => {
-
-          this.respuestaApi = respuesta;
-          this.cdr.markForCheck();
-        },
-
-        error: (error) => {
-
-          this.respuestaApi = {
-            status: error.status,
-            mensaje:
-              'Solicitud rechazada'
-          };
-
-          this.cdr.markForCheck();
-        }
-      });
+    this.http.get(`${environment.apiBaseUrl}/api/pedidos`).subscribe(
+    {
+      next: (respuesta) => 
+      {
+        this.respuestaApi = respuesta;
+      },
+      error: (error) => 
+      {
+        this.respuestaApi = 
+        {
+          status: error.status,
+          mensaje: 'Solicitud rechazada',
+        };
+      },
+    });
   }
 
-  logout(): void {
-
-    this.authService
-      .logoutRedirect({
-        postLogoutRedirectUri:
-          'http://localhost:4200'
-      });
-  }
-
-  ngOnDestroy(): void {
-
-    this.destroying$.next();
-    this.destroying$.complete();
+  logout(): void 
+  {
+    this.authService.logout();
   }
 }

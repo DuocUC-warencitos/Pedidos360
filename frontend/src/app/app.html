@@ -6,7 +6,7 @@
     <p>Integración Frontend ↔ Backend con Access Token JWT</p>
   </header>
 
-  <section *ngIf="!user" class="tarjeta">
+  <section *ngIf="!user()" class="tarjeta">
     <h2>Usuario no autenticado</h2>
     <p>
       Inicia sesión con Microsoft Entra ID para continuar.
@@ -17,14 +17,14 @@
     </button>
   </section>
 
-  <section *ngIf="user" class="tarjeta">
+  <section *ngIf="user()" class="tarjeta">
 
     <h2>Sesión iniciada correctamente</h2>
 
     <div class="datos">
-      <p><strong>Nombre:</strong> {{ user.name }}</p>
-      <p><strong>Cuenta:</strong> {{ user.username }}</p>
-      <p><strong>Tenant:</strong> {{ user.tenantId }}</p>
+      <p><strong>Nombre:</strong> {{ user()?.name }}</p>
+      <p><strong>Cuenta:</strong> {{ user()?.username }}</p>
+      <p><strong>Tenant:</strong> {{ user()?.tenantId }}</p>
     </div>
 
     <div class="acciones">
