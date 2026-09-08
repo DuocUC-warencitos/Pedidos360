@@ -40,4 +40,10 @@ public class PedidoService
     {
         return pedidoRepository.findAllWithProductos();
     }
+
+    @Transactional
+    public void deleteAll()
+    {
+        pedidoRepository.deleteAll();
+    }
 }
