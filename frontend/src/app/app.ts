@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
+import { MsalService } from '@azure/msal-angular';
 
 @Component({
   selector: 'app-root',
@@ -7,5 +8,13 @@ import { RouterLink, RouterOutlet } from '@angular/router';
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
-export class App {
+export class App implements OnInit {
+
+  constructor(private readonly msalService: MsalService) {}
+
+  ngOnInit(): void {
+    this.msalService
+      .handleRedirectObservable({ navigateToLoginRequestUrl: true })
+      .subscribe();
+  }
 }

@@ -3,7 +3,7 @@ import { AuthenticationProvider, AuthUser } from "../authenticationProvider";
 import { Injectable, signal } from "@angular/core";
 import { MsalBroadcastService, MsalService } from "@azure/msal-angular";
 import { environment } from "../../../../environments/environment";
-import { AccountInfo, AuthenticationResult, InteractionStatus } from "@azure/msal-browser";
+import { AccountInfo, InteractionStatus } from "@azure/msal-browser";
 
 @Injectable({providedIn: 'root'})
 export class MsalAuthenticationProvider implements AuthenticationProvider
@@ -77,27 +77,6 @@ export class MsalAuthenticationProvider implements AuthenticationProvider
     
     private inicializar(): void 
     {
-        this.msalService
-            .handleRedirectObservable(
-            {
-                navigateToLoginRequestUrl: false
-            })
-            .subscribe(
-            {
-                next: (result: AuthenticationResult | null) => 
-                {
-                    if (result?.account) 
-                    {
-                        this.msalService.instance
-                            .setActiveAccount(result.account);
-                    }
-                },
-                error: error => 
-                {
-                    console.error('Error MSAL:', error);
-                }
-            });
-
         this.msalBroadcast
             .inProgress$
             .pipe(
