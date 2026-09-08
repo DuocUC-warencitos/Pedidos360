@@ -30,7 +30,8 @@ export class MsalAuthenticationProvider implements AuthenticationProvider
         this.inicializar();
     }
 
-    login(): void {
+    login(): void 
+    {
         this.msalService.loginRedirect(
         {
             scopes: 
