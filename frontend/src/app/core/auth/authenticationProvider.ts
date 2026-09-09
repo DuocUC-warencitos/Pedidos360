@@ -8,6 +8,7 @@ export interface AuthUser
     username: string;
     email: string;
     tenantId: string;
+    photoUrl?: string;
 }
 
 export interface AuthenticationProvider

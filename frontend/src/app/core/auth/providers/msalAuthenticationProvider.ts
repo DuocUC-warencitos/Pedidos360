@@ -12,7 +12,7 @@ export class MsalAuthenticationProvider implements AuthenticationProvider
 
     readonly user = this._user.asReadonly();
 
-    get isAuthenticated(): boolean { return this.user !== null };
+    get isAuthenticated(): boolean { return this.user() !== null };
 
     private readonly userSubject = new BehaviorSubject<AuthUser | null>(null);
     readonly user$ = this.userSubject.asObservable();
@@ -91,22 +91,23 @@ export class MsalAuthenticationProvider implements AuthenticationProvider
 
     private actualizarUsuario(): void 
     {
-        let account =this.msalService.instance
-            .getActiveAccount();
+        let account = this.msalService.instance.getActiveAccount();
 
-        const accounts =this.msalService.instance
-            .getAllAccounts();
+        const accounts = this.msalService.instance.getAllAccounts();
 
         if (!account && accounts.length > 0) 
         {
-
             account = accounts[0];
 
-            this.msalService.instance
-                .setActiveAccount(account);
+            this.msalService.instance.setActiveAccount(account);
         }
 
-        this._user.set(account ? this.toAuthUser(account): null);
+        const user = account
+            ? this.toAuthUser(account)
+            : null;
+
+        this._user.set(user);
+        this.userSubject.next(user);
     }
 
     private toAuthUser(account: AccountInfo): AuthUser 
