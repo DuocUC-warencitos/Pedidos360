@@ -14,11 +14,11 @@ export class PedidosService
 
 	crearPedido(productos: PedidoProducto[]): Observable<any> 
 	{
-		return this.http.post<any>(apiPedidos.base, productos);
+		return this.http.post<any>(apiPedidos.post.create, productos);
 	}
 
 	obtenerPedidos(): Observable<any[]> 
 	{
-		return this.http.get<any[]>(apiPedidos.base);
+		return this.http.get<any[]>(apiPedidos.get.all);
 	}
 }

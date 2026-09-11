@@ -1,6 +1,15 @@
 import { environment } from "../../../../environments/environment";
 
+const base = `${environment.apiBaseUrl}/api/v1/pedidos`;
+
 export const apiPedidos =
 {
-    base: `${environment.apiBaseUrl}/api/v1/pedidos`
+    get:
+    {
+        all: base
+    },
+    post:
+    {
+        create: base
+    }
 };
