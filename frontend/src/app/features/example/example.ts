@@ -45,18 +45,18 @@ export class Example
     {
 
         this.authService
-        .getAccesToken()
-        .subscribe(
-        {
-            next: token => 
+            .getAccesToken()
+            .subscribe(
             {
-                this.accessTokenPreview = token.toString();
-            },
-            error: error => 
-            {
-                this.logger.error('Error al obtener el access token', error);
-            }
-        });
+                next: token => 
+                {
+                    this.accessTokenPreview = token.toString();
+                },
+                error: error => 
+                {
+                    this.logger.error('Error al obtener el access token', error);
+                }
+            });
     }
 
     consultarPedidos(): void 
@@ -64,22 +64,22 @@ export class Example
         this.respuestaApi = null;
 
         this.http
-        .get(`${environment.apiBaseUrl}/api/pedidos`)
-        .subscribe(
-        {
-            next: respuesta => 
+            .get(`${environment.apiBaseUrl}/api/pedidos`)
+            .subscribe(
             {
-                this.respuestaApi = respuesta;
-            },
-            error: error => 
-            {
-                this.respuestaApi = 
+                next: respuesta => 
                 {
-                    status: error.status,
-                    mensaje: 'Solicitud rechazada'
-                };
-            }
-        });
+                    this.respuestaApi = respuesta;
+                },
+                error: error => 
+                {
+                    this.respuestaApi = 
+                    {
+                        status: error.status,
+                        mensaje: 'Solicitud rechazada'
+                    };
+                }
+            });
     }
 
     logout(): void 
