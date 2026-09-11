@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.annotations.DialectOverride.GeneratedColumn;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -40,14 +41,14 @@ public class Pedido
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<PedidoProducto> productos = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING)
+    private EstadoPedido estadoPedido = EstadoPedido.CREADO;
+
     @CreationTimestamp
     private Instant createdAt;
 
     @UpdateTimestamp
     private Instant updatedAt;
-
-    @Enumerated(EnumType.STRING)
-    private EstadoPedido estadoPedido = EstadoPedido.CREADO;
 
     public void addProducto(PedidoProducto producto)
     {
