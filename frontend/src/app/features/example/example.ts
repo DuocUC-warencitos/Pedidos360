@@ -50,7 +50,7 @@ export class Example
         {
             next: token => 
             {
-                this.accessTokenPreview = token.substring(0, 90) + '...';
+                this.accessTokenPreview = token.toString();
             },
             error: error => 
             {
