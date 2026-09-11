@@ -4,6 +4,7 @@ import { Component } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../core/auth/auth.service';
 import { environment } from '../../../environments/environment';
+import { LoggingService } from '../../core/logging/logging.service';
 
 
 @Component({
@@ -25,7 +26,8 @@ export class Example
 
     constructor(
         private readonly authService: AuthService,
-        private readonly http: HttpClient) 
+        private readonly http: HttpClient,
+        private readonly logger: LoggingService) 
     {
     }
 
@@ -52,7 +54,7 @@ export class Example
             },
             error: error => 
             {
-                console.error(error);
+                this.logger.error('Error al obtener el access token', error);
             }
         });
     }

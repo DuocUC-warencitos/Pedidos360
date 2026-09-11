@@ -3,7 +3,7 @@ import { AccountInfo } from "@azure/msal-browser";
 import { Observable, Subject } from "rxjs";
 import { AUTHENTICATION_PROVIDER, AuthenticationProvider, AuthUser } from "./authenticationProvider";
 
-@Injectable({providedIn: 'root'})
+@Injectable({ providedIn: 'root' })
 export class AuthService
 {
     private readonly authenticationProvider: AuthenticationProvider;
