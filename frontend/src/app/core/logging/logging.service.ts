@@ -1,14 +1,6 @@
 import { Injectable } from "@angular/core";
 import { environment } from "../../../environments/environment";
-
-export enum LogLevel
-{
-    DEACTIVATED = 0,
-    DEBUG = 1,
-    INFO = 2,
-    WARN = 3,
-    ERROR = 4
-}
+import { LogLevel } from "./logLevel";
 
 export interface LogEntry
 {

@@ -1,4 +1,4 @@
-import { LogLevel } from "../app/core/logging/logging.service";
+import { LogLevel } from "../app/core/logging/logLevel";
 
 export const environment = 
 {
