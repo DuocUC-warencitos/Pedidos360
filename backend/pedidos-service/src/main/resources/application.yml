@@ -15,3 +15,8 @@ spring:
         show-sql: false
         open-in-view: false
         database-platform: org.hibernate.dialect.PostgreSQLDialect
+    security:
+        oauth2:
+            resourceserver:
+                jwt:
+                    issuer-uri: https://login.microsoftonline.com/1f3a849e-c198-4ff7-b67c-d17f15cbc152/v2.0

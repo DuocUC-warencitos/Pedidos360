@@ -14,6 +14,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class PedidoResponse 
 {
+    private String userId;
     private List<PedidoProductoResponse> productos;
 
     private Instant createdAt;

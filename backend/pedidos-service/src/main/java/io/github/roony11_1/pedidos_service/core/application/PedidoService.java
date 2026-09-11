@@ -9,6 +9,7 @@ import io.github.roony11_1.pedidos_service.core.domain.model.EstadoPedido;
 import io.github.roony11_1.pedidos_service.core.domain.model.Pedido;
 import io.github.roony11_1.pedidos_service.core.domain.model.PedidoProducto;
 import io.github.roony11_1.pedidos_service.core.domain.repository.PedidoRepository;
+import io.github.roony11_1.pedidos_service.kernel.IUserTokenService;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -16,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 public class PedidoService 
 {
     private final PedidoRepository pedidoRepository;
+    private final IUserTokenService userTokenService;
 
     @Transactional
     public Pedido save(List<PedidoProducto> productos) 
@@ -25,6 +27,7 @@ public class PedidoService
 
         productos.forEach(pedido::addProducto);
 
+        pedido.setUserId(userTokenService.getUserId());
         pedido.setEstadoPedido(EstadoPedido.CREADO);
 
         var saved = pedidoRepository.save(pedido);

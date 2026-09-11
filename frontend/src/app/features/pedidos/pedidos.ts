@@ -2,7 +2,7 @@ import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { PedidosService } from './pedidos.service';
-import { PedidoProducto } from './pedidos.type';
+import { PedidoProductoRequest, PedidoResponse } from './pedidos.type';
 import { LoggingService } from '../../core/logging/logging.service';
 
 @Component({
@@ -20,7 +20,8 @@ export class Pedidos
 	nombreProducto: string = '';
 	cantidad: number = 1;
 
-	productos: PedidoProducto[] = [];
+	productos: PedidoProductoRequest[] = [];
+	pedidoGuardado: PedidoResponse | null = null;
 
 	agregarProducto(): void 
 	{
@@ -37,7 +38,7 @@ export class Pedidos
 			return;
 		}
 
-		const producto: PedidoProducto = 
+		const producto: PedidoProductoRequest = 
 		{
 			nombreProducto: this.nombreProducto.trim(),
 			cantidad: this.cantidad
@@ -67,6 +68,8 @@ export class Pedidos
 			next: (pedido) => 
 			{
 				this.logger.debug('Pedido creado: ', pedido)
+
+				this.pedidoGuardado = pedido;
 
 				alert('Pedido creado correctamente');
 

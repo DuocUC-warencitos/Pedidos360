@@ -18,6 +18,7 @@ public class PedidoResponseMapper implements IMapper<PedidoResponse, Pedido>
     public PedidoResponse map(Pedido entity) 
     {
         return PedidoResponse.builder()
+            .userId(entity.getUserId())
             .productos(entity.getProductos().stream().map(mapper::map).toList())
             .createdAt(entity.getCreatedAt())
             .updatedAt(entity.getUpdatedAt())

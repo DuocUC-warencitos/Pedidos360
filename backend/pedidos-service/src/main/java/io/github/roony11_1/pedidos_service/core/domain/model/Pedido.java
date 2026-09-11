@@ -36,7 +36,7 @@ public class Pedido
     private Long id;
 
     @Column
-    private UUID userId;
+    private String userId;
 
     @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<PedidoProducto> productos = new ArrayList<>();

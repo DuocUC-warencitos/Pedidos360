@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-import { PedidoProducto } from './pedidos.type';
+import { PedidoProductoRequest, PedidoResponse } from './pedidos.type';
 import { apiPedidos } from './api/api.config';
 
 @Injectable({
@@ -12,13 +12,16 @@ export class PedidosService
 {
 	private http = inject(HttpClient);
 
-	crearPedido(productos: PedidoProducto[]): Observable<any> 
+	crearPedido(productos: PedidoProductoRequest[]): Observable<PedidoResponse> 
 	{
-		return this.http.post<any>(apiPedidos.post.create, productos);
+		return this.http.post<PedidoResponse>(
+			apiPedidos.post.create, 
+			productos);
 	}
 
-	obtenerPedidos(): Observable<any[]> 
+	obtenerPedidos(): Observable<PedidoResponse[]> 
 	{
-		return this.http.get<any[]>(apiPedidos.get.all);
+		return this.http.get<PedidoResponse[]>(
+			apiPedidos.get.all);
 	}
 }

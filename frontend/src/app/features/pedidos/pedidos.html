@@ -1,91 +1,116 @@
 <div class="pedido-container">
-  <h1>Crear pedido</h1>
-  <div class="formulario">
+	<h1>Crear pedido</h1>
+	<div class="formulario">
     <div class="campo">
-      <label for="producto">
-        Producto
-      </label>
-      <input
-        id="producto"
-        type="text"
-        [(ngModel)]="nombreProducto"
-        placeholder="Ingrese el nombre del producto"
-      >
+		<label for="producto">
+			Producto
+		</label>
+		<input
+			id="producto"
+			type="text"
+			[(ngModel)]="nombreProducto"
+			placeholder="Ingrese el nombre del producto"
+		>
     </div>
 
-    <div class="campo">
-      <label for="cantidad">
-        Cantidad
-      </label>
+	<div class="campo">
+		<label for="cantidad">
+			Cantidad
+		</label>
 
-      <input
-        id="cantidad"
-        type="number"
-        [(ngModel)]="cantidad"
-        min="1"
-      >
-    </div>
+		<input
+			id="cantidad"
+			type="number"
+			[(ngModel)]="cantidad"
+			min="1"
+		>
+		</div>
 
 
-    <button
-      type="button"
-      class="btn-agregar"
-      (click)="agregarProducto()"
-    >
-      + Agregar producto
-    </button>
+		<button
+		type="button"
+		class="btn-agregar"
+		(click)="agregarProducto()"
+		>
+		+ Agregar producto
+		</button>
 
+	</div>
+
+	<div class="productos">
+		<h2>Productos del pedido</h2>
+
+		@if (productos.length === 0) 
+		{
+		<p class="sin-productos">
+			Todavía no hay productos agregados.
+		</p>
+
+		} 
+		@else 
+		{
+		@for (producto of productos; track $index) 
+		{
+			<div class="producto">
+			<div>
+				<strong>
+				{{ producto.nombreProducto }}
+				</strong>
+				<span>
+				Cantidad: {{ producto.cantidad }}
+				</span>
+			</div>
+
+			<button
+				type="button"
+				class="btn-eliminar"
+				(click)="eliminarProducto($index)"
+			>
+				Eliminar
+			</button>
+
+			</div>
+
+		}
+
+		}
   </div>
-
-
-  <div class="productos">
-    <h2>Productos del pedido</h2>
-
-    @if (productos.length === 0) 
-    {
-      <p class="sin-productos">
-        Todavía no hay productos agregados.
-      </p>
-
-    } 
-    @else 
-    {
-      @for (producto of productos; track $index) 
-      {
-        <div class="producto">
-          <div>
-            <strong>
-              {{ producto.nombreProducto }}
-            </strong>
-            <span>
-              Cantidad: {{ producto.cantidad }}
-            </span>
-          </div>
-
-          <button
-            type="button"
-            class="btn-eliminar"
-            (click)="eliminarProducto($index)"
-          >
-            Eliminar
-          </button>
-
-        </div>
-
-      }
-
-    }
-
-  </div>
-
-
-  <button
-    type="button"
-    class="btn-guardar"
-    [disabled]="productos.length === 0"
-    (click)="guardarPedido()"
-  >
-    Crear pedido
-  </button>
-
+	<button
+		type="button"
+		class="btn-guardar"
+		[disabled]="productos.length === 0"
+		(click)="guardarPedido()"
+	>
+		Crear pedido
+	</button>
 </div>
+
+@if (pedidoGuardado)
+{
+    <div class="pedido-guardado">
+        <h2>Pedido guardado</h2>
+
+		<h1>
+			Id usuario: {{ pedidoGuardado.userId }}
+		</h1>
+
+        <p>
+            Creado: {{ pedidoGuardado.createdAt }}
+        </p>
+
+        <h3>Productos</h3>
+
+        @for (producto of pedidoGuardado.productos; track $index)
+        {
+            <div class="producto">
+                <strong>
+                    {{ producto.nombreProducto }}
+                </strong>
+
+                <span>
+                    Cantidad: {{ producto.cantidad }}
+                </span>
+            </div>
+        }
+    </div>
+}
