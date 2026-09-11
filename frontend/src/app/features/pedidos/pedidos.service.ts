@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { PedidoProducto } from './pedidos.type';
-import { environment } from '../../../environments/environment';
+import { apiPedidos } from './api/api.config';
 
 @Injectable({
   providedIn: 'root'
@@ -12,15 +12,13 @@ export class PedidosService
 {
 	private http = inject(HttpClient);
 
-	private pedidosUrl = environment.apiBaseUrl+"/api/v1/pedidos";
-
 	crearPedido(productos: PedidoProducto[]): Observable<any> 
 	{
-		return this.http.post<any>(this.pedidosUrl, productos);
+		return this.http.post<any>(apiPedidos.base, productos);
 	}
 
 	obtenerPedidos(): Observable<any[]> 
 	{
-		return this.http.get<any[]>(this.pedidosUrl);
+		return this.http.get<any[]>(apiPedidos.base);
 	}
 }
