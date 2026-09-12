@@ -1,4 +1,4 @@
-<div>
+<div class="pedidos-list">
     <h1>Pedidos realizados</h1>
     <div>
         @if (pedidosQuery.isLoading())
@@ -13,13 +13,15 @@
         {
             <h2>No hay pedidos</h2>
         }
-        @else 
+        @else
         {
-            <div>
+            <div class="lista-pedidos">
+
                 @for (pedido of pedidosQuery.data(); track pedido.createdAt)
                 {
-                    <app-pedido-card [pedido]="pedido"/>
+                    <app-pedido-card [pedido]="pedido" />
                 }
+
             </div>
         }
     </div>

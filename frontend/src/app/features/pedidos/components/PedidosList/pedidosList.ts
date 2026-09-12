@@ -20,9 +20,11 @@ export class PedidosList
     readonly pedidosQuery = injectQuery(() => (
     {
         queryKey: ['pedidos'],
-        queryFn: () =>
-            lastValueFrom(
-                this.pedidoService.obtenerPedidos()
-            )
+        queryFn: async () =>
+        {
+            const pedidos = await lastValueFrom(this.pedidoService.obtenerPedidos());
+
+            return pedidos.sort((a, b) => new Date(b.createdAt).getTime() -new Date(a.createdAt).getTime());
+        }
     }));
 }

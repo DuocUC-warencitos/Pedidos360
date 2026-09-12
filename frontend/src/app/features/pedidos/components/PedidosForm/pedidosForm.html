@@ -1,113 +1,205 @@
 <div class="pedido-container">
-	<h1>Crear pedido</h1>
-	<div class="formulario">
-    <div class="campo">
-		<label for="producto">
-			Producto
-		</label>
-		<input
-			id="producto"
-			type="text"
-			[(ngModel)]="uiState().nombreProducto"
-			placeholder="Ingrese el nombre del producto"
-		>
-    </div>
 
-	<div class="campo">
-		<label for="cantidad">
-			Cantidad
-		</label>
+    <header class="pagina-header">
+        <span class="eyebrow">PEDIDOS360</span>
+        <h1>Crear pedido</h1>
+        <p>Agrega los productos que quieres incluir en tu pedido.</p>
+    </header>
 
-		<input
-			id="cantidad"
-			type="number"
-			[(ngModel)]="uiState().cantidad"
-			min="1"
-		>
-		</div>
+    <section class="formulario">
+
+        <div class="formulario-header">
+            <div>
+                <h2>Nuevo producto</h2>
+                <p>Ingresa un producto y su cantidad.</p>
+            </div>
+        </div>
+
+        <div class="formulario-campos">
+
+            <div class="campo">
+                <label for="producto">
+                    Producto
+                </label>
+
+                <input
+                    id="producto"
+                    type="text"
+                    [(ngModel)]="uiState().nombreProducto"
+                    placeholder="Ej: Cerveza Kunstmann Lager Blanc Botella 330 cc"
+                >
+            </div>
+
+            <div class="campo">
+                <label for="cantidad">
+                    Cantidad
+                </label>
+
+                <input
+                    id="cantidad"
+                    type="number"
+                    [(ngModel)]="uiState().cantidad"
+                    min="1"
+                >
+            </div>
+
+        </div>
+
+        <button
+            type="button"
+            class="btn-agregar"
+            (click)="agregarProducto()"
+        >
+            <span>+</span>
+            Agregar producto
+        </button>
+
+    </section>
 
 
-		<button
-		type="button"
-		class="btn-agregar"
-		(click)="agregarProducto()"
-		>
-		+ Agregar producto
-		</button>
+    <section class="productos">
 
-	</div>
+        <header class="seccion-header">
+            <div>
+                <span class="eyebrow">DETALLE</span>
+                <h2>Productos del pedido</h2>
+            </div>
 
-	<div class="productos">
-		<h2>Productos del pedido</h2>
+            <span class="contador">
+                {{ uiState().productos.length }}
+                {{ uiState().productos.length === 1 ? 'producto' : 'productos' }}
+            </span>
+        </header>
 
-		@if (uiState().productos.length === 0) 
-		{
-			<p class="sin-productos">
-				Todavía no hay productos agregados.
-			</p>
-		} 
-		@else 
-		{
-			@for (producto of uiState().productos; track $index) 
-			{
-				<div class="producto">
-				<div>
-					<strong>
-					{{ producto.nombreProducto }}
-					</strong>
-					<span>
-					Cantidad: {{ producto.cantidad }}
-					</span>
-				</div>
+        @if (uiState().productos.length === 0)
+        {
+            <div class="sin-productos">
+                <span class="sin-productos-icono">+</span>
 
-				<button
-					type="button"
-					class="btn-eliminar"
-					(click)="eliminarProducto($index)"
-				>
-					Eliminar
-				</button>
+                <strong>No hay productos todavía</strong>
 
-				</div>
+                <p>
+                    Agrega productos utilizando el formulario superior.
+                </p>
+            </div>
+        }
+        @else
+        {
+            <div class="lista-productos">
 
-			}
-		}
-	</div>
-	<button
-		type="button"
-		class="btn-guardar"
-		[disabled]="uiState().productos.length === 0"
-		(click)="guardarPedido()"
-	>
-		Crear pedido
-	</button>
+                @for (producto of uiState().productos; track $index)
+                {
+                    <article class="producto">
+
+                        <div class="producto-info">
+
+                            <span class="producto-numero">
+                                #{{ $index + 1 }}
+                            </span>
+
+                            <div>
+                                <strong>
+                                    {{ producto.nombreProducto }}
+                                </strong>
+
+                                <span>
+                                    Cantidad: {{ producto.cantidad }}
+                                </span>
+                            </div>
+
+                        </div>
+
+                        <button
+                            type="button"
+                            class="btn-eliminar"
+                            (click)="eliminarProducto($index)"
+                            aria-label="Eliminar producto"
+                        >
+                            Eliminar
+                        </button>
+
+                    </article>
+                }
+
+            </div>
+        }
+
+        <button
+            type="button"
+            class="btn-guardar"
+            [disabled]="
+                uiState().productos.length === 0 ||
+                crearPedidoMutation.isPending()
+            "
+            (click)="guardarPedido()"
+        >
+            @if (crearPedidoMutation.isPending())
+            {
+                Creando pedido...
+            }
+            @else
+            {
+                Crear pedido
+            }
+        </button>
+
+    </section>
+
 </div>
+
 
 @if (uiState().pedidoGuardado; as pedido)
 {
-    <div class="pedido-guardado">
-        <h2>Pedido guardado</h2>
-		<b>
-			Id: {{ pedido.id }}
-		</b>
-        <p>
-            Id usuario: {{ pedido.userId }}
-        </p>
-        <p>
-            Creado: {{ pedido.createdAt }}
-        </p>
-        <h3>Productos</h3>
+    <section class="pedido-guardado">
 
-        @for (producto of pedido.productos; track $index)
-        {
-            <div class="producto">
-                <strong>
-                    {{ producto.nombreProducto }}
-                </strong>
-                <span>
-                    Cantidad: {{ producto.cantidad }}
-                </span>
+        <header>
+            <span class="eyebrow">CONFIRMACIÓN</span>
+            <h2>Pedido creado correctamente</h2>
+            <p>Tu pedido fue registrado en el sistema.</p>
+        </header>
+
+        <div class="pedido-resumen">
+
+            <div>
+                <span>ID DEL PEDIDO</span>
+                <strong>{{ pedido.id }}</strong>
             </div>
-		}
-    </div>
+
+            <div>
+                <span>ID DEL USUARIO</span>
+                <strong>{{ pedido.userId }}</strong>
+            </div>
+
+			<div>
+				<span>FECHA</span>
+
+				<strong>
+					{{ pedido.createdAt | date:'dd/MM/yyyy HH:mm' }}
+				</strong>
+			</div>
+
+        </div>
+
+        <div class="pedido-productos">
+
+            <h3>Productos</h3>
+
+            @for (producto of pedido.productos; track $index)
+            {
+                <div class="producto">
+                    <div class="producto-info">
+                        <strong>
+                            {{ producto.nombreProducto }}
+                        </strong>
+
+                        <span>
+                            Cantidad: {{ producto.cantidad }}
+                        </span>
+                    </div>
+                </div>
+            }
+
+        </div>
+
+    </section>
 }
