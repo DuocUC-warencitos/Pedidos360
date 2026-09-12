@@ -1,0 +1,35 @@
+<div>
+    <h1>Pedidos realizados</h1>
+    <div>
+        @if(pedidos().length === 0)
+        {
+            <h2>No hay pedidos</h2>
+        }
+        @else 
+        {
+            <div>
+                @for (pedido of pedidos(); track pedido.createdAt) 
+                {
+                    <div>
+                        <h4>Usuario id: {{ pedido.userId }}</h4>
+
+                        <h3>Items: </h3>
+                        @if (pedido.productos.length === 0) 
+                        {
+                            <h2>No hay pedidos</h2>
+                        }
+                        @else 
+                        {
+                            @for (producto of pedido.productos; track producto.nombreProducto) 
+                            {
+                                <span>
+                                    -   Nombre: {{ producto.nombreProducto }} - Cantidad: {{ producto.cantidad }}
+                                </span>
+                            }
+                        }
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
