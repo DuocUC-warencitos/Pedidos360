@@ -1,29 +1,26 @@
 <header class="encabezado">
-    <a routerLink="/" class="titulo">
-        <h1>Pedidos360</h1>
-    </a>
+	<a routerLink="/" class="titulo">
+		<img src="/favicon.svg" alt="Pedidos360" class="logo" />
 
-    <nav>
-        @if (user(); as usuario) 
+		<h1>Pedidos360</h1>
+	</a>
+
+	<nav class="navegacion">
+		@if (user(); as usuario) 
         {
-            <div class="usuario">
-                <strong>{{ usuario.name }}</strong>
-            </div>
+			<div class="usuario">
+				<strong>
+					{{ usuario.name }}
+				</strong>
+			</div>
 
-            <button 
-                (click)="logout()"
-            >
-                Cerrar sesión
-            </button>
-        }
+			<button type="button" (click)="logout()">Cerrar sesión</button>
+		} 
         @else 
         {
-            <b>No hay sesión activa!</b>
-            <button
-                (click)="login()"
-            >
-                Inicia Sesión
-            </button>
-        }
-    </nav>
+			<b>No hay sesión activa!</b>
+
+			<button type="button" (click)="login()">Inicia Sesión</button>
+		}
+	</nav>
 </header>
