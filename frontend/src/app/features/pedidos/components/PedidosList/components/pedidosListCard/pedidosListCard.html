@@ -1,0 +1,48 @@
+<section class="pedido-card">
+	<header class="pedido-header">
+		<div>
+			<p class="pedido-label">PEDIDO</p>
+			<h2>Pedido #{{ pedido().id }}</h2>
+		</div>
+		<span class="pedido-fecha">
+			{{ pedido().createdAt | date: 'dd/MM/yyyy HH:mm' }}
+		</span>
+	</header>
+
+	<div class="pedido-info">
+		<div class="info-item">
+			<span class="info-label">ID</span>
+			<span>{{ pedido().id }}</span>
+		</div>
+
+		<div class="info-item">
+			<span class="info-label">USUARIO</span>
+			<span>{{ pedido().userId }}</span>
+		</div>
+
+		<div class="info-item">
+			<span class="info-label">PRODUCTOS</span>
+			<span>{{ pedido().productos.length }}</span>
+		</div>
+	</div>
+
+	<div class="productos">
+		<h3>Productos</h3>
+
+		@if (pedido().productos.length === 0) {
+			<p class="sin-productos">No hay productos</p>
+		} @else {
+			<ul>
+				@for (producto of pedido().productos; track producto.nombreProducto) {
+					<li class="producto">
+						<span class="producto-nombre">
+							{{ producto.nombreProducto }}
+						</span>
+
+						<span class="producto-cantidad"> x{{ producto.cantidad }} </span>
+					</li>
+				}
+			</ul>
+		}
+	</div>
+</section>

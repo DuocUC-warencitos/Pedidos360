@@ -10,40 +10,7 @@
             <div>
                 @for (pedido of pedidos(); track pedido.createdAt)
                 {
-                    <section>
-                        <h2>Pedido</h2>
-
-                        <div>
-                            <p>Id: {{ pedido.id }}</p>
-                            <p>Usuario id: {{ pedido.userId }}</p>
-                        </div>
-
-                        <div>
-                            <h3>Productos: {{ pedido.productos.length }}</h3>
-
-                            @if (pedido.productos.length === 0)
-                            {
-                                <p>No hay productos</p>
-                            }
-                            @else
-                            {
-                                <ul>
-                                    @for (producto of pedido.productos; track producto.nombreProducto)
-                                    {
-                                        <li>
-                                            <span>
-                                                Nombre: {{ producto.nombreProducto }}
-                                            </span>
-
-                                            <span>
-                                                Cantidad: {{ producto.cantidad }}
-                                            </span>
-                                        </li>
-                                    }
-                                </ul>
-                            }
-                        </div>
-                    </section>
+                    <app-pedido-card [pedido]="pedido"/>
                 }
             </div>
         }
