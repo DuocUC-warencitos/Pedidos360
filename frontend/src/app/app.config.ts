@@ -26,6 +26,7 @@ import {
 } from './msal-config';
 import { AUTHENTICATION_PROVIDER } from './core/auth/authenticationProvider';
 import { MsalAuthenticationProvider } from './core/auth/providers/msalAuthenticationProvider';
+import { provideTanStackQuery, QueryClient } from '@tanstack/angular-query-experimental';
 
 export const appConfig: ApplicationConfig = 
 {
@@ -33,6 +34,7 @@ export const appConfig: ApplicationConfig =
 	[
 		provideRouter(routes),
 		provideHttpClient(withInterceptorsFromDi()),
+		provideTanStackQuery(new QueryClient()),
 		{
 			provide: AUTHENTICATION_PROVIDER,
 			useClass: MsalAuthenticationProvider
@@ -41,17 +43,14 @@ export const appConfig: ApplicationConfig =
 			provide: MSAL_INSTANCE,
 			useFactory: MSALInstanceFactory
 		},
-
 		{
 			provide: MSAL_GUARD_CONFIG,
 			useFactory: MSALGuardConfigFactory
 		},
-
 		{
 			provide: MSAL_INTERCEPTOR_CONFIG,
 			useFactory: MSALInterceptorConfigFactory
 		},
-
 		{
 			provide: HTTP_INTERCEPTORS,
 			useClass: MsalInterceptor,

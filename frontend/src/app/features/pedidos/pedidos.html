@@ -1,4 +1,21 @@
-<section>
-	<app-pedidos-form />
-	<app-pedidos-list />
+<section class="pedidos-page">
+
+    <nav class="pedidos-nav">
+        <a
+            [routerLink]="['./lista']"
+            routerLinkActive="activo"
+        >
+            Pedidos
+        </a>
+
+        <a
+            [routerLink]="['./crear']"
+            routerLinkActive="activo"
+        >
+            Crear pedido
+        </a>
+    </nav>
+
+    <router-outlet />
+
 </section>

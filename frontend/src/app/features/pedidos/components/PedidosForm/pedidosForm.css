@@ -1,117 +1,126 @@
 .pedido-container {
-  width: 90%;
-  max-width: 800px;
-  margin: 40px auto;
+	width: 90%;
+	max-width: 800px;
+	margin: 40px auto;
 }
 
 h1 {
-  text-align: center;
-  margin-bottom: 30px;
+	margin-bottom: 30px;
+	text-align: center;
 }
 
 .formulario {
-  background-color: white;
-  padding: 25px;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+	padding: 25px;
+	background-color: #ffffff;
+	border-radius: 10px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .campo {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 20px;
+	display: flex;
+	flex-direction: column;
+	margin-bottom: 20px;
 }
 
 .campo label {
-  margin-bottom: 8px;
-  font-weight: bold;
+	margin-bottom: 8px;
+	font-weight: bold;
 }
 
 .campo input {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  font-size: 16px;
+	padding: 10px;
+	border: 1px solid #ccc;
+	border-radius: 6px;
+	font-size: 16px;
+}
+
+.campo input:focus {
+	outline: none;
+	border-color: #1976d2;
+	box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.15);
 }
 
 .btn-agregar {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 6px;
-  background-color: #1976d2;
-  color: white;
-  cursor: pointer;
-  font-size: 15px;
+	padding: 10px 20px;
+	border: none;
+	border-radius: 6px;
+	background-color: #1976d2;
+	color: #ffffff;
+	font-size: 15px;
 }
 
 .btn-agregar:hover {
-  background-color: #1565c0;
+	background-color: #1565c0;
 }
 
 .productos {
-  margin-top: 30px;
-  background-color: white;
-  padding: 25px;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+	margin-top: 30px;
+	padding: 25px;
+	background-color: #ffffff;
+	border-radius: 10px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .producto {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px;
-  margin-bottom: 10px;
-  background-color: #f5f5f5;
-  border-radius: 6px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+
+	padding: 15px;
+	margin-bottom: 10px;
+
+	background-color: #f5f5f5;
+	border-radius: 6px;
 }
 
 .producto div {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
 }
 
 .producto span {
-  color: #666;
+	color: #666;
 }
 
 .btn-eliminar {
-  padding: 8px 15px;
-  border: none;
-  border-radius: 6px;
-  background-color: #dc3545;
-  color: white;
-  cursor: pointer;
+	padding: 8px 15px;
+	border: none;
+	border-radius: 6px;
+	background-color: #dc3545;
+	color: #ffffff;
 }
 
 .btn-eliminar:hover {
-  background-color: #c82333;
+	background-color: #c82333;
 }
 
 .sin-productos {
-  text-align: center;
-  color: #777;
+	text-align: center;
+	color: #777;
 }
+
+/* Botón guardar */
 
 .btn-guardar {
-  width: 100%;
-  margin-top: 20px;
-  padding: 14px;
-  border: none;
-  border-radius: 6px;
-  background-color: #28a745;
-  color: white;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
+	width: 100%;
+	margin-top: 20px;
+	padding: 14px;
+
+	border: none;
+	border-radius: 6px;
+
+	background-color: #28a745;
+	color: #ffffff;
+
+	font-size: 16px;
+	font-weight: bold;
 }
 
-.btn-guardar:hover:not(:disabled) {
-  background-color: #218838;
+.btn-guardar:hover {
+	background-color: #218838;
 }
 
 .btn-guardar:disabled {
-  background-color: #aaa;
-  cursor: not-allowed;
+	background-color: #aaa;
 }

@@ -15,6 +15,6 @@ export const routes: Routes =
 	{
 		path:'pedidos',
 		loadChildren:()=> import('./features/pedidos/pedidos.routes')
-			.then(m=>m.pedidos_routes)
+			.then(m=>m.pedidosRoutes)
 	}
 ];

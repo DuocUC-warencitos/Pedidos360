@@ -1,0 +1,46 @@
+.pedidos-page {
+	width: 90%;
+	max-width: 1000px;
+	margin: 40px auto;
+}
+
+.pedidos-nav {
+	display: flex;
+	justify-content: center;
+	gap: 8px;
+
+	margin-bottom: 30px;
+	padding: 6px;
+
+	background: #ffffff;
+	border: 1px solid #dfe3e8;
+	border-radius: 10px;
+
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.pedidos-nav a {
+	padding: 10px 20px;
+
+	border-radius: 7px;
+
+	color: #6b7280;
+	text-decoration: none;
+	font-weight: bold;
+
+	transition:
+		color 150ms ease,
+		background-color 150ms ease,
+		transform 150ms ease;
+}
+
+.pedidos-nav a:hover {
+	color: #1f2937;
+	background-color: #f3f4f6;
+	transform: translateY(-1px);
+}
+
+.pedidos-nav a.activo {
+	color: #ffffff;
+	background-color: #1976d2;
+}

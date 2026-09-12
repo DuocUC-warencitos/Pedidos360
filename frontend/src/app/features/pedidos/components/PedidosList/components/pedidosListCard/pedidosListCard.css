@@ -122,3 +122,38 @@
 		gap: 12px;
 	}
 }
+
+.pedido-card {
+	transition:
+		transform 180ms ease,
+		box-shadow 180ms ease,
+		border-color 180ms ease;
+}
+
+.pedido-card:hover {
+	transform: translateY(-4px);
+	border-color: #c7ced8;
+	box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.producto {
+	transition:
+		background-color 150ms ease,
+		padding-left 150ms ease;
+}
+
+.producto:hover {
+	background: #f1f3f5;
+	padding-left: 20px;
+}
+
+.producto-cantidad {
+	transition:
+		transform 150ms ease,
+		color 150ms ease;
+}
+
+.producto:hover .producto-cantidad {
+	color: #1f2937;
+	transform: translateX(-2px);
+}

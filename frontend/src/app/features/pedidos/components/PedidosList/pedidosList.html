@@ -1,14 +1,22 @@
 <div>
     <h1>Pedidos realizados</h1>
     <div>
-        @if(pedidos().length === 0)
+        @if (pedidosQuery.isLoading())
+        {
+            <h2>Cargando pedidos...</h2>
+        }
+        @else if (pedidosQuery.isError())
+        {
+            <h2>Error al cargar pedidos</h2>
+        }
+        @else if ((pedidosQuery.data() ?? []).length === 0)
         {
             <h2>No hay pedidos</h2>
         }
         @else 
         {
             <div>
-                @for (pedido of pedidos(); track pedido.createdAt)
+                @for (pedido of pedidosQuery.data(); track pedido.createdAt)
                 {
                     <app-pedido-card [pedido]="pedido"/>
                 }

@@ -1,7 +1,8 @@
-import { Component, inject } from "@angular/core";
+import { Component, inject, signal } from "@angular/core";
 import { PedidosService } from "../../core/pedidos.service";
-import { toSignal } from "@angular/core/rxjs-interop";
 import { PedidosListCard } from "./components/pedidosListCard/pedidosListCard";
+import { lastValueFrom } from "rxjs";
+import { injectQuery } from "@tanstack/angular-query-experimental";
 
 @Component({
     selector: 'app-pedidos-list',
@@ -14,8 +15,14 @@ export class PedidosList
 {
     private readonly pedidoService = inject(PedidosService);
 
-    readonly pedidos = toSignal(this.pedidoService.obtenerPedidos(), 
-    { 
-        initialValue: [] 
-    });
+    readonly cargando = signal(true);
+
+    readonly pedidosQuery = injectQuery(() => (
+    {
+        queryKey: ['pedidos'],
+        queryFn: () =>
+            lastValueFrom(
+                this.pedidoService.obtenerPedidos()
+            )
+    }));
 }

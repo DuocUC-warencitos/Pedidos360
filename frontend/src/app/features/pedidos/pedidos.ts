@@ -1,11 +1,10 @@
 import { Component } from "@angular/core";
-import { PedidosForm } from "./components/PedidosForm/pedidosForm";
-import { PedidosList } from "./components/PedidosList/pedidosList";
+import { RouterLink, RouterOutlet } from "@angular/router";
 
 @Component({
 	selector: 'app-pedidos',
 	standalone: true,
-	imports: [PedidosForm, PedidosList],
+	imports: [RouterOutlet, RouterLink],
 	templateUrl: './pedidos.html',
 	styleUrl: './pedidos.css'
 })
