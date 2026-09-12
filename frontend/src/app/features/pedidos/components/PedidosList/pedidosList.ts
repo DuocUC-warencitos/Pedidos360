@@ -13,5 +13,8 @@ export class PedidosList
 {
     private readonly pedidoService = inject(PedidosService);
 
-    readonly pedidos = toSignal(this.pedidoService.obtenerPedidos(), { initialValue: [] });
+    readonly pedidos = toSignal(this.pedidoService.obtenerPedidos(), 
+    { 
+        initialValue: [] 
+    });
 }
