@@ -2,8 +2,8 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-import { PedidoProductoRequest, PedidoResponse } from './pedidos.type';
-import { apiPedidos } from './api/api.config';
+import { apiPedidos } from '../api/api.config';
+import { PedidoProductoRequest, PedidoResponse } from '../pedidos.type';
 
 @Injectable({
   providedIn: 'root'
