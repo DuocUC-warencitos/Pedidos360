@@ -8,26 +8,42 @@
         @else 
         {
             <div>
-                @for (pedido of pedidos(); track pedido.createdAt) 
+                @for (pedido of pedidos(); track pedido.createdAt)
                 {
-                    <div>
-                        <h4>Usuario id: {{ pedido.userId }}</h4>
+                    <section>
+                        <h2>Pedido</h2>
 
-                        <h3>Items: </h3>
-                        @if (pedido.productos.length === 0) 
-                        {
-                            <h2>No hay pedidos</h2>
-                        }
-                        @else 
-                        {
-                            @for (producto of pedido.productos; track producto.nombreProducto) 
+                        <div>
+                            <p>Id: {{ pedido.id }}</p>
+                            <p>Usuario id: {{ pedido.userId }}</p>
+                        </div>
+
+                        <div>
+                            <h3>Productos: {{ pedido.productos.length }}</h3>
+
+                            @if (pedido.productos.length === 0)
                             {
-                                <span>
-                                    -   Nombre: {{ producto.nombreProducto }} - Cantidad: {{ producto.cantidad }}
-                                </span>
+                                <p>No hay productos</p>
                             }
-                        }
-                    </div>
+                            @else
+                            {
+                                <ul>
+                                    @for (producto of pedido.productos; track producto.nombreProducto)
+                                    {
+                                        <li>
+                                            <span>
+                                                Nombre: {{ producto.nombreProducto }}
+                                            </span>
+
+                                            <span>
+                                                Cantidad: {{ producto.cantidad }}
+                                            </span>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                        </div>
+                    </section>
                 }
             </div>
         }

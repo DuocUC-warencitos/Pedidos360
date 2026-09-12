@@ -7,6 +7,7 @@ export interface PedidoProductoRequest
 // Responses
 export interface PedidoResponse
 {
+	id: number;
 	userId: string;
 	productos: PedidoProductoResponse[];
 	createdAt: string;
