@@ -2,7 +2,7 @@ import { Component, inject, signal } from "@angular/core";
 import { PedidosService } from "../../core/pedidos.service";
 import { PedidosListCard } from "./components/pedidosListCard/pedidosListCard";
 import { lastValueFrom } from "rxjs";
-import { injectQuery } from "@tanstack/angular-query-experimental";
+import { injectMutation, injectQuery, QueryClient } from "@tanstack/angular-query-experimental";
 
 @Component({
     selector: 'app-pedidos-list',
@@ -14,8 +14,7 @@ import { injectQuery } from "@tanstack/angular-query-experimental";
 export class PedidosList
 {
     private readonly pedidoService = inject(PedidosService);
-
-    readonly cargando = signal(true);
+    private readonly queryClient = inject(QueryClient);
 
     readonly pedidosQuery = injectQuery(() => (
     {
@@ -25,6 +24,17 @@ export class PedidosList
             const pedidos = await lastValueFrom(this.pedidoService.obtenerPedidos());
 
             return pedidos.sort((a, b) => new Date(b.createdAt).getTime() -new Date(a.createdAt).getTime());
+        }
+    }));
+
+    readonly eliminarTodosMutation = injectMutation(() => (
+    {
+        mutationFn: async () =>
+            await lastValueFrom(this.pedidoService.eliminarTodosLosPedidos()),
+
+        onSuccess: () =>
+        {
+            this.queryClient.invalidateQueries({ queryKey: ['pedidos'] });
         }
     }));
 }

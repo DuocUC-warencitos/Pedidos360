@@ -1,4 +1,17 @@
 <div class="pedidos-list">
+    <button
+        (click)="eliminarTodosMutation.mutate()"
+        [disabled]="eliminarTodosMutation.isPending()">
+
+        @if (eliminarTodosMutation.isPending()) 
+        {
+            Eliminando...
+        } 
+        @else 
+        {
+            Eliminar todos
+        }
+    </button>
     <h1>Pedidos realizados</h1>
     <div>
         @if (pedidosQuery.isLoading())

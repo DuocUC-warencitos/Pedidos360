@@ -24,4 +24,9 @@ export class PedidosService
 		return this.http.get<PedidoResponse[]>(
 			apiPedidos.get.all);
 	}
+
+	eliminarTodosLosPedidos(): Observable<void> 
+	{
+		return this.http.delete<void>(apiPedidos.delete.all);
+	}
 }

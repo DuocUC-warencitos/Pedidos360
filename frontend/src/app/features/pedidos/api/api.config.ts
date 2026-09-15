@@ -11,5 +11,9 @@ export const apiPedidos =
     post:
     {
         create: base
+    },
+    delete:
+    {
+        all: `${base}/all`
     }
 };

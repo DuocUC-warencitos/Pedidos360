@@ -47,6 +47,7 @@ public class PedidoService
     @Transactional
     public void deleteAll()
     {
-        pedidoRepository.deleteAll();
+        pedidoRepository.deleteAllProductos();
+        pedidoRepository.deleteAllPedidos();
     }
 }
