@@ -1,6 +1,7 @@
 package io.github.roony11_1.pedidos_service.core.application;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -49,5 +50,14 @@ public class PedidoService
     {
         pedidoRepository.deleteAllProductos();
         pedidoRepository.deleteAllPedidos();
+    }
+
+    @Transactional
+    public void avanzarEstado(UUID id)
+    {
+        var pedido = pedidoRepository.findById(id)
+            .orElseThrow();
+
+        pedido.avanzarEstado();
     }
 }

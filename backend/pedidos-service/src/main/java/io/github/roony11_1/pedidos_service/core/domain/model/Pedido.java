@@ -54,4 +54,26 @@ public class Pedido
         productos.add(producto);
         producto.setPedido(this);
     }
+
+    public void cambiarEstado(EstadoPedido nuevo)
+    {
+        if (!this.estadoPedido.puedeTransicionarA(nuevo))
+            throw new IllegalArgumentException(this.estadoPedido + " no puede transicionar a: " + nuevo);
+
+        this.estadoPedido = nuevo;
+    }
+
+    /** Avanza al siguiente estado del flujo principal. */
+    public void avanzarEstado()
+    {
+        EstadoPedido siguiente = this.estadoPedido.siguiente()
+            .orElseThrow(() -> new IllegalStateException("El pedido ya está en un estado final: " + this.estadoPedido));
+
+        cambiarEstado(siguiente);
+    }
+
+    public void cancelar()
+    {
+        cambiarEstado(EstadoPedido.CANCELADO);
+    }
 }
