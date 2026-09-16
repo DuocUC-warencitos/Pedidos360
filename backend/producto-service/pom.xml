@@ -30,55 +30,41 @@
 		<java.version>21</java.version>
 	</properties>
 	<dependencies>
-		<!-- WebFlux (reactivo) - reemplaza spring-boot-starter-webmvc:39 -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-webflux</artifactId>
+			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 
-		<!-- PostgreSQL R2DBC (reactivo) - reemplaza spring-boot-starter-data-jpa:35 + postgresql:47 runtime -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-r2dbc</artifactId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
+
 		<dependency>
 			<groupId>org.postgresql</groupId>
-			<artifactId>r2dbc-postgresql</artifactId> <!-- driver R2DBC, versión gestionada por parent -->
-		<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>io.r2dbc</groupId>
-			<artifactId>r2dbc-pool</artifactId> <!-- pool reactivo (sustituye HikariCP de application.yml:1/SpringSecurityUserTokenService.java:15) -->
+			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- Security OAuth2 Resource Server (reactivo) - mismo que pedidos-service/pom.xml:42 pero en WebFlux funciona con ReactiveJwtDecoder -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
 		</dependency>
-		<!-- Opcional validación -->
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-validation</artifactId>
 		</dependency>
 
-		<!-- Lombok (igual que pedidos-service/pom.xml:62, corrige scope 'annotationProcessor' -> 'provided') -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 			<optional>true</optional>
 		</dependency>
 
-		<!-- Test reactivo -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>io.projectreactor</groupId>
-			<artifactId>reactor-test</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
