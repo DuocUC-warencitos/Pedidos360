@@ -43,7 +43,7 @@ public class Pedido
     @Enumerated(EnumType.STRING)
     private EstadoPedido estadoPedido = EstadoPedido.CREADO;
 
-    @Column(length = 500)
+    @Column(length = 1000)
     private String comentario;
 
     @CreationTimestamp
@@ -66,6 +66,15 @@ public class Pedido
         this.estadoPedido = nuevo;
     }
 
+    private void appendComentario(String nuevo) {
+        if (nuevo == null || nuevo.isBlank()) return;
+        if (this.comentario == null || this.comentario.isBlank()) {
+            this.comentario = nuevo;
+        } else {
+            this.comentario = this.comentario + "\n" + nuevo;
+        }
+    }
+
     /** Avanza al siguiente estado del flujo principal. */
     public void avanzarEstado(String comentario)
     {
@@ -73,13 +82,13 @@ public class Pedido
             .orElseThrow(() -> new IllegalStateException("El pedido ya está en un estado final: " + this.estadoPedido));
 
         cambiarEstado(siguiente);
-        this.comentario = comentario;
+        appendComentario(comentario);
     }
 
     public void cancelar(String comentario)
     {
         cambiarEstado(EstadoPedido.CANCELADO);
-        this.comentario = comentario;
+        appendComentario(comentario);
     }
 
     // Sobrecargas sin comentario para compatibilidad interna / tests

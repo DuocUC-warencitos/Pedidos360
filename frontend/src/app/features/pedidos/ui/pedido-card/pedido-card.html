@@ -4,25 +4,18 @@
   <header class="flex justify-between items-start gap-4 pb-4 border-b border-[#e5e7eb]">
     <div class="min-w-0 flex-1">
       <p class="m-0 mb-1 text-xs font-bold tracking-widest text-[#6b7280]">PEDIDO</p>
-      <h2 class="m-0 text-[22px] break-all min-w-0">Pedido #{{ pedido().id }}</h2>
+      <h2 class="m-0 text-[22px] truncate min-w-0" [title]="pedido().id">Pedido #{{ idCorto() }}</h2>
     </div>
 
     <div class="flex flex-col items-end gap-2 shrink-0">
       <ui-badge [estado]="pedido().estado" />
-      <span class="text-[13px] text-[#6b7280] whitespace-nowrap">
-        {{ pedido().createdAt | date: 'dd/MM/yyyy HH:mm' }}
-      </span>
     </div>
   </header>
 
-  <div class="grid grid-cols-3 gap-3 py-4">
+  <div class="grid grid-cols-2 gap-3 py-4">
     <div class="flex flex-col gap-1.5">
-      <span class="text-[11px] font-bold tracking-wide text-[#6b7280]">ID</span>
-      <span class="break-all text-sm">{{ pedido().id }}</span>
-    </div>
-    <div class="flex flex-col gap-1.5">
-      <span class="text-[11px] font-bold tracking-wide text-[#6b7280]">USUARIO</span>
-      <span class="break-all text-sm">{{ pedido().userId }}</span>
+      <span class="text-[11px] font-bold tracking-wide text-[#6b7280]">FECHA</span>
+      <span class="text-sm">{{ pedido().createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
     </div>
     <div class="flex flex-col gap-1.5">
       <span class="text-[11px] font-bold tracking-wide text-[#6b7280]">PRODUCTOS</span>
@@ -75,7 +68,7 @@
     </div>
   </div>
 
-  <p class="mt-4 p-2.5 bg-[#f8fafc] border border-[#e5e7eb] rounded-md text-xs text-[#4b5563] italic break-words leading-snug">
+  <p class="mt-4 p-2.5 bg-[#f8fafc] border border-[#e5e7eb] rounded-md text-xs text-[#4b5563] italic break-words leading-snug whitespace-pre-wrap">
     {{ pedido().comentario ?? 'Sin comentarios' }}
   </p>
 </section>

@@ -17,6 +17,8 @@ export class PedidoCard {
   readonly avanzar = output<void>();
   readonly cancelar = output<void>();
 
+  readonly idCorto = computed(() => this.pedido().id.slice(0, 8));
+
   readonly isTerminal = computed(() => {
     const s = this.pedido().estado;
     return s === 'ENTREGADO' || s === 'CANCELADO';

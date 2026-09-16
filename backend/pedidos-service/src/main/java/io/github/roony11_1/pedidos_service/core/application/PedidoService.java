@@ -30,6 +30,7 @@ public class PedidoService
 
         pedido.setUserId(userTokenService.getUserId());
         pedido.setEstadoPedido(EstadoPedido.CREADO);
+        pedido.setComentario(userTokenService.getAuditComentario("Ingresado por"));
 
         var saved = pedidoRepository.save(pedido);
 
@@ -58,7 +59,10 @@ public class PedidoService
         var pedido = pedidoRepository.findById(id)
             .orElseThrow();
 
-        String comentario = userTokenService.getAuditComentario("Estado actualizado por");
+        EstadoPedido siguiente = pedido.getEstadoPedido().siguiente()
+            .orElseThrow(() -> new IllegalStateException("El pedido ya está en un estado final: " + pedido.getEstadoPedido()));
+
+        String comentario = userTokenService.getAuditComentario("Estado actualizado a " + siguiente + " por");
         pedido.avanzarEstado(comentario);
     }
 
