@@ -2,3 +2,23 @@
   <app-header />
   <router-outlet />
 </main>
+<ngx-sonner-toaster
+  position="top-right"
+  expand
+  closeButton
+  [toastOptions]="{
+    unstyled: true,
+    classes: {
+      toast: 'group bg-white border border-[var(--color-border)] text-[var(--color-text)] shadow-md rounded-md p-4 flex gap-3 items-start pointer-events-auto',
+      title: 'text-[13px] font-bold text-[var(--color-text)]',
+      description: 'text-[12px] text-[#6b7280]',
+      success: 'bg-[#e7f6ec]! text-[#1f7a3f]! border-[#c5e9d2]!',
+      error: 'bg-[#fdecec]! text-[#b3261e]! border-[#f5c6c3]!',
+      warning: 'bg-[#fff5e0]! text-[#9a6400]! border-[#f2ddb0]!',
+      info: 'bg-[#e8f0fe]! text-[#1a56b8]! border-[#c6d8f7]!',
+      actionButton: 'bg-[var(--color-primary-dark)] text-white rounded-md px-3 py-1 text-xs',
+      cancelButton: 'bg-white border border-[var(--color-border)] rounded-md px-3 py-1 text-xs',
+      closeButton: 'bg-white border border-[var(--color-border-light)] rounded-md'
+    }
+  }"
+/>

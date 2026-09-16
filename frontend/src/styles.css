@@ -75,6 +75,12 @@ button:disabled {
   cursor: not-allowed;
 }
 
+/* === Sonner override: evita jitter del hover global en toasts === */
+[data-sonner-toast] button:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
 /* === Utilities legacy (compatibilidad hasta migrar templates a Tailwind) === */
 .boton-container {
   display: flex;

@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { LoggingService } from '@core/logging/logging.service';
+import { NotificationService } from '@core/notification/notification.service';
 import { useCrearPedidoMutation } from '@features/pedidos/data/pedidos.queries';
 import {
   PedidoProductoRequest,
@@ -25,6 +26,7 @@ export interface PedidosFormUiState {
 })
 export class PedidosCreate {
   private logger = inject(LoggingService);
+  private notify = inject(NotificationService);
 
   readonly uiState = signal<PedidosFormUiState>({
     nombreProducto: '',
@@ -34,26 +36,23 @@ export class PedidosCreate {
     guardando: false,
   });
 
-  readonly crearPedidoMutation = useCrearPedidoMutation((pedido) => 
-  {
-    this.logger.debug('Pedido creado: ', pedido);
-    this.uiState.update((state) => (
-    {
-      ...state,
-      pedidoGuardado: pedido,
-      productos: [],
-      nombreProducto: '',
-      cantidad: 1,
-    }));
-      
-    alert('Pedido creado correctamente');
-  },
-  (error) => 
-  {
-    this.logger.error('Error al crear el pedido: ', error);
-    alert('No se pudo crear el pedido');
-  },
-);
+  readonly crearPedidoMutation = useCrearPedidoMutation(
+    (pedido) => {
+      this.logger.debug('Pedido creado: ', pedido);
+      this.uiState.update((state) => ({
+        ...state,
+        pedidoGuardado: pedido,
+        productos: [],
+        nombreProducto: '',
+        cantidad: 1,
+      }));
+      this.notify.success('Pedido creado correctamente');
+    },
+    (error) => {
+      this.logger.error('Error al crear el pedido: ', error);
+      this.notify.error('No se pudo crear el pedido');
+    },
+  );
 
   agregarProducto(): void {
     const state = this.uiState();
@@ -61,12 +60,12 @@ export class PedidosCreate {
     const cantidad = state.cantidad;
 
     if (nombreProducto === '') {
-      alert('Ingrese un producto');
+      this.notify.warning('Ingrese un producto');
       return;
     }
 
     if (cantidad <= 0) {
-      alert('La cantidad debe ser mayor a 0');
+      this.notify.warning('La cantidad debe ser mayor a 0');
       return;
     }
 
@@ -93,7 +92,7 @@ export class PedidosCreate {
   guardarPedido(): void {
     const productos = this.uiState().productos;
     if (productos.length === 0) {
-      alert('Agregue al menos un producto al pedido');
+      this.notify.warning('Agregue al menos un producto al pedido');
       return;
     }
     this.crearPedidoMutation.mutate(productos);
