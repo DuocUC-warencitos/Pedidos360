@@ -1,0 +1,18 @@
+server:
+    port: 8082
+
+spring:
+    r2dbc:
+        url: r2dbc:pool:postgresql://aws-0-us-east-1.pooler.supabase.com:6543/postgres?ssl=true&sslmode=require
+        username: postgres.myunbjgdvtkkvgaqemwz
+        password: oeyA3CqStCq0LwHx
+    application:
+        name: producto-service
+    sql:
+        init:
+            mode: always
+    security:
+        oauth2:
+            resourceserver:
+                jwt:
+                    issuer-uri: https://login.microsoftonline.com/1f3a849e-c198-4ff7-b67c-d17f15cbc152/v2.0
