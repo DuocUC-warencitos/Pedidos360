@@ -8,20 +8,31 @@ export type EstadoPedido =
   | 'ENTREGADO'
   | 'CANCELADO';
 
+export const ESTADO_LABEL: Record<EstadoPedido, string> = {
+  CREADO: 'Creado',
+  CONFIRMADO: 'Confirmado',
+  EN_PREPARACION: 'En preparación',
+  DESPACHADO: 'Despachado',
+  ENTREGADO: 'Entregado',
+  CANCELADO: 'Cancelado',
+};
+
 @Component({
   selector: 'ui-badge',
   standalone: true,
   template: `
     <span
       [class]="badgeClass()"
-      [attr.title]="estado()"
+      [attr.title]="label()"
     >
-      {{ estado() }}
+      {{ label() }}
     </span>
   `,
 })
 export class UiBadge {
   readonly estado = input.required<EstadoPedido>();
+
+  readonly label = computed(() => ESTADO_LABEL[this.estado()]);
 
   readonly badgeClass = computed(() => {
     const base =
