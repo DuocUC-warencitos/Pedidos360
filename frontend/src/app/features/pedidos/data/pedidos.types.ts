@@ -18,6 +18,7 @@ export interface PedidoResponse {
   userId: string;
   productos: PedidoProductoResponse[];
   estado: EstadoPedido;
+  comentario: string | null;
   createdAt: string;
   updatedAt: string;
 }

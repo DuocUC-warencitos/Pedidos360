@@ -43,6 +43,9 @@ public class Pedido
     @Enumerated(EnumType.STRING)
     private EstadoPedido estadoPedido = EstadoPedido.CREADO;
 
+    @Column(length = 500)
+    private String comentario;
+
     @CreationTimestamp
     private Instant createdAt;
 
@@ -64,16 +67,27 @@ public class Pedido
     }
 
     /** Avanza al siguiente estado del flujo principal. */
-    public void avanzarEstado()
+    public void avanzarEstado(String comentario)
     {
         EstadoPedido siguiente = this.estadoPedido.siguiente()
             .orElseThrow(() -> new IllegalStateException("El pedido ya está en un estado final: " + this.estadoPedido));
 
         cambiarEstado(siguiente);
+        this.comentario = comentario;
     }
 
-    public void cancelar()
+    public void cancelar(String comentario)
     {
         cambiarEstado(EstadoPedido.CANCELADO);
+        this.comentario = comentario;
+    }
+
+    // Sobrecargas sin comentario para compatibilidad interna / tests
+    public void avanzarEstado() {
+        avanzarEstado(null);
+    }
+
+    public void cancelar() {
+        cancelar(null);
     }
 }

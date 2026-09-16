@@ -1,7 +1,7 @@
 <section
-  class="flex flex-col bg-white border border-[var(--color-border)] rounded-xl max-w-[453px] min-h-[700px] max-h-[800px] p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg hover:border-[#c7ced8]"
+  class="flex flex-col bg-white border border-[var(--color-border)] rounded-xl max-w-[453px] min-h-[420px] p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg hover:border-[#c7ced8]"
 >
-  <header class="flex justify-between items-start gap-5 pb-5 border-b border-[#e5e7eb]">
+  <header class="flex justify-between items-start gap-4 pb-4 border-b border-[#e5e7eb]">
     <div class="min-w-0 flex-1">
       <p class="m-0 mb-1 text-xs font-bold tracking-widest text-[#6b7280]">PEDIDO</p>
       <h2 class="m-0 text-[22px] break-all min-w-0">Pedido #{{ pedido().id }}</h2>
@@ -15,7 +15,7 @@
     </div>
   </header>
 
-  <div class="grid grid-cols-3 gap-4 py-5">
+  <div class="grid grid-cols-3 gap-3 py-4">
     <div class="flex flex-col gap-1.5">
       <span class="text-[11px] font-bold tracking-wide text-[#6b7280]">ID</span>
       <span class="break-all text-sm">{{ pedido().id }}</span>
@@ -34,12 +34,12 @@
     <h3 class="m-0 mb-3 text-base">Productos</h3>
 
     @if (pedido().productos.length === 0) {
-      <p class="m-0 p-4 border border-dashed border-[#d1d5db] rounded-lg text-center text-[#6b7280]">
+      <p class="m-0 p-4 h-[145px] flex items-center justify-center border border-dashed border-[#d1d5db] rounded-lg text-center text-[#6b7280]">
         No hay productos
       </p>
     } @else {
       <ul
-        class="flex flex-col max-h-[145px] m-0 p-0 list-none border border-[#e5e7eb] rounded-lg overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-track-transparent"
+        class="flex flex-col h-[145px] m-0 p-0 list-none border border-[#e5e7eb] rounded-lg overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-track-transparent"
         style="scrollbar-width: thin; scrollbar-color: #c7ced8 transparent;"
       >
         @for (producto of pedido().productos; track producto.nombreProducto) {
@@ -74,4 +74,8 @@
       </button>
     </div>
   </div>
+
+  <p class="mt-4 p-2.5 bg-[#f8fafc] border border-[#e5e7eb] rounded-md text-xs text-[#4b5563] italic break-words leading-snug">
+    {{ pedido().comentario ?? 'Sin comentarios' }}
+  </p>
 </section>

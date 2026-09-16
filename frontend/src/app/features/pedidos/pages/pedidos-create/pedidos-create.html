@@ -139,6 +139,10 @@
       </div>
     </div>
 
+    <p class="p-3 bg-[#f8fafc] border border-[#e5e7eb] rounded-md text-xs text-[#4b5563] italic break-words">
+      {{ pedido.comentario ?? 'Sin comentarios' }}
+    </p>
+
     <div class="pt-1">
       <h3 class="m-0 mb-3 text-[15px] font-bold">Productos</h3>
       @for (producto of pedido.productos; track $index) {

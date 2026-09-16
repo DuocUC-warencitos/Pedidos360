@@ -22,6 +22,8 @@ public class PedidoResponse
 
     private EstadoPedido estado;
 
+    private String comentario;
+
     private Instant createdAt;
     private Instant updatedAt;
 }

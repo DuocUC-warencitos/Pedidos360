@@ -58,7 +58,8 @@ public class PedidoService
         var pedido = pedidoRepository.findById(id)
             .orElseThrow();
 
-        pedido.avanzarEstado();
+        String comentario = userTokenService.getAuditComentario("Estado actualizado por");
+        pedido.avanzarEstado(comentario);
     }
 
     @Transactional
@@ -67,6 +68,7 @@ public class PedidoService
         var pedido = pedidoRepository.findById(id)
             .orElseThrow();
 
-        pedido.cancelar();
+        String comentario = userTokenService.getAuditComentario("Cancelado por");
+        pedido.cancelar(comentario);
     }
 }
