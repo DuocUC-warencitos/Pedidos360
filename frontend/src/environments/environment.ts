@@ -18,7 +18,7 @@ export const environment =
           'api://374ba786-74ed-4b20-a6f5-b115c2e58625/Pedidos.Read'
     },
     // Backend Spring Boot de la Sesión 3
-    apiBaseUrl: 'http://localhost:8080',
+    apiGatewayUrl: 'http://localhost:8080',
     logging:
     {
         minLevel: LogLevel.DEBUG

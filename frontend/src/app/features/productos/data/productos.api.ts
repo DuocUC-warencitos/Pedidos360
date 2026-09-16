@@ -1,6 +1,6 @@
 import { environment } from "@env/environment";
 
-const base = `${environment.apiBaseUrl}/api/v1/productos`;
+const base = `${environment.apiGatewayUrl}/api/v1/productos`;
 
 export const apiProductos = 
 {

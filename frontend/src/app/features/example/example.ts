@@ -59,7 +59,7 @@ export class Example
         this.respuestaApi = null;
 
         this.http
-            .get(`${environment.apiBaseUrl}/api/pedidos`)
+            .get(`${environment.apiGatewayUrl}/api/pedidos`)
             .subscribe(
             {
                 next: respuesta => 
