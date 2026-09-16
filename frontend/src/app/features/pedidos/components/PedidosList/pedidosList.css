@@ -17,8 +17,3 @@
     flex-wrap: wrap;
     gap: 16px;
 }
-
-.lista-pedidos > *
-{
-    flex: 1 1 320px;
-}

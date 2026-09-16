@@ -10,6 +10,9 @@
     border: 1px solid #dfe3e8;
     border-radius: 12px;
 
+    min-height: 528px;
+    max-width: 453px;
+
     padding: 24px;
 
     margin-bottom: 20px;
@@ -60,8 +63,9 @@
 .pedido-header h2
 {
     margin: 0;
-
     font-size: 22px;
+
+    word-break: break-word;
 }
 
 .pedido-fecha
