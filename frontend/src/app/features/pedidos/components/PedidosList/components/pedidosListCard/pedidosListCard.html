@@ -35,9 +35,12 @@
 	<div class="productos">
 		<h3>Productos</h3>
 
-		@if (pedido().productos.length === 0) {
+		@if (pedido().productos.length === 0) 
+		{
 			<p class="sin-productos">No hay productos</p>
-		} @else {
+		} 
+		@else 
+		{
 			<ul>
 				@for (producto of pedido().productos; track producto.nombreProducto) {
 					<li class="producto">
@@ -50,5 +53,22 @@
 				}
 			</ul>
 		}
+		<div class="boton-container">
+			<button
+				class="boton boton-avanzar"
+				(click)="avanzar.emit()"
+				[disabled]="pedido().estado === 'ENTREGADO' || pedido().estado === 'CANCELADO'"
+			>
+				Avanzar estado
+			</button>
+
+			<button
+				class="boton boton-cancelar"
+				(click)="cancelar.emit()"
+				[disabled]="pedido().estado === 'ENTREGADO' || pedido().estado === 'CANCELADO'"
+			>
+				Cancelar
+			</button>
+		</div>
 	</div>
 </section>

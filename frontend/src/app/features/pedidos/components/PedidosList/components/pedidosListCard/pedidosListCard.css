@@ -357,3 +357,31 @@
 
     margin-bottom: 16px;
 }
+
+.boton-avanzar
+{
+    background: #1f7a3f;
+    color: #ffffff;
+    border: 1px solid #1a6433;
+}
+
+.boton-container {
+    margin-top: 20px;
+}
+
+.boton-avanzar:not(:disabled):hover
+{
+    background: #1a6433;
+}
+
+.boton-cancelar
+{
+    background: #ffffff;
+    color: #b3261e;
+    border: 1px solid #f5c6c3;
+}
+
+.boton-cancelar:not(:disabled):hover
+{
+    background: #fdecec;
+}

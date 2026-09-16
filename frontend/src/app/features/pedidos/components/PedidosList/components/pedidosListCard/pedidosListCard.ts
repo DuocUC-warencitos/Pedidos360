@@ -1,4 +1,4 @@
-import { Component, input } from "@angular/core";
+import { Component, input, output } from "@angular/core";
 import { PedidoResponse } from "../../../../pedidos.type";
 import { DatePipe } from "@angular/common";
 
@@ -12,4 +12,7 @@ import { DatePipe } from "@angular/common";
 export class PedidosListCard
 {
     readonly pedido = input.required<PedidoResponse>();
+
+    avanzar  = output<void>();
+    cancelar = output<void>();
 }
