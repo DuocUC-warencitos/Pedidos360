@@ -70,4 +70,12 @@ public class PedidoController
 
         return ResponseEntity.noContent().build();
     }
+
+    @PatchMapping("/{id}/cancelar")
+    public ResponseEntity<Void> cancelar(@PathVariable UUID id)
+    {
+        pedidoService.cancelar(id);
+
+        return ResponseEntity.noContent().build();
+    }
 }

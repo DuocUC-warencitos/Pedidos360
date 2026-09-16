@@ -60,4 +60,13 @@ public class PedidoService
 
         pedido.avanzarEstado();
     }
+
+    @Transactional
+    public void cancelar(UUID id)
+    {
+        var pedido = pedidoRepository.findById(id)
+            .orElseThrow();
+
+        pedido.cancelar();
+    }
 }
