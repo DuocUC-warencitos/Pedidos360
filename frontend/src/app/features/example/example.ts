@@ -3,21 +3,15 @@ import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
 
-import { LoggingService } from '@core/logging/logging.service';
 import { AuthService } from '@core/auth/auth.service';
+import { LoggingService } from '@core/logging/logging.service';
 import { environment } from '@env/environment';
 
 
 @Component({
-    selector: 'app-example',
-    imports: 
-    [
-        CommonModule,
-        RouterLink,
-        RouterOutlet
-    ],
-    templateUrl: './example.html',
-    styleUrl: './example.css',
+  selector: 'app-example',
+  imports: [CommonModule, RouterLink, RouterOutlet],
+  templateUrl: './example.html',
 })
 export class Example 
 {

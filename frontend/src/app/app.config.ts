@@ -1,13 +1,11 @@
-import { ApplicationConfig } from '@angular/core';
 
 import {
 	HTTP_INTERCEPTORS,
 	provideHttpClient,
 	withInterceptorsFromDi
 } from '@angular/common/http';
-
+import { ApplicationConfig } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { routes } from './app.routes';
 import {
   MSAL_GUARD_CONFIG,
   MSAL_INSTANCE,
@@ -26,6 +24,8 @@ import {
   MSALInterceptorConfigFactory,
 } from '@core/auth/msal.config';
 import { MsalAuthenticationProvider } from '@core/auth/providers/msalAuthenticationProvider';
+
+import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = 
 {

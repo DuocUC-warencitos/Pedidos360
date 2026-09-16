@@ -1,75 +1,62 @@
-<section *ngIf="!user()" class="tarjeta">
-    <h1>ESTOY EN EXAMPLE</h1>
-    <h2>Usuario no autenticado</h2>
+<section *ngIf="!user()" class="block bg-white border border-[#d5dbe3] rounded-xl p-6 mb-5">
+  <h1 class="text-xl font-bold mb-2">ESTOY EN EXAMPLE</h1>
+  <h2 class="text-[#e66c00] font-bold text-xl mb-3">Usuario no autenticado</h2>
 
-    <p>
-        Inicia sesión con Microsoft Entra ID para continuar.
-    </p>
+  <p class="mb-4">Inicia sesión con Microsoft Entra ID para continuar.</p>
 
-    <button (click)="login()">
-        Iniciar sesión con Microsoft
-    </button>
+  <button
+    (click)="login()"
+    class="appearance-none border-0 rounded-[7px] bg-[#1f4e79] text-white cursor-pointer font-bold px-3.5 py-2.5 hover:brightness-[1.08] transition"
+  >
+    Iniciar sesión con Microsoft
+  </button>
 </section>
 
-<section *ngIf="user()" class="tarjeta">
-    <h2>Sesión iniciada correctamente</h2>
+<section *ngIf="user()" class="block bg-white border border-[#d5dbe3] rounded-xl p-6 mb-5">
+  <h2 class="text-[#e66c00] font-bold text-xl mb-3">Sesión iniciada correctamente</h2>
 
-    <div class="datos">
-        <p>
-            <strong>Nombre:</strong>
-            {{ user()?.name }}
-        </p>
-        <p>
-            <strong>Cuenta:</strong>
-            {{ user()?.username }}
-        </p>
-        <p>
-            <strong>Tenant:</strong>
-            {{ user()?.tenantId }}
-        </p>
-    </div>
+  <div class="py-2">
+    <p class="mb-2"><strong>Nombre:</strong> {{ user()?.name }}</p>
+    <p class="mb-2"><strong>Cuenta:</strong> {{ user()?.username }}</p>
+    <p class="mb-2"><strong>Tenant:</strong> {{ user()?.tenantId }}</p>
+  </div>
 
-    <div class="acciones">
-        <button (click)="obtenerAccessToken()">
-            Obtener Access Token
-        </button>
-        <a
-            class="boton enlace"
-            routerLink="/example/protegido">
-            Ir a ruta protegida
-        </a>
-        <button (click)="consultarPedidos()">
-        Consultar API protegida
-        </button>
-        <button
-            class="secundario"
-            (click)="logout()">
-            Cerrar sesión
-        </button>
-    </div>
+  <div class="flex flex-wrap gap-2.5 my-[18px]">
+    <button
+      (click)="obtenerAccessToken()"
+      class="appearance-none border-0 rounded-[7px] bg-[#1f4e79] text-white cursor-pointer font-bold px-3.5 py-2.5 hover:brightness-[1.08] transition"
+    >
+      Obtener Access Token
+    </button>
+    <a
+      class="appearance-none border-0 rounded-[7px] bg-[#1f4e79] text-white cursor-pointer font-bold px-3.5 py-2.5 no-underline inline-flex items-center hover:brightness-[1.08] transition"
+      routerLink="/example/protegido"
+    >
+      Ir a ruta protegida
+    </a>
+    <button
+      (click)="consultarPedidos()"
+      class="appearance-none border-0 rounded-[7px] bg-[#1f4e79] text-white cursor-pointer font-bold px-3.5 py-2.5 hover:brightness-[1.08] transition"
+    >
+      Consultar API protegida
+    </button>
+    <button
+      (click)="logout()"
+      class="appearance-none border-0 rounded-[7px] bg-[#5d6874] text-white cursor-pointer font-bold px-3.5 py-2.5 hover:brightness-[1.08] transition"
+    >
+      Cerrar sesión
+    </button>
+  </div>
 
-    <div
-        *ngIf="accessTokenPreview"
-        class="resultado">
-        <h3>
-        Access Token
-        </h3>
-        <code>
-        {{ accessTokenPreview }}
-        </code>
-    </div>
+  <div *ngIf="accessTokenPreview" class="bg-[#f2f2f2] border-l-[5px] border-l-[#548235] p-4 mt-4 break-all">
+    <h3 class="text-[#548235] font-bold text-lg mb-2">Access Token</h3>
+    <code class="whitespace-pre-wrap break-all">{{ accessTokenPreview }}</code>
+  </div>
 
-    <div
-        *ngIf="respuestaApi"
-        class="resultado">
-        <h3>
-        Respuesta de la API
-        </h3>
-        <pre>
-        {{ respuestaApi | json }}
-        </pre>
-    </div>
-
+  <div *ngIf="respuestaApi" class="bg-[#f2f2f2] border-l-[5px] border-l-[#548235] p-4 mt-4 break-all">
+    <h3 class="text-[#548235] font-bold text-lg mb-2">Respuesta de la API</h3>
+    <pre class="whitespace-pre-wrap break-all">{{ respuestaApi | json }}</pre>
+  </div>
 </section>
 
 <router-outlet></router-outlet>

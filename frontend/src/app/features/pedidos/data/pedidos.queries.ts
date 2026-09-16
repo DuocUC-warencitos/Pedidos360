@@ -1,10 +1,10 @@
 import { inject } from '@angular/core';
-import { lastValueFrom } from 'rxjs';
 import {
   injectMutation,
   injectQuery,
   QueryClient,
 } from '@tanstack/angular-query-experimental';
+import { lastValueFrom } from 'rxjs';
 
 import { PedidosService } from './pedidos.service';
 import { PedidoProductoRequest } from './pedidos.types';

@@ -5,12 +5,11 @@ import { injectMutation, QueryClient } from '@tanstack/angular-query-experimenta
 import { lastValueFrom } from 'rxjs';
 
 import { LoggingService } from '@core/logging/logging.service';
-
-import { PedidosService } from '../../data/pedidos.service';
+import { PedidosService } from '@features/pedidos/data/pedidos.service';
 import {
   PedidoProductoRequest,
   PedidoResponse,
-} from '../../data/pedidos.types';
+} from '@features/pedidos/data/pedidos.types';
 
 export interface PedidosFormUiState {
   nombreProducto: string;

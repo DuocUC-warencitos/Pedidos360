@@ -1,13 +1,13 @@
 import {
+  MsalGuardConfiguration,
+  MsalInterceptorConfiguration,
+} from '@azure/msal-angular';
+import {
   BrowserCacheLocation,
   IPublicClientApplication,
   InteractionType,
   PublicClientApplication,
 } from '@azure/msal-browser';
-import {
-  MsalGuardConfiguration,
-  MsalInterceptorConfiguration,
-} from '@azure/msal-angular';
 
 import { environment } from '@env/environment';
 
