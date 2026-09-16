@@ -60,12 +60,19 @@
     color: #6b7280;
 }
 
+.pedido-header > div
+{
+    min-width: 0;
+    flex: 1;
+}
+
 .pedido-header h2
 {
     margin: 0;
     font-size: 22px;
-
+    overflow-wrap: anywhere;
     word-break: break-word;
+    min-width: 0;
 }
 
 .pedido-fecha
@@ -246,4 +253,104 @@
     color: #6b7280;
 
     text-align: center;
+}
+
+/* === Header derecha: estado + fecha === */
+
+.pedido-header-right
+{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* === Badge de estado === */
+
+.estado-badge
+{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+
+    padding: 4px 10px;
+
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+
+    border-radius: 999px;
+
+    background: #eef2f7;
+    color: #4b5563;
+
+    border: 1px solid transparent;
+
+    white-space: nowrap;
+}
+
+/* Punto de color a la izquierda */
+.estado-badge::before
+{
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+/* Variantes por estado */
+
+.estado-creado
+{
+    background: #eef2f7;
+    color: #4b5563;
+    border-color: #dfe3e8;
+}
+
+.estado-confirmado
+{
+    background: #e7f6ec;
+    color: #1f7a3f;
+    border-color: #c5e9d2;
+}
+
+.estado-en_preparacion
+{
+    background: #fff5e0;
+    color: #9a6400;
+    border-color: #f2ddb0;
+}
+
+.estado-despachado
+{
+    background: #e8f0fe;
+    color: #1a56b8;
+    border-color: #c6d8f7;
+}
+
+.estado-entregado
+{
+    background: #e7f6ec;
+    color: #1f7a3f;
+    border-color: #c5e9d2;
+}
+
+.estado-cancelado
+{
+    background: #fdecec;
+    color: #b3261e;
+    border-color: #f5c6c3;
+}
+
+/* === Leyenda de estados === */
+
+.estado-leyenda
+{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    margin-bottom: 16px;
 }

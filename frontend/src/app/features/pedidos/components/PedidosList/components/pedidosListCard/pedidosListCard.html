@@ -4,9 +4,15 @@
 			<p class="pedido-label">PEDIDO</p>
 			<h2>Pedido #{{ pedido().id }}</h2>
 		</div>
-		<span class="pedido-fecha">
-			{{ pedido().createdAt | date: 'dd/MM/yyyy HH:mm' }}
-		</span>
+
+		<div class="pedido-header-right">
+			<span class="estado-badge" [class]="'estado-' + pedido().estado" [attr.title]="pedido().estado">
+				{{ pedido().estado }}
+			</span>
+			<span class="pedido-fecha">
+				{{ pedido().createdAt | date: 'dd/MM/yyyy HH:mm' }}
+			</span>
+		</div>
 	</header>
 
 	<div class="pedido-info">
