@@ -1,6 +1,8 @@
-import { Injectable } from "@angular/core";
-import { environment } from "../../../environments/environment";
-import { LogLevel } from "./logLevel";
+import { Injectable } from '@angular/core';
+
+import { environment } from '@env/environment';
+
+import { LogLevel } from './logLevel';
 
 export interface LogEntry
 {

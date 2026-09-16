@@ -2,9 +2,10 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { RouterLink, RouterOutlet } from '@angular/router';
-import { AuthService } from '../../core/auth/auth.service';
-import { environment } from '../../../environments/environment';
-import { LoggingService } from '../../core/logging/logging.service';
+
+import { LoggingService } from '@core/logging/logging.service';
+import { AuthService } from '@core/auth/auth.service';
+import { environment } from '@env/environment';
 
 
 @Component({

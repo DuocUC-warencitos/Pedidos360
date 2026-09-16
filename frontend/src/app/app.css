@@ -1,23 +1,10 @@
-* {
-  box-sizing: border-box;
-}
-
 :host {
   display: block;
   min-height: 100vh;
-  font-family: Consolas, 'Courier New', monospace;
-  background: #f5f7fa;
-  color: #1f2937;
 }
 
 .contenedor {
   width: 100%;
   min-height: 100vh;
   padding: 32px;
-}
-
-.boton {
-  text-decoration: none;
-  padding: 10px 16px;
-  border-radius: 6px;
 }

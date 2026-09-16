@@ -1,7 +1,7 @@
-import { Inject, Injectable, Signal } from "@angular/core";
-import { AccountInfo } from "@azure/msal-browser";
-import { Observable, Subject } from "rxjs";
-import { AUTHENTICATION_PROVIDER, AuthenticationProvider, AuthUser } from "./authenticationProvider";
+import { Inject, Injectable, Signal } from '@angular/core';
+import { Observable } from 'rxjs';
+
+import { AUTHENTICATION_PROVIDER, AuthenticationProvider, AuthUser } from './authenticationProvider';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService

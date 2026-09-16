@@ -1,0 +1,38 @@
+<div class="w-full mx-auto p-6">
+  <button
+    (click)="eliminarTodosMutation.mutate()"
+    [disabled]="eliminarTodosMutation.isPending()"
+    class="mb-4 px-4 py-2 rounded-md text-sm font-bold border bg-white text-[#b3261e] border-[#f5c6c3] hover:bg-[#fdecec] disabled:opacity-60 disabled:cursor-not-allowed"
+  >
+    @if (eliminarTodosMutation.isPending()) {
+      Eliminando...
+    } @else {
+      Eliminar todos
+    }
+  </button>
+
+  <div class="flex justify-between items-center gap-6 flex-wrap mb-6">
+    <h1 class="m-0 text-[28px] font-bold">Pedidos realizados</h1>
+    <ui-estado-leyenda />
+  </div>
+
+  <div>
+    @if (pedidosQuery.isLoading()) {
+      <h2 class="text-lg">Cargando pedidos...</h2>
+    } @else if (pedidosQuery.isError()) {
+      <h2 class="text-lg text-[#b3261e]">Error al cargar pedidos</h2>
+    } @else if ((pedidosQuery.data() ?? []).length === 0) {
+      <h2 class="text-lg text-[#6b7280]">No hay pedidos</h2>
+    } @else {
+      <div class="flex flex-wrap gap-4">
+        @for (pedido of pedidosQuery.data(); track pedido.id) {
+          <app-pedido-card
+            [pedido]="pedido"
+            (avanzar)="avanzarMutation.mutate(pedido.id)"
+            (cancelar)="cancelarMutation.mutate(pedido.id)"
+          />
+        }
+      </div>
+    }
+  </div>
+</div>

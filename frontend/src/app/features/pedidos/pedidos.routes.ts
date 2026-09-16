@@ -1,31 +1,31 @@
 import { Routes } from '@angular/router';
 
-import { Pedidos } from './pedidos';
+import { Pedidos } from './shell/pedidos-shell';
 
-export const pedidosRoutes: Routes = 
-[
-    {
+export const pedidosRoutes: Routes = [
+  {
+    path: '',
+    component: Pedidos,
+    children: [
+      {
         path: '',
-        component: Pedidos,
-        children: 
-        [
-            {
-                path: '',
-                pathMatch: 'full',
-                redirectTo: 'lista'
-            },
-            {
-                path: 'lista',
-                loadComponent: () =>
-                    import('./components/PedidosList/pedidosList')
-                        .then(m => m.PedidosList)
-            },
-            {
-                path: 'crear',
-                loadComponent: () =>
-                    import('./components/PedidosForm/pedidosForm')
-                        .then(m => m.PedidosForm)
-            }
-        ]
-    }
+        pathMatch: 'full',
+        redirectTo: 'lista',
+      },
+      {
+        path: 'lista',
+        loadComponent: () =>
+          import('./pages/pedidos-list/pedidos-list').then(
+            (m) => m.PedidosList,
+          ),
+      },
+      {
+        path: 'crear',
+        loadComponent: () =>
+          import('./pages/pedidos-create/pedidos-create').then(
+            (m) => m.PedidosCreate,
+          ),
+      },
+    ],
+  },
 ];

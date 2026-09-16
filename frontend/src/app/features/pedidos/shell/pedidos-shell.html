@@ -1,0 +1,23 @@
+<section class="pedidos-page">
+  <nav
+    class="flex justify-center gap-2 mb-8 p-1.5 bg-white border border-[var(--color-border)] rounded-xl shadow-sm"
+  >
+    <a
+      [routerLink]="['./lista']"
+      routerLinkActive="activo"
+      [routerLinkActiveOptions]="{ exact: false }"
+      class="px-5 py-2.5 rounded-lg text-[#6b7280] no-underline font-bold transition hover:text-[#1f2937] hover:bg-[#f3f4f6] hover:-translate-y-px [&.activo]:bg-[#1976d2] [&.activo]:text-white"
+    >
+      Pedidos
+    </a>
+    <a
+      [routerLink]="['./crear']"
+      routerLinkActive="activo"
+      class="px-5 py-2.5 rounded-lg text-[#6b7280] no-underline font-bold transition hover:text-[#1f2937] hover:bg-[#f3f4f6] hover:-translate-y-px [&.activo]:bg-[#1976d2] [&.activo]:text-white"
+    >
+      Crear pedido
+    </a>
+  </nav>
+
+  <router-outlet />
+</section>

@@ -1,0 +1,30 @@
+<header class="flex justify-between items-center w-full px-8 py-6 mb-2.5 max-[700px]:flex-col max-[700px]:items-start max-[700px]:gap-4 max-[700px]:px-4 max-[700px]:py-5">
+  <a routerLink="/" class="flex items-center gap-3 text-inherit no-underline hover:no-underline">
+    <img src="/favicon.svg" alt="Pedidos360" class="block w-[42px] h-[42px]" />
+    <h1 class="m-0 text-[28px] font-bold tracking-tight">Pedidos360</h1>
+  </a>
+
+  <nav class="flex items-center gap-3 max-[700px]:w-full max-[700px]:flex-wrap">
+    @if (user(); as usuario) {
+      <div class="flex items-center max-w-[280px] overflow-hidden text-ellipsis whitespace-nowrap max-[700px]:max-w-full">
+        <strong class="text-sm">{{ usuario.name }}</strong>
+      </div>
+      <button
+        type="button"
+        (click)="logout()"
+        class="px-3.5 py-2 border border-[#d1d5db] rounded-md bg-white text-[#1f2937] text-[13px] hover:bg-[#f3f4f6]"
+      >
+        Cerrar sesión
+      </button>
+    } @else {
+      <b class="text-[#6b7280] text-[13px]">No hay sesión activa!</b>
+      <button
+        type="button"
+        (click)="login()"
+        class="px-3.5 py-2 border border-[#d1d5db] rounded-md bg-white text-[#1f2937] text-[13px] hover:bg-[#f3f4f6]"
+      >
+        Inicia Sesión
+      </button>
+    }
+  </nav>
+</header>

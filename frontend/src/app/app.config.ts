@@ -8,25 +8,24 @@ import {
 
 import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
-
 import {
-	MSAL_GUARD_CONFIG,
-	MSAL_INSTANCE,
-	MSAL_INTERCEPTOR_CONFIG,
-	MsalBroadcastService,
-	MsalGuard,
-	MsalInterceptor,
-	MsalService
+  MSAL_GUARD_CONFIG,
+  MSAL_INSTANCE,
+  MSAL_INTERCEPTOR_CONFIG,
+  MsalBroadcastService,
+  MsalGuard,
+  MsalInterceptor,
+  MsalService,
 } from '@azure/msal-angular';
-
-import {
-	MSALGuardConfigFactory,
-	MSALInstanceFactory,
-	MSALInterceptorConfigFactory
-} from './msal-config';
-import { AUTHENTICATION_PROVIDER } from './core/auth/authenticationProvider';
-import { MsalAuthenticationProvider } from './core/auth/providers/msalAuthenticationProvider';
 import { provideTanStackQuery, QueryClient } from '@tanstack/angular-query-experimental';
+
+import { AUTHENTICATION_PROVIDER } from '@core/auth/authenticationProvider';
+import {
+  MSALGuardConfigFactory,
+  MSALInstanceFactory,
+  MSALInterceptorConfigFactory,
+} from '@core/auth/msal.config';
+import { MsalAuthenticationProvider } from '@core/auth/providers/msalAuthenticationProvider';
 
 export const appConfig: ApplicationConfig = 
 {

@@ -1,9 +1,11 @@
-import { BehaviorSubject, filter, map, Observable, Subject, takeUntil } from "rxjs";
-import { AuthenticationProvider, AuthUser } from "../authenticationProvider";
-import { Injectable, signal } from "@angular/core";
-import { MsalBroadcastService, MsalService } from "@azure/msal-angular";
-import { environment } from "../../../../environments/environment";
-import { AccountInfo, InteractionStatus } from "@azure/msal-browser";
+import { Injectable, signal } from '@angular/core';
+import { MsalBroadcastService, MsalService } from '@azure/msal-angular';
+import { AccountInfo, InteractionStatus } from '@azure/msal-browser';
+import { BehaviorSubject, filter, map, Observable, Subject, takeUntil } from 'rxjs';
+
+import { environment } from '@env/environment';
+
+import { AuthenticationProvider, AuthUser } from '../authenticationProvider';
 
 @Injectable({providedIn: 'root'})
 export class MsalAuthenticationProvider implements AuthenticationProvider

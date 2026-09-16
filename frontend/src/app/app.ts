@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { MsalService } from '@azure/msal-angular';
-import { HeaderComponent } from './shared/component/header';
-import { LoggingService } from './core/logging/logging.service';
+
+import { LoggingService } from '@core/logging/logging.service';
+import { HeaderComponent } from '@shared/layout/header/header';
 
 @Component({
     selector: 'app-root',

@@ -1,0 +1,77 @@
+<section
+  class="flex flex-col bg-white border border-[var(--color-border)] rounded-xl max-w-[453px] min-h-[700px] max-h-[800px] p-6 shadow-sm transition hover:-translate-y-1 hover:shadow-lg hover:border-[#c7ced8]"
+>
+  <header class="flex justify-between items-start gap-5 pb-5 border-b border-[#e5e7eb]">
+    <div class="min-w-0 flex-1">
+      <p class="m-0 mb-1 text-xs font-bold tracking-widest text-[#6b7280]">PEDIDO</p>
+      <h2 class="m-0 text-[22px] break-all min-w-0">Pedido #{{ pedido().id }}</h2>
+    </div>
+
+    <div class="flex flex-col items-end gap-2 shrink-0">
+      <ui-badge [estado]="pedido().estado" />
+      <span class="text-[13px] text-[#6b7280] whitespace-nowrap">
+        {{ pedido().createdAt | date: 'dd/MM/yyyy HH:mm' }}
+      </span>
+    </div>
+  </header>
+
+  <div class="grid grid-cols-3 gap-4 py-5">
+    <div class="flex flex-col gap-1.5">
+      <span class="text-[11px] font-bold tracking-wide text-[#6b7280]">ID</span>
+      <span class="break-all text-sm">{{ pedido().id }}</span>
+    </div>
+    <div class="flex flex-col gap-1.5">
+      <span class="text-[11px] font-bold tracking-wide text-[#6b7280]">USUARIO</span>
+      <span class="break-all text-sm">{{ pedido().userId }}</span>
+    </div>
+    <div class="flex flex-col gap-1.5">
+      <span class="text-[11px] font-bold tracking-wide text-[#6b7280]">PRODUCTOS</span>
+      <span class="text-sm">{{ pedido().productos.length }}</span>
+    </div>
+  </div>
+
+  <div class="pt-1 flex-1 flex flex-col">
+    <h3 class="m-0 mb-3 text-base">Productos</h3>
+
+    @if (pedido().productos.length === 0) {
+      <p class="m-0 p-4 border border-dashed border-[#d1d5db] rounded-lg text-center text-[#6b7280]">
+        No hay productos
+      </p>
+    } @else {
+      <ul
+        class="flex flex-col max-h-[145px] m-0 p-0 list-none border border-[#e5e7eb] rounded-lg overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-track-transparent"
+        style="scrollbar-width: thin; scrollbar-color: #c7ced8 transparent;"
+      >
+        @for (producto of pedido().productos; track producto.nombreProducto) {
+          <li
+            class="flex justify-between items-center gap-4 min-h-12 px-4 py-3 bg-[#fafafa] hover:bg-[#f1f3f5] hover:pl-5 transition not-first:border-t not-first:border-[#e5e7eb]"
+          >
+            <span class="font-bold">{{ producto.nombreProducto }}</span>
+            <span
+              class="text-[13px] text-[#6b7280] group-hover:text-[#1f2937] transition"
+              >x{{ producto.cantidad }}</span
+            >
+          </li>
+        }
+      </ul>
+    }
+
+    <div class="flex justify-center items-center gap-3 mt-5">
+      <button
+        class="px-4 py-2.5 rounded-md text-[13px] font-bold border bg-[#1f7a3f] text-white border-[#1a6433] hover:bg-[#1a6433] disabled:opacity-60 disabled:cursor-not-allowed"
+        (click)="avanzar.emit()"
+        [disabled]="isTerminal()"
+      >
+        Avanzar estado
+      </button>
+
+      <button
+        class="px-4 py-2.5 rounded-md text-[13px] font-bold border bg-white text-[#b3261e] border-[#f5c6c3] hover:bg-[#fdecec] disabled:opacity-60 disabled:cursor-not-allowed"
+        (click)="cancelar.emit()"
+        [disabled]="isTerminal()"
+      >
+        Cancelar
+      </button>
+    </div>
+  </div>
+</section>
