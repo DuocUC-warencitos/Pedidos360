@@ -16,7 +16,7 @@ export type EstadoPedido =
 // Responses
 export interface PedidoResponse
 {
-	id: number;
+	id: string;
 	userId: string;
 	productos: PedidoProductoResponse[];
 	estado: EstadoPedido;

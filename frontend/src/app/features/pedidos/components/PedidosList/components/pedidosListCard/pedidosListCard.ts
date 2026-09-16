@@ -1,6 +1,7 @@
-import { Component, input, output } from "@angular/core";
+import { Component, Inject, input, output } from "@angular/core";
 import { PedidoResponse } from "../../../../pedidos.type";
 import { DatePipe } from "@angular/common";
+import { PedidosService } from "../../../../core/pedidos.service";
 
 @Component({
     selector: 'app-pedido-card',

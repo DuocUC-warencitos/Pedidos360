@@ -37,4 +37,22 @@ export class PedidosList
             this.queryClient.invalidateQueries({ queryKey: ['pedidos'] });
         }
     }));
+
+    readonly avanzarMutation = injectMutation(() => (
+    {
+        mutationFn: (id: string) => lastValueFrom(this.pedidoService.avanzarEstadoPedido(id)),
+        onSuccess: () => 
+        {
+            this.queryClient.invalidateQueries({ queryKey: ['pedidos'] });
+        },
+    }));
+
+    readonly cancelarMutation = injectMutation(() => (
+    {
+        mutationFn: (id: string) => lastValueFrom(this.pedidoService.cancelarPedido(id)),
+        onSuccess: () => 
+        {
+            this.queryClient.invalidateQueries({ queryKey: ['pedidos'] });
+        },
+    }));
 }

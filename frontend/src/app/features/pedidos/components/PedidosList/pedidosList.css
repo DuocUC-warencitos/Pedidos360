@@ -74,3 +74,29 @@
 .estado-despachado      { background: #1a56b8; }
 .estado-entregado       { background: #1f7a3f; }
 .estado-cancelado       { background: #b3261e; }
+
+.pedidos-header
+{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+.pedidos-header h1
+{
+    margin: 0;
+    font-size: 28px;
+}
+
+.estado-leyenda
+{
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    font-size: 12px;
+    color: #6b7280;
+}

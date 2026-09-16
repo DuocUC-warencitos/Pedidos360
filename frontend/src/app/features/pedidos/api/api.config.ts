@@ -15,5 +15,10 @@ export const apiPedidos =
     delete:
     {
         all: `${base}/all`
+    },
+    patch:
+    {
+        changeStatus: (id: string) => `${base}/${id}/avanzarEstado`,
+        cancel: (id: string) => `${base}/${id}/cancelar`,
     }
 };

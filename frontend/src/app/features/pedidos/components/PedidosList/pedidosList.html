@@ -12,33 +12,35 @@
             Eliminar todos
         }
     </button>
-    <div class="estado-leyenda">
-        <span class="estado-item">
-            <span class="estado-punto estado-creado"></span>
-            Creado
-        </span>
-        <span class="estado-item">
-            <span class="estado-punto estado-confirmado"></span>
-            Confirmado
-        </span>
-        <span class="estado-item">
-            <span class="estado-punto estado-en_preparacion"></span>
-            En preparación
-        </span>
-        <span class="estado-item">
-            <span class="estado-punto estado-despachado"></span>
-            Despachado
-        </span>
-        <span class="estado-item">
-            <span class="estado-punto estado-entregado"></span>
-            Entregado
-        </span>
-        <span class="estado-item">
-            <span class="estado-punto estado-cancelado"></span>
-            Cancelado
-        </span>
+    <div class="pedidos-header">
+        <h1>Pedidos realizados</h1>
+        <div class="estado-leyenda">
+            <span class="estado-item">
+                <span class="estado-punto estado-creado"></span>
+                Creado
+            </span>
+            <span class="estado-item">
+                <span class="estado-punto estado-confirmado"></span>
+                Confirmado
+            </span>
+            <span class="estado-item">
+                <span class="estado-punto estado-en_preparacion"></span>
+                En preparación
+            </span>
+            <span class="estado-item">
+                <span class="estado-punto estado-despachado"></span>
+                Despachado
+            </span>
+            <span class="estado-item">
+                <span class="estado-punto estado-entregado"></span>
+                Entregado
+            </span>
+            <span class="estado-item">
+                <span class="estado-punto estado-cancelado"></span>
+                Cancelado
+            </span>
+        </div>
     </div>
-    <h1>Pedidos realizados</h1>
     <div>
         @if (pedidosQuery.isLoading())
         {
@@ -56,9 +58,12 @@
         {
             <div class="lista-pedidos">
 
-                @for (pedido of pedidosQuery.data(); track pedido.createdAt)
+                @for (pedido of pedidosQuery.data(); track pedido.id)
                 {
-                    <app-pedido-card [pedido]="pedido" />
+                        <app-pedido-card
+                            [pedido]="pedido"
+                            (avanzar)="avanzarMutation.mutate(pedido.id)"
+                            (cancelar)="cancelarMutation.mutate(pedido.id)" />
                 }
 
             </div>

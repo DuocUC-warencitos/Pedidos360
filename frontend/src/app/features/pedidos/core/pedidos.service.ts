@@ -29,4 +29,14 @@ export class PedidosService
 	{
 		return this.http.delete<void>(apiPedidos.delete.all);
 	}
+
+	avanzarEstadoPedido(id: string): Observable<void>
+	{
+		return this.http.patch<void>(apiPedidos.patch.changeStatus(id), {});
+	}
+
+	cancelarPedido(id: string): Observable<void>
+	{
+		return this.http.patch<void>(apiPedidos.patch.cancel(id), {});
+	}
 }
