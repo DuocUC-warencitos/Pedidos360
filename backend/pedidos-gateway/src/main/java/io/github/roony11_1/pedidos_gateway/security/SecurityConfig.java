@@ -30,7 +30,7 @@ public class SecurityConfig
             )
             .authorizeExchange(exchanges -> exchanges
                 .pathMatchers("/actuator/health").permitAll()
-                .anyExchange().permitAll()
+                .anyExchange().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(jwt -> jwt
