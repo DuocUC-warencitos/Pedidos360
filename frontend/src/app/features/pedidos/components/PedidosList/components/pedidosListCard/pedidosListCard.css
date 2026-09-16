@@ -5,13 +5,16 @@
 
 .pedido-card
 {
+    display: flex;
+    flex-direction: column;
     background: #ffffff;
 
     border: 1px solid #dfe3e8;
     border-radius: 12px;
 
-    min-height: 528px;
     max-width: 453px;
+    min-height: 700px;
+    max-height: 800px;
 
     padding: 24px;
 
