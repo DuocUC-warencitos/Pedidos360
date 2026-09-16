@@ -52,7 +52,7 @@ public class PedidoController
     }
 
     @DeleteMapping("/all")
-    @PreAuthorize("hasRole('OPERADOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteAll()
     {
         pedidoService.deleteAll();

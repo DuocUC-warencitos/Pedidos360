@@ -2,6 +2,7 @@ package io.github.roony11_1.pedidos_service.api.dto.response;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -14,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class PedidoResponse 
 {
-    private Long id;
+    private UUID id;
     private String userId;
     private List<PedidoProductoResponse> productos;
 

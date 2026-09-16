@@ -2,6 +2,7 @@ package io.github.roony11_1.pedidos_service.core.domain.repository;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -10,7 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import io.github.roony11_1.pedidos_service.core.domain.model.Pedido;
 import jakarta.transaction.Transactional;
 
-public interface PedidoRepository extends JpaRepository<Pedido, Long>
+public interface PedidoRepository extends JpaRepository<Pedido, UUID>
 {
     @Query("""
         SELECT DISTINCT p
@@ -25,7 +26,7 @@ public interface PedidoRepository extends JpaRepository<Pedido, Long>
         LEFT JOIN FETCH p.productos
         WHERE p.id = :id
     """)
-    Optional<Pedido> findByIdWithProductos(Long id);
+    Optional<Pedido> findByIdWithProductos(UUID id);
 
     @Modifying
     @Transactional
