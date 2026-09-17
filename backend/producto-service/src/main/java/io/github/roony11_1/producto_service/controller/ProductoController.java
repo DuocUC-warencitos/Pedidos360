@@ -2,6 +2,7 @@ package io.github.roony11_1.producto_service.controller;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
@@ -17,7 +18,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.github.roony11_1.producto_service.dto.ProductoRequest;
 import io.github.roony11_1.producto_service.dto.ProductoResponse;
-import io.github.roony11_1.producto_service.mapper.IMapper;
 import io.github.roony11_1.producto_service.model.Producto;
 import io.github.roony11_1.producto_service.service.ProductoService;
 import lombok.RequiredArgsConstructor;
@@ -29,13 +29,13 @@ public class ProductoController
 {
     private final ProductoService productoService;
 
-    private final IMapper<ProductoRequest, Producto> requestToProducto = request ->
+    private final Function<ProductoRequest, Producto> requestToProducto = request ->
         Producto.builder()
             .nombre(request.getNombre())
             .precio(request.getPrecio())
             .build();
 
-    private final IMapper<Producto, ProductoResponse> productoToResponse = producto ->
+    private final Function<Producto, ProductoResponse> productoToResponse = producto ->
            ProductoResponse.builder()
                 .id(producto.getId())
                 .nombre(producto.getNombre())
@@ -47,14 +47,14 @@ public class ProductoController
     {
         return productoService.listar()
             .stream()
-            .map(productoToResponse::map)
+            .map(productoToResponse::apply)
             .collect(Collectors.toList());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductoResponse> obtenerPorId(@PathVariable UUID id) {
         return productoService.obtenerPorId(id)
-            .map(productoToResponse::map)
+            .map(productoToResponse::apply)
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }
@@ -62,19 +62,19 @@ public class ProductoController
     @PostMapping
     public ResponseEntity<ProductoResponse> crear(@RequestBody ProductoRequest request)
     {
-        Producto producto = requestToProducto.map(request);
+        Producto producto = requestToProducto.apply(request);
         Producto guardado = productoService.crear(producto);
-        ProductoResponse response = productoToResponse.map(guardado);
+        ProductoResponse response = productoToResponse.apply(guardado);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<ProductoResponse> actualizar(@PathVariable UUID id, @RequestBody ProductoRequest request)
     {
-        Producto producto = requestToProducto.map(request);
+        Producto producto = requestToProducto.apply(request);
 
         return productoService.actualizar(id, producto)
-            .map(productoToResponse::map)
+            .map(productoToResponse::apply)
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }
