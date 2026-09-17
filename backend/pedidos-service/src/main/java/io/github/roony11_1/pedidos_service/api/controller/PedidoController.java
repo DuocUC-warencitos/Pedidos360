@@ -29,7 +29,12 @@ import lombok.RequiredArgsConstructor;
 public class PedidoController 
 {
     private final PedidoService pedidoService;
-    private final IMapper<PedidoProducto, PedidoProductoRequest> pedidoProductoRequestMapper;
+    private final IMapper<PedidoProducto, PedidoProductoRequest> pedidoProductoRequestMapper = request -> 
+        PedidoProducto.builder()
+            .nombreProducto(request.getNombreProducto())
+            .cantidad(request.getCantidad())
+            .build();
+            
     private final IMapper<PedidoResponse, Pedido> pedidoResponseMapper;
 
     @PostMapping
