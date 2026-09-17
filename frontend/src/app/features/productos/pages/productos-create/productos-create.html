@@ -1,0 +1,156 @@
+<div class="w-full my-10">
+
+  <a
+    routerLink="/productos/lista"
+    class="inline-flex items-center gap-2 mb-6 px-4 py-2.5 rounded-md text-sm font-bold border border-[#d1d5db] bg-white text-[#1f2937] no-underline hover:bg-[#f8fafc] transition"
+  >
+    ← Ver productos
+  </a>
+
+  <header class="mb-7">
+    <span
+      class="block text-[11px] font-bold tracking-[1.5px] text-[#6b7280]"
+    >
+      PRODUCTOS360
+    </span>
+
+    <h1
+      class="mt-1 mb-2 text-[32px] font-bold tracking-tight max-[600px]:text-[27px]"
+    >
+      Crear producto
+    </h1>
+
+    <p class="m-0 text-[#6b7280] leading-relaxed">
+      Ingresa los datos del nuevo producto.
+    </p>
+  </header>
+
+  <section
+    class="bg-white border border-[var(--color-border)] rounded-xl p-6 shadow-sm max-[600px]:p-[18px]"
+  >
+    <div class="mb-5">
+      <h2 class="m-0 text-[19px] font-bold">
+        Nuevo producto
+      </h2>
+
+      <p class="mt-1.5 m-0 text-[#6b7280] text-[13px]">
+        Completa el nombre y precio del producto.
+      </p>
+    </div>
+
+    <div
+      class="grid grid-cols-2 gap-4 max-[600px]:grid-cols-1"
+    >
+      <div class="flex flex-col gap-1.5">
+        <label
+          for="nombre"
+          class="text-[13px] font-bold"
+        >
+          Nombre
+        </label>
+
+        <input
+          id="nombre"
+          type="text"
+          [(ngModel)]="uiState().nombre"
+          placeholder="Ej: Coca Cola 500ml"
+          class="w-full px-3 py-2.5 border border-[#d1d5db] rounded-md bg-white text-[#1f2937] text-sm placeholder:text-[#9ca3af] focus:outline-none focus:border-[#1f2937] focus:ring-2 focus:ring-[rgba(31,41,55,0.08)] transition"
+        />
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <label
+          for="precio"
+          class="text-[13px] font-bold"
+        >
+          Precio
+        </label>
+
+        <input
+          id="precio"
+          type="number"
+          [(ngModel)]="uiState().precio"
+          min="0"
+          step="1"
+          placeholder="Ej: 2990"
+          class="w-full px-3 py-2.5 border border-[#d1d5db] rounded-md bg-white text-[#1f2937] text-sm placeholder:text-[#9ca3af] focus:outline-none focus:border-[#1f2937] focus:ring-2 focus:ring-[rgba(31,41,55,0.08)] transition"
+        />
+      </div>
+    </div>
+
+    <button
+      type="button"
+      (click)="guardarProducto()"
+      [disabled]="crearProductoMutation.isPending()"
+      class="inline-flex items-center justify-center gap-2 mt-5 px-4 py-2.5 border border-[#1f2937] rounded-md bg-[#1f2937] text-white text-[13px] font-bold hover:bg-[#111827] disabled:bg-[#d1d5db] disabled:text-[#6b7280] disabled:cursor-not-allowed transition"
+    >
+      @if (crearProductoMutation.isPending()) {
+        Creando producto...
+      } @else {
+        Crear producto
+      }
+    </button>
+  </section>
+</div>
+
+@if (uiState().productoGuardado; as producto) {
+  <section
+    class="w-full mt-5 mb-10 bg-white border border-[#cbd5e1] rounded-xl p-6 shadow-sm max-[600px]:p-[18px]"
+  >
+    <header class="pb-5 border-b border-[#e5e7eb]">
+      <span
+        class="block text-[11px] font-bold tracking-[1.5px] text-[#6b7280]"
+      >
+        CONFIRMACIÓN
+      </span>
+
+      <h2 class="my-1 text-xl font-bold">
+        Producto creado correctamente
+      </h2>
+
+      <p class="m-0 text-[#6b7280] text-[13px]">
+        El producto fue registrado en el sistema.
+      </p>
+    </header>
+
+    <div
+      class="grid grid-cols-3 gap-4 py-5 max-[600px]:grid-cols-1"
+    >
+      <div class="flex flex-col gap-1.5">
+        <span
+          class="text-[#6b7280] text-[10px] font-bold tracking-wide"
+        >
+          ID
+        </span>
+
+        <strong class="text-[13px] break-all">
+          {{ producto.id }}
+        </strong>
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <span
+          class="text-[#6b7280] text-[10px] font-bold tracking-wide"
+        >
+          NOMBRE
+        </span>
+
+        <strong class="text-[13px]">
+          {{ producto.nombre }}
+        </strong>
+      </div>
+
+      <div class="flex flex-col gap-1.5">
+        <span
+          class="text-[#6b7280] text-[10px] font-bold tracking-wide"
+        >
+          PRECIO
+        </span>
+
+        <strong class="text-[13px]">
+          ${{ producto.precio }}
+        </strong>
+      </div>
+    </div>
+  </section>
+}
