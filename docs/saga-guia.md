@@ -137,7 +137,7 @@ for(Item i: req.items()){
 ## 8. Fase 6 — Frontend Angular polling + timeline (1 día)
 
 **Qué tocar:**
-- `frontend/src/app/features/pedidos/data/pedidos.queries.ts:81` agregar `refetchInterval: (q)=> q.state.data?.some(p=>!['ENTREGADO','CANCELADO'].includes(p.estado))?3000:false` + `refetchOnWindowFocus:true`
+- `frontend/src/app/features/pedidos/data/pedidos.queries.ts:81` agregar `refetchInterval: (q)=> q.state.data?.some(p=>!['ENTREGADO','CANCELADO'].includes(p.estado))?3000:false` + `refetchOnWindowFocus:true` 
 - `pedidos-create.ts:100` cambiar `nombreProducto` input → `select` de `productos.service.ts:51` (`obtenerProductos()`), enviar `productoId`
 - `ui/pedido-timeline` nuevo (stepper 5 pasos reutilizando `ui-badge.ts` colores) para espejar `temp-monitor-frontend/src/features/admin/pages/AdminPage.tsx`
 - `pedidos-create.html:156` mostrar `estado` + timeline, `pedidos-list.html` polling skeleton

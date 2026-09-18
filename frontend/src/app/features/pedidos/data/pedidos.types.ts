@@ -6,6 +6,8 @@ export interface PedidoProductoRequest {
 
 export type EstadoPedido =
   | 'CREADO'
+  | 'STOCK_RESERVADO'
+  | 'STOCK_FALLIDO'
   | 'CONFIRMADO'
   | 'EN_PREPARACION'
   | 'DESPACHADO'

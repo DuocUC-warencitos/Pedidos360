@@ -1,81 +1,98 @@
 import { inject } from '@angular/core';
-import {
-  injectMutation,
-  injectQuery,
-  QueryClient,
-} from '@tanstack/angular-query-experimental';
+import { injectMutation, injectQuery, QueryClient } from '@tanstack/angular-query-experimental';
 import { lastValueFrom } from 'rxjs';
 
 import { PedidosService } from './pedidos.service';
-import { PedidoProductoRequest } from './pedidos.types';
+import { PedidoProductoRequest, PedidoResponse } from './pedidos.types';
+
+const ESTADOS_TERMINALES: ReadonlyArray<PedidoResponse['estado']> = ['ENTREGADO', 'CANCELADO'];
+
+const POLL_INTERVAL_MS = 3_000;
 
 export function usePedidosQuery() 
 {
-  const service = inject(PedidosService);
+    const service = inject(PedidosService);
 
-  return injectQuery(() => (
-  {
-    queryKey: ['pedidos'],
-    queryFn: async () => 
-    {
-      const pedidos = await lastValueFrom(service.obtenerPedidos());
-      return pedidos.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      );
-    },
-  }));
+    return injectQuery(() => (
+	{
+        queryKey: ['pedidos'],
+        queryFn: async (): Promise<PedidoResponse[]> => 
+		{
+            const pedidos = await lastValueFrom(service.obtenerPedidos());
+
+            return pedidos.sort(
+                (a, b) =>
+                    new Date(b.createdAt).getTime() -
+                    new Date(a.createdAt).getTime(),
+            );
+        },
+        refetchInterval: (query) => 
+		{
+            const pedidos = query.state.data;
+
+            if (!pedidos || pedidos.length === 0)
+                return false;
+
+            const hayVivos = pedidos.some((p) => !ESTADOS_TERMINALES.includes(p.estado),);
+
+            return hayVivos ? POLL_INTERVAL_MS : false;
+        },
+        refetchOnWindowFocus: true,
+    }));
 }
 
 export function useEliminarTodosMutation() 
 {
-  const service = inject(PedidosService);
+	const service = inject(PedidosService);
 
-  const qc = inject(QueryClient);
-  return injectMutation(() => (
-  {
-    mutationFn: async () => await lastValueFrom(service.eliminarTodosLosPedidos()),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['pedidos'] }),
-  }));
+	const qc = inject(QueryClient);
+	return injectMutation(() => (
+	{
+		mutationFn: async () => await lastValueFrom(service.eliminarTodosLosPedidos()),
+		onSuccess: () => qc.invalidateQueries({ queryKey: ['pedidos'] }),
+	}));
 }
 
 export function useAvanzarMutation() 
 {
-  const service = inject(PedidosService);
+	const service = inject(PedidosService);
 
-  const qc = inject(QueryClient);
-  return injectMutation(() => (
-  {
-    mutationFn: (id: string) => lastValueFrom(service.avanzarEstadoPedido(id)),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['pedidos'] }),
-  }));
+	const qc = inject(QueryClient);
+	return injectMutation(() => (
+	{
+		mutationFn: (id: string) => lastValueFrom(service.avanzarEstadoPedido(id)),
+		onSuccess: () => qc.invalidateQueries({ queryKey: ['pedidos'] }),
+	}));
 }
 
 export function useCancelarMutation() 
 {
-  const service = inject(PedidosService);
+	const service = inject(PedidosService);
 
-  const qc = inject(QueryClient);
-  return injectMutation(() => (
-  {
-    mutationFn: (id: string) => lastValueFrom(service.cancelarPedido(id)),
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['pedidos'] }),
-  }));
+	const qc = inject(QueryClient);
+	return injectMutation(() => (
+		{
+		mutationFn: (id: string) => lastValueFrom(service.cancelarPedido(id)),
+		onSuccess: () => qc.invalidateQueries({ queryKey: ['pedidos'] }),
+	}));
 }
 
 export function useCrearPedidoMutation(
-  onSuccessCb: (pedido: import('./pedidos.types').PedidoResponse) => void,
-  onErrorCb: (err: unknown) => void) 
+	onSuccessCb: (pedido: import('./pedidos.types').PedidoResponse) => void,
+	onErrorCb: (err: unknown) => void,) 
 {
-  const service = inject(PedidosService);
-  const qc = inject(QueryClient);
+	const service = inject(PedidosService);
+	const qc = inject(QueryClient);
 
-  return injectMutation(() => (
-  {
-    mutationFn: (productos: PedidoProductoRequest[]) => lastValueFrom(service.crearPedido(productos)),
-    onSuccess: (pedido) => 
-    {
-      qc.invalidateQueries({ queryKey: ['pedidos'] });
-      onSuccessCb(pedido);
-    },
-    onError: onErrorCb,
-  }));
+	return injectMutation(() => (
+	{
+		mutationFn: (productos: PedidoProductoRequest[]) =>
+			lastValueFrom(service.crearPedido(productos)),
+		onSuccess: (pedido) => 
+		{
+			qc.invalidateQueries({ queryKey: ['pedidos'] });
+			onSuccessCb(pedido);
+		},
+		onError: onErrorCb,
+	}));
 }
