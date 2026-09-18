@@ -1,5 +1,6 @@
 package io.github.roony11_1.pedidos_service.core.domain.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -22,7 +23,12 @@ public class PedidoProducto
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String nombreProducto;
+    @Column(name = "nombre_snapshot", nullable = false)
+    private String nombreSnapshot;
+
+    @Column(name = "precio_snapshot", nullable = false)
+    private int precioSnapshot;
+
     private int cantidad;
 
     @ManyToOne

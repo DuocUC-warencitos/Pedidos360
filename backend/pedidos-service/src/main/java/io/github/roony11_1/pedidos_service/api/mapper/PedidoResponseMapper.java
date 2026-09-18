@@ -16,7 +16,7 @@ public class PedidoResponseMapper implements Function<Pedido, PedidoResponse>
 {
     private final Function<PedidoProducto, PedidoProductoResponse> pedidoProductoMapper = pedidoProducto ->
         PedidoProductoResponse.builder()
-            .nombreProducto(pedidoProducto.getNombreProducto())
+            .nombreProducto(pedidoProducto.getNombreSnapshot())
             .cantidad(pedidoProducto.getCantidad())
             .build();
 
