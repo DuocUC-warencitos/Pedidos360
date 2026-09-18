@@ -3,14 +3,13 @@ package io.github.roony11_1.producto_service.dto;
 import java.util.List;
 import java.util.UUID;
 
-import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 public record ReservaStockRequest(
     UUID pedidoId,
-    @NotEmpty @Valid List<Item> items)
+    @NotEmpty List<Item> items)
 {
     public record Item(
         @NotNull UUID productoId,
