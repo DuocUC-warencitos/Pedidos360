@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.github.roony11_1.pedidos_service.api.dto.request.PedidoProductoRequest;
 import io.github.roony11_1.pedidos_service.api.dto.response.PedidoResponse;
-import io.github.roony11_1.pedidos_service.core.application.PedidoService;
+import io.github.roony11_1.pedidos_service.core.application.service.PedidoService;
 import io.github.roony11_1.pedidos_service.core.domain.model.Pedido;
 import io.github.roony11_1.pedidos_service.core.domain.model.PedidoProducto;
 import lombok.RequiredArgsConstructor;

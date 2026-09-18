@@ -1,5 +1,7 @@
 package io.github.roony11_1.pedidos_service.core.domain.model;
 
+import java.util.UUID;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -22,6 +24,9 @@ public class PedidoProducto
     @Id 
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "producto_id", nullable = false)
+    private UUID productoId;
 
     @Column(name = "nombre_snapshot", nullable = false)
     private String nombreSnapshot;

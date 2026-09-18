@@ -20,3 +20,11 @@ spring:
             resourceserver:
                 jwt:
                     issuer-uri: https://login.microsoftonline.com/1f3a849e-c198-4ff7-b67c-d17f15cbc152/v2.0
+    cloud:
+        openfeign:
+            client:
+                config:
+                    productoService:
+                        connect-timeout: 2000
+                        read-timeout: 3000
+                        logger-level: basic

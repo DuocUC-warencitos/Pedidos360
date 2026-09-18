@@ -1,4 +1,4 @@
-package io.github.roony11_1.pedidos_service.core.application;
+package io.github.roony11_1.pedidos_service.core.application.service;
 
 import java.util.List;
 import java.util.UUID;

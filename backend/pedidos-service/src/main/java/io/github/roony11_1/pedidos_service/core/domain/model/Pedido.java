@@ -19,6 +19,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -46,11 +47,20 @@ public class Pedido
     @Column(length = 1000)
     private String comentario;
 
+    @Column(name = "idempotency_key", unique = true, length = 128)
+    private String idempotencyKey;
+
+    @Column(name = "correlation_id", length = 64)
+    private String correlationId;
+
     @CreationTimestamp
     private Instant createdAt;
 
     @UpdateTimestamp
     private Instant updatedAt;
+
+    @Version 
+    private Long version;
 
     public void addProducto(PedidoProducto producto)
     {
@@ -91,12 +101,13 @@ public class Pedido
         appendComentario(comentario);
     }
 
-    // Sobrecargas sin comentario para compatibilidad interna / tests
-    public void avanzarEstado() {
+    public void avanzarEstado() 
+    {
         avanzarEstado(null);
     }
 
-    public void cancelar() {
+    public void cancelar() 
+    {
         cancelar(null);
     }
 }
