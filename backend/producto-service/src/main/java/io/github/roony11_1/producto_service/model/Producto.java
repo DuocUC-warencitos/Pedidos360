@@ -33,6 +33,18 @@ public class Producto
     @Column(name = "nombre")
     private String nombre;
 
+    @Column(name = "stock_disponible", nullable = false)
+    private int stockDisponible;
+
+    @Column(name = "stock_reservado", nullable = false)
+    private int stockReservado;
+
     @Version
     private Long version;
+
+    public void reservarStock(int cantidad)
+    {
+        stockDisponible = stockDisponible - cantidad;
+        stockReservado = stockReservado + cantidad;
+    }
 }

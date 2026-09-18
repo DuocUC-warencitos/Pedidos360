@@ -35,6 +35,7 @@ public class SecurityConfig
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/api/v1/productos/stock/**").permitAll()
                 .anyRequest().permitAll()
             )
             .oauth2ResourceServer(o -> o.jwt(j -> j
