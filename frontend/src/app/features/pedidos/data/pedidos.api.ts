@@ -1,19 +1,23 @@
 import { environment } from '@env/environment';
 
 const base = `${environment.apiGatewayUrl}/api/v1/pedidos`;
+const sagaBase = `${base}/saga`;
 
 export const apiPedidos = {
-  get: {
-    all: base,
-  },
-  post: {
-    create: base,
-  },
-  delete: {
-    all: `${base}/all`,
-  },
-  patch: {
-    changeStatus: (id: string) => `${base}/${id}/avanzarEstado`,
-    cancel: (id: string) => `${base}/${id}/cancelar`,
-  },
-};
+	get: {
+		all: base,
+		jobStatus: (jobId: string) => `${sagaBase}/jobs/${jobId}`,
+	},
+	post: {
+		/** @deprecated usar createSaga (201 síncrono sin reserva de stock). */
+		create: base,
+		createSaga: sagaBase,
+	},
+	delete: {
+		all: `${base}/all`,
+	},
+	patch: {
+		changeStatus: (id: string) => `${base}/${id}/avanzarEstado`,
+		cancel: (id: string) => `${base}/${id}/cancelar`,
+	},
+} as const;

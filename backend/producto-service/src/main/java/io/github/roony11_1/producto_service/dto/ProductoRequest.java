@@ -13,4 +13,5 @@ public class ProductoRequest
 {
     private String nombre;
     private int precio;
+    private int stock;
 }

@@ -3,7 +3,7 @@ import { injectMutation, injectQuery, QueryClient } from '@tanstack/angular-quer
 import { lastValueFrom } from 'rxjs';
 
 import { PedidosService } from './pedidos.service';
-import { PedidoProductoRequest, PedidoResponse } from './pedidos.types';
+import { CrearPedidoRequest, PedidoJobStatusResponse, PedidoProductoRequest, PedidoResponse } from './pedidos.types';
 
 const ESTADOS_TERMINALES: ReadonlyArray<PedidoResponse['estado']> = ['ENTREGADO', 'CANCELADO'];
 
@@ -94,5 +94,43 @@ export function useCrearPedidoMutation(
 			onSuccessCb(pedido);
 		},
 		onError: onErrorCb,
+	}));
+}
+
+export function useCrearPedidoSagaMutation(
+	onSuccessCb: (job: PedidoJobStatusResponse) => void,
+	onErrorCb: (err: unknown) => void) 
+{
+	const service = inject(PedidosService);
+	const qc = inject(QueryClient);
+
+	return injectMutation(() => (
+	{
+		mutationFn: ({ request, idempotencyKey }: 
+		{
+			request: CrearPedidoRequest;
+			idempotencyKey: string;
+		}) => lastValueFrom(service.crearPedidoSaga(request, idempotencyKey)),
+		onSuccess: (job) => 
+		{
+			// El pedido ya existe (TX1 commiteada) → invalida la lista
+			// para que usePedidosQuery lo recoja antes del primer tick de polling.
+			qc.invalidateQueries({ queryKey: ['pedidos'] });
+			onSuccessCb(job);
+		},
+		onError: onErrorCb,
+	}));
+}
+
+export function useJobStatusQuery(jobId: () => string | null) 
+{
+	const service = inject(PedidosService);
+	return injectQuery(() => (
+	{
+		queryKey: ['pedido-job', jobId()],
+		enabled: !!jobId(),
+		queryFn: async (): Promise<PedidoJobStatusResponse> => lastValueFrom(service.obtenerEstadoJob(jobId()!)),
+		// Job vive pocos segundos: polleamos cada 1s hasta terminal.
+		refetchInterval: (q) => (q.state.data?.estadoJob === 'RUNNING' ? 1_000 : false),
 	}));
 }

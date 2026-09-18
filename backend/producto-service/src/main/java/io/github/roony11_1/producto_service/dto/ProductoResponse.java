@@ -16,4 +16,5 @@ public class ProductoResponse
     private UUID id;
     private String nombre;
     private int precio;
+    private int stockDisponible;
 }

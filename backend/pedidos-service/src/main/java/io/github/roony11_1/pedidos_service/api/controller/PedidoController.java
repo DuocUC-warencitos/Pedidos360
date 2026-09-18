@@ -38,6 +38,7 @@ public class PedidoController
     private final Function<Pedido, PedidoResponse> pedidoResponseMapper;
 
     @PostMapping
+    @Deprecated(forRemoval = true, since = "Entrega 2")
     public ResponseEntity<PedidoResponse> crearPedido(@RequestBody List<PedidoProductoRequest> request)
     {
         var productos = request.stream()

@@ -2,49 +2,67 @@
   <header class="mb-7">
     <span class="block text-[11px] font-bold tracking-[1.5px] text-[#6b7280]">PEDIDOS360</span>
     <h1 class="mt-1 mb-2 text-[32px] font-bold tracking-tight max-[600px]:text-[27px]">Crear pedido</h1>
-    <p class="m-0 text-[#6b7280] leading-relaxed">Agrega los productos que quieres incluir en tu pedido.</p>
+    <p class="m-0 text-[#6b7280] leading-relaxed">Selecciona los productos que quieres incluir en tu pedido.</p>
   </header>
 
+  <!-- ============ NUEVO PRODUCTO ============ -->
   <section class="bg-white border border-[var(--color-border)] rounded-xl p-6 shadow-sm max-[600px]:p-[18px]">
     <div class="mb-5">
-      <h2 class="m-0 text-[19px] font-bold">Nuevo producto</h2>
-      <p class="mt-1.5 m-0 text-[#6b7280] text-[13px]">Ingresa un producto y su cantidad.</p>
+      <h2 class="m-0 text-[19px] font-bold">Agregar producto</h2>
+      <p class="mt-1.5 m-0 text-[#6b7280] text-[13px]">Elige un producto del catálogo y su cantidad.</p>
     </div>
 
-    <div class="grid grid-cols-[1fr_150px] gap-4 max-[600px]:grid-cols-1">
-      <div class="flex flex-col gap-1.5">
-        <label for="producto" class="text-[13px] font-bold">Producto</label>
-        <input
-          id="producto"
-          type="text"
-          [(ngModel)]="uiState().nombreProducto"
-          placeholder="Ej: Cerveza Kunstmann Lager Blanc Botella 330 cc"
-          class="w-full px-3 py-2.5 border border-[#d1d5db] rounded-md bg-white text-[#1f2937] text-sm placeholder:text-[#9ca3af] focus:outline-none focus:border-[#1f2937] focus:ring-2 focus:ring-[rgba(31,41,55,0.08)] transition"
-        />
+    @if (productosQuery.isPending()) 
+    {
+      <p class="text-sm text-[#6b7280]">Cargando catálogo…</p>
+    } @else if (productosQuery.isError()) 
+    {
+      <p class="text-sm text-[#b91c1c]">No se pudo cargar el catálogo. Reintenta más tarde.</p>
+    } @else 
+    {
+      <div class="grid grid-cols-[1fr_150px] gap-4 max-[600px]:grid-cols-1">
+        <div class="flex flex-col gap-1.5">
+          <label for="producto" class="text-[13px] font-bold">Producto</label>
+          <select
+            id="producto"
+            [(ngModel)]="uiState().productoIdSeleccionado"
+            class="w-full px-3 py-2.5 border border-[#d1d5db] rounded-md bg-white text-[#1f2937] text-sm focus:outline-none focus:border-[#1f2937] focus:ring-2 focus:ring-[rgba(31,41,55,0.08)] transition"
+          >
+            <option value="" disabled>Selecciona un producto…</option>
+            @for (p of productos(); track p.id) 
+            {
+              <option [value]="p.id" [disabled]="p.stockDisponible === 0">
+                {{ p.nombre }} — {{ formatearPrecio(p.precio) }}
+                (stock: {{ p.stockDisponible }})
+              </option>
+            }
+          </select>
+        </div>
+
+        <div class="flex flex-col gap-1.5">
+          <label for="cantidad" class="text-[13px] font-bold">Cantidad</label>
+          <input
+            id="cantidad"
+            type="number"
+            [(ngModel)]="uiState().cantidad"
+            min="1"
+            class="w-full px-3 py-2.5 border border-[#d1d5db] rounded-md bg-white text-[#1f2937] text-sm focus:outline-none focus:border-[#1f2937] focus:ring-2 focus:ring-[rgba(31,41,55,0.08)] transition"
+          />
+        </div>
       </div>
 
-      <div class="flex flex-col gap-1.5">
-        <label for="cantidad" class="text-[13px] font-bold">Cantidad</label>
-        <input
-          id="cantidad"
-          type="number"
-          [(ngModel)]="uiState().cantidad"
-          min="1"
-          class="w-full px-3 py-2.5 border border-[#d1d5db] rounded-md bg-white text-[#1f2937] text-sm focus:outline-none focus:border-[#1f2937] focus:ring-2 focus:ring-[rgba(31,41,55,0.08)] transition"
-        />
-      </div>
-    </div>
-
-    <button
-      type="button"
-      (click)="agregarProducto()"
-      class="inline-flex items-center justify-center gap-2 mt-5 px-4 py-2.5 border border-[#1f2937] rounded-md bg-[#1f2937] text-white text-[13px] font-bold hover:bg-[#111827] transition"
-    >
-      <span class="text-lg leading-none">+</span>
-      Agregar producto
-    </button>
+      <button
+        type="button"
+        (click)="agregarItem()"
+        class="inline-flex items-center justify-center gap-2 mt-5 px-4 py-2.5 border border-[#1f2937] rounded-md bg-[#1f2937] text-white text-[13px] font-bold hover:bg-[#111827] transition"
+      >
+        <span class="text-lg leading-none">+</span>
+        Agregar producto
+      </button>
+    }
   </section>
 
+  <!-- ============ DETALLE ============ -->
   <section class="mt-5 bg-white border border-[var(--color-border)] rounded-xl p-6 shadow-sm max-[600px]:p-[18px]">
     <header class="flex items-center justify-between gap-4 mb-5 max-[600px]:items-start">
       <div>
@@ -52,43 +70,34 @@
         <h2 class="m-0 text-[19px] font-bold">Productos del pedido</h2>
       </div>
       <span class="px-2.5 py-1 rounded-full bg-[#f1f3f5] text-[#4b5563] text-xs font-bold">
-        {{ uiState().productos.length }}
-        {{ uiState().productos.length === 1 ? 'producto' : 'productos' }}
+        {{ uiState().items.length }}
+        {{ uiState().items.length === 1 ? 'producto' : 'productos' }}
       </span>
     </header>
 
-    @if (uiState().productos.length === 0) {
-      <div
-        class="flex flex-col items-center text-center p-9 border border-dashed border-[#d1d5db] rounded-lg"
-      >
-        <span
-          class="flex items-center justify-center w-10 h-10 mb-3 rounded-full bg-[#f1f3f5] text-[#6b7280] text-2xl"
-          >+</span
-        >
+    @if (uiState().items.length === 0) {
+      <div class="flex flex-col items-center text-center p-9 border border-dashed border-[#d1d5db] rounded-lg">
+        <span class="flex items-center justify-center w-10 h-10 mb-3 rounded-full bg-[#f1f3f5] text-[#6b7280] text-2xl">+</span>
         <strong class="text-sm">No hay productos todavía</strong>
-        <p class="mt-1.5 m-0 text-[#6b7280] text-xs">
-          Agrega productos utilizando el formulario superior.
-        </p>
+        <p class="mt-1.5 m-0 text-[#6b7280] text-xs">Agrega productos utilizando el formulario superior.</p>
       </div>
     } @else {
       <div class="border border-[#e5e7eb] rounded-lg overflow-hidden">
-        @for (producto of uiState().productos; track $index) {
-          <article
-            class="flex items-center justify-between gap-4 px-4 py-3.5 bg-white hover:bg-[#f8fafc] hover:pl-5 transition not-first:border-t not-first:border-[#e5e7eb] max-[600px]:items-start"
-          >
+        @for (item of uiState().items; track item.producto.id) {
+          <article class="flex items-center justify-between gap-4 px-4 py-3.5 bg-white hover:bg-[#f8fafc] hover:pl-5 transition not-first:border-t not-first:border-[#e5e7eb] max-[600px]:items-start">
             <div class="flex items-center gap-3 min-w-0">
-              <span
-                class="flex items-center justify-center w-7 h-7 shrink-0 rounded-md bg-[#f1f3f5] text-[#6b7280] text-[11px] font-bold"
-                >#{{ $index + 1 }}</span
-              >
+              <span class="flex items-center justify-center w-7 h-7 shrink-0 rounded-md bg-[#f1f3f5] text-[#6b7280] text-[11px] font-bold">#{{ $index + 1 }}</span>
               <div class="flex flex-col gap-1 min-w-0">
-                <strong class="truncate">{{ producto.nombreProducto }}</strong>
-                <span class="text-[#6b7280] text-xs">Cantidad: {{ producto.cantidad }}</span>
+                <strong class="truncate">{{ item.producto.nombre }}</strong>
+                <span class="text-[#6b7280] text-xs">
+                  {{ formatearPrecio(item.producto.precio) }} × {{ item.cantidad }}
+                  = <strong>{{ formatearPrecio(item.producto.precio * item.cantidad) }}</strong>
+                </span>
               </div>
             </div>
             <button
               type="button"
-              (click)="eliminarProducto($index)"
+              (click)="eliminarItem($index)"
               aria-label="Eliminar producto"
               class="shrink-0 px-2.5 py-1.5 border border-[#fecaca] rounded-md bg-[#fff5f5] text-[#b91c1c] text-xs font-bold hover:bg-[#fee2e2] transition"
             >
@@ -97,16 +106,21 @@
           </article>
         }
       </div>
+
+      <div class="flex items-center justify-between mt-4 pt-4 border-t border-[#e5e7eb]">
+        <span class="text-sm font-bold text-[#6b7280]">Total</span>
+        <strong class="text-lg">{{ formatearPrecio(total()) }}</strong>
+      </div>
     }
 
     <button
       type="button"
-      [disabled]="uiState().productos.length === 0 || crearPedidoMutation.isPending()"
+      [disabled]="uiState().items.length === 0 || crearPedidoMutation.isPending()"
       (click)="guardarPedido()"
-      class="w-full mt-5 p-3.5 border-none rounded-md bg-[#1f2937] text-white text-sm font-bold hover:bg-[#111827] disabled:bg-[#d1d5db] disabled:text-[#6b7280] disabled:cursor-not-allowed disabled:shadow-none disabled:transform-none transition"
+      class="w-full mt-5 p-3.5 border-none rounded-md bg-[#1f2937] text-white text-sm font-bold hover:bg-[#111827] disabled:bg-[#d1d5db] disabled:text-[#6b7280] disabled:cursor-not-allowed transition"
     >
       @if (crearPedidoMutation.isPending()) {
-        Creando pedido...
+        Enviando pedido…
       } @else {
         Crear pedido
       }
@@ -114,43 +128,43 @@
   </section>
 </div>
 
-@if (uiState().pedidoGuardado; as pedido) {
-  <section
-    class="w-full mt-5 mb-10 bg-white border border-[#cbd5e1] rounded-xl p-6 shadow-sm max-[600px]:p-[18px]"
-  >
+<!-- ============ CONFIRMACIÓN + TIMELINE ============ -->
+@if (uiState().jobCreado; as job) {
+  <section class="w-full mt-5 mb-10 bg-white border border-[#cbd5e1] rounded-xl p-6 shadow-sm max-[600px]:p-[18px]">
     <header class="pb-5 border-b border-[#e5e7eb]">
-      <span class="block text-[11px] font-bold tracking-[1.5px] text-[#6b7280]">CONFIRMACIÓN</span>
-      <h2 class="my-1 text-xl font-bold">Pedido creado correctamente</h2>
-      <p class="m-0 text-[#6b7280] text-[13px]">Tu pedido fue registrado en el sistema.</p>
+      <span class="block text-[11px] font-bold tracking-[1.5px] text-[#6b7280]">PROCESANDO</span>
+      <h2 class="my-1 text-xl font-bold">Pedido recibido</h2>
+      <p class="m-0 text-[#6b7280] text-[13px]">
+        Estamos reservando el stock. Esto puede tomar unos segundos.
+      </p>
     </header>
 
     <div class="grid grid-cols-2 gap-4 py-5 max-[600px]:grid-cols-1 max-[600px]:gap-3">
       <div class="flex flex-col gap-1.5">
         <span class="text-[#6b7280] text-[10px] font-bold tracking-wide">ID DEL PEDIDO</span>
-        <strong class="text-[13px] break-all">{{ pedido.id }}</strong>
+        <strong class="text-[13px] break-all">{{ job.pedidoId }}</strong>
       </div>
       <div class="flex flex-col gap-1.5">
-        <span class="text-[#6b7280] text-[10px] font-bold tracking-wide">FECHA</span>
-        <strong class="text-[13px]">{{ pedido.createdAt | date: 'dd/MM/yyyy HH:mm' }}</strong>
+        <span class="text-[#6b7280] text-[10px] font-bold tracking-wide">JOB ID</span>
+        <strong class="text-[13px] break-all">{{ job.jobId }}</strong>
       </div>
     </div>
 
-    <p class="p-3 bg-[#f8fafc] border border-[#e5e7eb] rounded-md text-xs text-[#4b5563] italic break-words whitespace-pre-wrap">
-      {{ pedido.comentario ?? 'Sin comentarios' }}
-    </p>
+    <!-- Timeline básico inline (puedes extraerlo luego a <app-pedido-timeline>) -->
+    <app-pedido-timeline [estadoPedido]="job.estadoPedido" [estadoJob]="job.estadoJob" />
 
-    <div class="pt-1">
-      <h3 class="m-0 mb-3 text-[15px] font-bold">Productos</h3>
-      @for (producto of pedido.productos; track $index) {
-        <div
-          class="flex items-center justify-between gap-4 px-4 py-3.5 bg-white border-t border-[#e5e7eb] first:border-t-0"
-        >
-          <div class="flex flex-col">
-            <strong>{{ producto.nombreProducto }}</strong>
-            <span class="text-[#6b7280] text-xs">Cantidad: {{ producto.cantidad }}</span>
-          </div>
-        </div>
-      }
-    </div>
+    @if (job.error) {
+      <p class="mt-4 p-3 bg-[#fff5f5] border border-[#fecaca] rounded-md text-xs text-[#b91c1c]">
+        {{ job.error }}
+      </p>
+    }
+
+    <button
+      type="button"
+      (click)="nuevoPedido()"
+      class="mt-5 px-4 py-2.5 border border-[#1f2937] rounded-md bg-white text-[#1f2937] text-[13px] font-bold hover:bg-[#f8fafc] transition"
+    >
+      Crear otro pedido
+    </button>
   </section>
 }

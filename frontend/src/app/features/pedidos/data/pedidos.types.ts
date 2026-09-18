@@ -4,6 +4,30 @@ export interface PedidoProductoRequest {
   cantidad: number;
 }
 
+export interface CrearPedidoRequest
+{
+  items: ItemPedido[]
+}
+
+export interface ItemPedido
+{
+  productoId: string;
+  cantidad: number;
+}
+
+export type EstadoJob = 'RUNNING' | 'COMPLETED' | 'FAILED';
+
+export interface PedidoJobStatusResponse
+{
+  jobId: string;
+  pedidoId: string;
+  estadoJob: EstadoJob;
+  estadoPedido: EstadoPedido;
+  error: string | null;
+  startedAt: string;
+  finishedAt: string | null;
+}
+
 export type EstadoPedido =
   | 'CREADO'
   | 'STOCK_RESERVADO'

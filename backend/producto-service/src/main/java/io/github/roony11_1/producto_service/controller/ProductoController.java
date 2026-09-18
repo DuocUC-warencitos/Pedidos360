@@ -33,6 +33,7 @@ public class ProductoController
         Producto.builder()
             .nombre(request.getNombre())
             .precio(request.getPrecio())
+            .stockDisponible(request.getStock())
             .build();
 
     private final Function<Producto, ProductoResponse> productoToResponse = producto ->
@@ -40,6 +41,7 @@ public class ProductoController
                 .id(producto.getId())
                 .nombre(producto.getNombre())
                 .precio(producto.getPrecio())
+                .stockDisponible(producto.getStockDisponible())
                 .build();
 
     @GetMapping

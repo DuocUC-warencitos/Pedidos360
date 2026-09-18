@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.github.roony11_1.pedidos_service.api.dto.request.CrearPedidoRequest;
 import io.github.roony11_1.pedidos_service.api.dto.response.PedidoJobStatusResponse;
 import io.github.roony11_1.pedidos_service.core.application.service.PedidoJobService;
 import io.github.roony11_1.pedidos_service.core.application.service.PedidoSagaService;
@@ -18,6 +19,7 @@ import io.github.roony11_1.pedidos_service.core.domain.model.Pedido;
 import io.github.roony11_1.pedidos_service.core.domain.model.PedidoJob;
 import io.github.roony11_1.pedidos_service.core.domain.repository.PedidoJobRepository;
 import io.github.roony11_1.pedidos_service.core.domain.repository.PedidoRepository;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -31,7 +33,7 @@ public class PedidoSagaController
     private final PedidoRepository pedidoRepository;
 
     @PostMapping
-    public ResponseEntity<PedidoJobStatusResponse> crear(@RequestHeader("Idempotency-Key") String idempotencyKey, @RequestBody CrearPedidoRequest request)
+    public ResponseEntity<PedidoJobStatusResponse> crear(@RequestHeader("Idempotency-Key") String idempotencyKey, @Valid @RequestBody CrearPedidoRequest request)
     {
         String correlationId = UUID.randomUUID().toString();
 
@@ -42,7 +44,7 @@ public class PedidoSagaController
         PedidoJob job = pedidojobService.crearEjecutar(pedidoId, idempotencyKey, correlationId);
 
         return ResponseEntity.accepted()
-            .header("Location", "api/v1/pedidos/saga/jobs/ " + job.getId())
+            .header("Location", "api/v1/pedidos/saga/jobs/" + job.getId())
             .body(PedidoJobStatusResponse.from(job, "CREADO"));
     }
 

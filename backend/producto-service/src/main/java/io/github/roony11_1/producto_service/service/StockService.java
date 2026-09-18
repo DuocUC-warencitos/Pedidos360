@@ -27,21 +27,21 @@ public class StockService
         if (previa.isPresent())
             return toResponse(previa.get(), true);
 
-        for (var producto : request.getProductos())
+        for (var producto : request.items())
         {
-            var p = productoRepository.findById(producto.getProductoId())
-                .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado: " + producto.getProductoId()));
+            var p = productoRepository.findById(producto.productoId())
+                .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado: " + producto.productoId()));
 
-            if (p.getStockDisponible() < producto.getCantidad())
-                throw new StockInsuficienteException(p.getId(), producto.getCantidad(), p.getStockDisponible());
+            if (p.getStockDisponible() < producto.cantidad())
+                throw new StockInsuficienteException(p.getId(), producto.cantidad(), p.getStockDisponible());
 
             // Esta mapeado con @Version, siguiendo el contexto de Hibernate. Intentara actualizar si el UPDATE difiere en el Version fallara con http 409
-            p.reservarStock(producto.getCantidad());
+            p.reservarStock(producto.cantidad());
         }
 
         ReservaStock reserva = ReservaStock.builder()
             .idempotencyKey(idempotencyKey)
-            .pedidoId(request.getPedidoId())
+            .pedidoId(request.pedidoId())
             .estado(EstadoReserva.RESERVADO)
             .build();
 
