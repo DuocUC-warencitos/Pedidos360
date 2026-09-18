@@ -31,7 +31,7 @@ public class PedidoController
     private final PedidoService pedidoService;
     private final Function<PedidoProductoRequest, PedidoProducto> pedidoProductoRequestMapper = request -> 
         PedidoProducto.builder()
-            .nombreProducto(request.getNombreProducto())
+            .nombreSnapshot(request.getNombreProducto())
             .cantidad(request.getCantidad())
             .build();
             
