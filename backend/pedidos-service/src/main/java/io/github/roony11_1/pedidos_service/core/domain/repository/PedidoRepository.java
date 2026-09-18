@@ -13,6 +13,8 @@ import jakarta.transaction.Transactional;
 
 public interface PedidoRepository extends JpaRepository<Pedido, UUID>
 {
+    Optional<Pedido> findByIdempotencyKey(String idempotencyKey);
+
     @Query("""
         SELECT DISTINCT p
         FROM Pedido p

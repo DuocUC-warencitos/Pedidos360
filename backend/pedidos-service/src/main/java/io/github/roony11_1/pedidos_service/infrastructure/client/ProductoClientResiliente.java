@@ -21,10 +21,22 @@ public class ProductoClientResiliente
         return productoClient.reservar(idempotencyKey, req);
     }
 
+    @CircuitBreaker(name = "productoService", fallbackMethod = "liberarFallback")
+    @Retry(name = "productoService")
+    public void liberar(ProductoClient.LiberarStockRequest req)
+    {
+        productoClient.liberar(req);
+    }
+
     // --- fallbacks ---
 
     private ReservaStockResponse reservarFallback(String key, ReservaStockRequest req, Throwable t) 
     {
         throw new ProductoServiceUnavailableException("producto-service no disponible al reservar stock: " + t.getMessage(), t);
+    }
+
+    private void liberarFallback(ProductoClient.LiberarStockRequest req, Throwable t) 
+    {
+        throw new ProductoServiceUnavailableException("producto-service no disponible al liberar stock: " + t.getMessage(), t);
     }
 }

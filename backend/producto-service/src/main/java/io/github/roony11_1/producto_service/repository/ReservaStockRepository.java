@@ -11,4 +11,5 @@ public interface ReservaStockRepository extends JpaRepository<ReservaStock, UUID
 {
     Optional<ReservaStock> findByIdempotencyKey(String idempotencyKey);
     boolean existsByIdempotencyKey(String idempotencyKey);
+    Optional<ReservaStock> findByPedidoId(UUID pedidoId);
 }

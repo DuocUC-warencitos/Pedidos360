@@ -32,6 +32,13 @@ public class PedidoJobService
 
     public PedidoJob crearEjecutar(UUID pedidodId, String idempotencyKey, String correlationId)
     {
+        // Idempotencia: si ya existe job para este key, retorna existente sin crear duplicado
+        var existente = pedidoJobRepository.findByIdempotencyKey(idempotencyKey);
+        if (existente.isPresent()) {
+            log.info("Idempotency hit crearEjecutar key={} -> jobId={}", idempotencyKey, existente.get().getId());
+            return existente.get();
+        }
+
         var ejecutadoPorId = userTokenService.getUserId();
 
         PedidoJob job = PedidoJob.builder()
@@ -43,13 +50,19 @@ public class PedidoJobService
             .idempotencyKey(idempotencyKey)
             .build();
 
+        try {
             job = pedidoJobRepository.save(job);
+        } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+            log.warn("DataIntegrityViolation crearEjecutar key={} -> recuperando existente", idempotencyKey, ex);
+            return pedidoJobRepository.findByIdempotencyKey(idempotencyKey)
+                .orElseThrow(() -> ex);
+        }
 
-            PedidoJobService self = ctx.getBean(PedidoJobService.class);
+        PedidoJobService self = ctx.getBean(PedidoJobService.class);
 
-            self.ejecutarAsync(job.getId());
+        self.ejecutarAsync(job.getId());
 
-            return job;
+        return job;
     }
 
     @Async("pedidoExecutor")

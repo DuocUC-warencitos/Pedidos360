@@ -25,7 +25,8 @@ import lombok.NoArgsConstructor;
     { 
         @Index(name = "ix_pedido_job_estado", columnList = "estado"), 
         @Index(name = "ix_pedido_job_pedido", columnList = "pedido_id") 
-    })
+    },
+    uniqueConstraints = @jakarta.persistence.UniqueConstraint(name = "uk_pedido_job_idempotency", columnNames = "idempotency_key"))
 @Data
 @Builder 
 @NoArgsConstructor 

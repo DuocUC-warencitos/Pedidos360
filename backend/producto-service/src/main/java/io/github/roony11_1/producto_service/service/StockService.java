@@ -3,6 +3,7 @@ package io.github.roony11_1.producto_service.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.github.roony11_1.producto_service.dto.LiberarStockRequest;
 import io.github.roony11_1.producto_service.dto.ReservaStockRequest;
 import io.github.roony11_1.producto_service.dto.ReservaStockResponse;
 import io.github.roony11_1.producto_service.exception.StockInsuficienteException;
@@ -11,7 +12,9 @@ import io.github.roony11_1.producto_service.model.ReservaStock;
 import io.github.roony11_1.producto_service.repository.ProductoRepository;
 import io.github.roony11_1.producto_service.repository.ReservaStockRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service 
 @RequiredArgsConstructor
 public class StockService 
@@ -48,6 +51,38 @@ public class StockService
         reserva = reservaStockRepository.save(reserva);
 
         return toResponse(reserva, false);
+    }
+
+    @Transactional
+    public void liberar(LiberarStockRequest request) {
+        var reservaOpt = reservaStockRepository.findByPedidoId(request.pedidoId());
+
+        if (reservaOpt.isEmpty()) {
+            log.warn("Liberar idempotente: no existe reserva para pedidoId={} -> no-op", request.pedidoId());
+            return;
+        }
+
+        var reserva = reservaOpt.get();
+
+        if (reserva.getEstado() == EstadoReserva.LIBERADO) {
+            log.info("Liberar idempotente: pedidoId={} ya LIBERADO -> no-op", request.pedidoId());
+            return;
+        }
+
+        if (reserva.getEstado() != EstadoReserva.RESERVADO) {
+            log.warn("Liberar: pedidoId={} estado={} no es RESERVADO -> no-op", request.pedidoId(), reserva.getEstado());
+            return;
+        }
+
+        for (var item : request.items()) {
+            var p = productoRepository.findById(item.productoId())
+                .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado: " + item.productoId()));
+            p.liberarStock(item.cantidad());
+        }
+
+        reserva.setEstado(EstadoReserva.LIBERADO);
+        reservaStockRepository.save(reserva);
+        log.info("Stock liberado pedidoId={} items={}", request.pedidoId(), request.items().size());
     }
 
     private ReservaStockResponse toResponse(ReservaStock r, boolean idempotente) 

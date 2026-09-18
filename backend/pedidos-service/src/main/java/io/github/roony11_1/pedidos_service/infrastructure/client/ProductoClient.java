@@ -26,5 +26,7 @@ public interface ProductoClient
     record ReservaStockResponse(UUID reservaId, UUID pedidoId, String estado,
                                     java.time.Instant creadaEn, boolean idempotente) {}
 
-    record LiberarStockRequest(UUID pedidoId) {}
+    record LiberarStockRequest(UUID pedidoId, List<Item> items) {
+        public record Item(UUID productoId, int cantidad) {}
+    }
 }

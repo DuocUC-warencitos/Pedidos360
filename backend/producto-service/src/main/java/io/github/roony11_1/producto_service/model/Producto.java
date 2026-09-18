@@ -47,4 +47,11 @@ public class Producto
         stockDisponible = stockDisponible - cantidad;
         stockReservado = stockReservado + cantidad;
     }
+
+    public void liberarStock(int cantidad)
+    {
+        stockDisponible = stockDisponible + cantidad;
+        stockReservado = stockReservado - cantidad;
+        if (stockReservado < 0) stockReservado = 0;
+    }
 }
