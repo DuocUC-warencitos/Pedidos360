@@ -83,7 +83,7 @@ public class PedidoJobService
                                     pp.getProductoId(), pp.getCantidad()))
                             .toList()));
 
-            // TX corta: job COMPLETED + pedido STOCK_RESERVADO
+            // TX corta: job COMPLETED + pedido ACEPTADO automático (STOCK_RESERVADO intermedio para trazabilidad)
             ctx.getBean(PedidoJobService.class).marcarCompletado(job.getId());
 
         }
@@ -105,7 +105,15 @@ public class PedidoJobService
         Pedido pedido = pedidoRepository.findById(job.getPedidoId())
             .orElseThrow(() -> new IllegalArgumentException("No hay un pedido con id: " + job.getPedidoId().toString()));
 
-        pedido.cambiarEstado(EstadoPedido.STOCK_RESERVADO);
+        // EP1: aparece aceptado automático. Hace STOCK_RESERVADO -> ACEPTADO en misma TX para respetar flujo CREADO->STOCK_RESERVADO->ACEPTADO
+        if (pedido.getEstadoPedido() == EstadoPedido.CREADO) {
+            pedido.cambiarEstado(EstadoPedido.STOCK_RESERVADO);
+        }
+        if (pedido.getEstadoPedido() == EstadoPedido.STOCK_RESERVADO) {
+            pedido.cambiarEstado(EstadoPedido.ACEPTADO);
+            // comentario de auditoría opcional para trazabilidad
+            pedido.setComentario((pedido.getComentario() != null ? pedido.getComentario() + "\n" : "") + "Aceptado automáticamente tras reserva de stock");
+        }
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)

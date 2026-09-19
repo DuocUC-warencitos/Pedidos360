@@ -32,6 +32,7 @@ export type EstadoPedido =
   | 'CREADO'
   | 'STOCK_RESERVADO'
   | 'STOCK_FALLIDO'
+  | 'ACEPTADO'
   | 'CONFIRMADO'
   | 'EN_PREPARACION'
   | 'DESPACHADO'
@@ -50,6 +51,7 @@ export interface PedidoResponse {
 }
 
 export interface PedidoProductoResponse {
+  productoId: string;
   nombreProducto: string;
   cantidad: number;
 }

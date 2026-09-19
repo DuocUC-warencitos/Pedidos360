@@ -4,7 +4,7 @@
   <header class="flex justify-between items-start gap-4 pb-4 border-b border-[#e5e7eb]">
     <div class="min-w-0 flex-1">
       <p class="m-0 mb-1 text-xs font-bold tracking-widest text-[#6b7280]">PEDIDO</p>
-      <h2 class="m-0 text-[22px] truncate min-w-0" [title]="pedido().id">Pedido #{{ idCorto() }}</h2>
+      <h2 class="m-0 text-[22px] truncate min-w-0" [title]="pedido().id">{{ nombreDisplay() }}</h2>
     </div>
 
     <div class="flex flex-col items-end gap-2 shrink-0">
@@ -35,7 +35,7 @@
         class="flex flex-col h-[145px] m-0 p-0 list-none border border-[#e5e7eb] rounded-lg overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-track-transparent"
         style="scrollbar-width: thin; scrollbar-color: #c7ced8 transparent;"
       >
-        @for (producto of pedido().productos; track producto.nombreProducto) {
+        @for (producto of pedido().productos; track producto.productoId) {
           <li
             class="flex justify-between items-center gap-4 min-h-12 px-4 py-3 bg-[#fafafa] hover:bg-[#f1f3f5] hover:pl-5 transition not-first:border-t not-first:border-[#e5e7eb]"
           >
@@ -53,7 +53,8 @@
       <button
         class="px-4 py-2.5 rounded-md text-[13px] font-bold border bg-[#1f7a3f] text-white border-[#1a6433] hover:bg-[#1a6433] disabled:opacity-60 disabled:cursor-not-allowed"
         (click)="avanzar.emit()"
-        [disabled]="isTerminal()"
+        [disabled]="!puedeAvanzar()"
+        [title]="puedeAvanzar() ? 'Avanzar al siguiente estado (Operador/Admin)' : 'Solo Operador/Admin puede avanzar'"
       >
         Avanzar estado
       </button>
@@ -61,7 +62,7 @@
       <button
         class="px-4 py-2.5 rounded-md text-[13px] font-bold border bg-white text-[#b3261e] border-[#f5c6c3] hover:bg-[#fdecec] disabled:opacity-60 disabled:cursor-not-allowed"
         (click)="cancelar.emit()"
-        [disabled]="isTerminal()"
+        [disabled]="!puedeCancelar()"
       >
         Cancelar
       </button>

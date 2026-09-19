@@ -1,5 +1,7 @@
 import { Routes } from '@angular/router';
 
+import { roleGuard } from '@core/auth/guards/role.guard';
+
 export const productosRoutes: Routes = [
   {
     path: '',
@@ -17,6 +19,8 @@ export const productosRoutes: Routes = [
 
   {
     path: 'crear',
+    canActivate: [roleGuard],
+    data: { roles: ['ADMIN'] },
     loadComponent: () =>
       import('./pages/productos-create/productos-create').then(
         (m) => m.ProductosCreate,

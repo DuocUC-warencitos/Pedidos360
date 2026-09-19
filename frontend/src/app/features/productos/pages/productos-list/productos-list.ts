@@ -1,5 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+
+import { AuthService } from '@core/auth/auth.service';
 
 import { NotificationService } from '@core/notification/notification.service';
 
@@ -18,8 +20,11 @@ import { ProductoCard } from '@features/productos/ui/producto-card/producto-card
 })
 export class ProductosList {
   private notify = inject(NotificationService);
+  private auth = inject(AuthService);
 
   readonly productosQuery = useProductosQuery();
+
+  readonly esAdmin = computed(() => this.auth.hasRole('ADMIN'));
 
   readonly eliminarMutation =
     useEliminarProductoMutation(

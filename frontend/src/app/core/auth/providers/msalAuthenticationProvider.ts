@@ -114,12 +114,16 @@ export class MsalAuthenticationProvider implements AuthenticationProvider
 
     private toAuthUser(account: AccountInfo): AuthUser 
     {
+        const claims = (account.idTokenClaims ?? {}) as Record<string, unknown>;
+        const rawRoles = claims['roles'] ?? claims['role'] ?? [];
+        const roles = Array.isArray(rawRoles) ? (rawRoles as string[]) : rawRoles ? [rawRoles as string] : [];
         return {
             id: account.localAccountId,
             name: account.name ?? '',
             username: account.username,
             email: account.username,
-            tenantId: account.tenantId
+            tenantId: account.tenantId,
+            roles: roles.map((r) => String(r).toUpperCase()),
         };
     }
 

@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -62,7 +63,8 @@ public class ProductoController
     }
 
     @PostMapping
-    public ResponseEntity<ProductoResponse> crear(@RequestBody ProductoRequest request)
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ProductoResponse> crear(@jakarta.validation.Valid @RequestBody ProductoRequest request)
     {
         Producto producto = requestToProducto.apply(request);
         Producto guardado = productoService.crear(producto);
@@ -71,7 +73,8 @@ public class ProductoController
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<ProductoResponse> actualizar(@PathVariable UUID id, @RequestBody ProductoRequest request)
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ProductoResponse> actualizar(@PathVariable UUID id, @jakarta.validation.Valid @RequestBody ProductoRequest request)
     {
         Producto producto = requestToProducto.apply(request);
 
@@ -82,6 +85,7 @@ public class ProductoController
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> eliminar(@PathVariable UUID id)
     {
         boolean eliminado = productoService.eliminar(id);

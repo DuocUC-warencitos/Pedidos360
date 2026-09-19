@@ -9,6 +9,11 @@ public enum EstadoPedido
     CREADO,
     STOCK_RESERVADO,
     STOCK_FALLIDO,
+    ACEPTADO,
+    /**
+     * @deprecated Mantener por compatibilidad BD. Usar ACEPTADO.
+     */
+    @Deprecated
     CONFIRMADO,
     EN_PREPARACION,
     DESPACHADO,
@@ -17,19 +22,20 @@ public enum EstadoPedido
 
     private static final Map<EstadoPedido, EstadoPedido> FLUJO = Map.of(
         CREADO,          STOCK_RESERVADO,
-        STOCK_RESERVADO, CONFIRMADO,
-        CONFIRMADO,      EN_PREPARACION,
+        STOCK_RESERVADO, ACEPTADO,
+        ACEPTADO,        EN_PREPARACION,
         EN_PREPARACION,  DESPACHADO,
         DESPACHADO,      ENTREGADO
     );
 
     private static final Map<EstadoPedido, Set<EstadoPedido>> TRANSICIONES = Map.of(
         CREADO,          Set.of(STOCK_RESERVADO, STOCK_FALLIDO, CANCELADO),
-        STOCK_RESERVADO, Set.of(CONFIRMADO, CANCELADO),
+        STOCK_RESERVADO, Set.of(ACEPTADO, CONFIRMADO, CANCELADO),
         STOCK_FALLIDO,   Set.of(CANCELADO),
+        ACEPTADO,        Set.of(EN_PREPARACION, CANCELADO),
         CONFIRMADO,      Set.of(EN_PREPARACION, CANCELADO),
         EN_PREPARACION,  Set.of(DESPACHADO, CANCELADO),
-        DESPACHADO,      Set.of(ENTREGADO),
+        DESPACHADO,      Set.of(ENTREGADO, CANCELADO),
         ENTREGADO,       Set.of(),
         CANCELADO,       Set.of()
     );

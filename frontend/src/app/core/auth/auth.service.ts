@@ -23,6 +23,21 @@ export class AuthService
         return this.authenticationProvider.isAuthenticated;
     }
 
+    get roles(): string[]
+    {
+        return this.authenticationProvider.user()?.roles ?? [];
+    }
+
+    hasRole(role: string): boolean
+    {
+        return this.roles.includes(role.toUpperCase());
+    }
+
+    hasAnyRole(roles: string[]): boolean
+    {
+        return roles.some((r) => this.hasRole(r));
+    }
+
     login(): void
     {
         this.authenticationProvider.login();

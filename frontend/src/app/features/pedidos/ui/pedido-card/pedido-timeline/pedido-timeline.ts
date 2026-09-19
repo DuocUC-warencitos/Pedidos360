@@ -10,7 +10,7 @@ interface Paso {
 const PASOS: Paso[] = [
 	{ key: 'CREADO', label: 'Creado' },
 	{ key: 'STOCK_RESERVADO', label: 'Stock reservado' },
-	{ key: 'CONFIRMADO', label: 'Confirmado' },
+	{ key: 'ACEPTADO', label: 'Aceptado' },
 	{ key: 'EN_PREPARACION', label: 'En preparación' },
 	{ key: 'DESPACHADO', label: 'Despachado' },
 	{ key: 'ENTREGADO', label: 'Entregado' },

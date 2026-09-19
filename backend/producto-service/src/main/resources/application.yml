@@ -1,13 +1,13 @@
 server:
-    port: 8082
+    port: ${SERVER_PORT:8082}
 
 spring:
     application:
         name: producto-service
     datasource:
-        url: jdbc:postgresql://aws-0-us-east-1.pooler.supabase.com:6543/postgres?ssl=true&sslmode=require&pgbouncer=true&prepareThreshold=0
-        username: postgres.myunbjgdvtkkvgaqemwz
-        password: oeyA3CqStCq0LwHx
+        url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://aws-0-us-east-1.pooler.supabase.com:6543/postgres?ssl=true&sslmode=require&pgbouncer=true&prepareThreshold=0}
+        username: ${SPRING_DATASOURCE_USERNAME:postgres.myunbjgdvtkkvgaqemwz}
+        password: ${SPRING_DATASOURCE_PASSWORD:oeyA3CqStCq0LwHx}
         driver-class-name: org.postgresql.Driver
     jpa:
         hibernate:
@@ -19,4 +19,4 @@ spring:
         oauth2:
             resourceserver:
                 jwt:
-                    issuer-uri: https://login.microsoftonline.com/1f3a849e-c198-4ff7-b67c-d17f15cbc152/v2.0
+                    issuer-uri: ${JWT_ISSUER_URI:https://login.microsoftonline.com/1f3a849e-c198-4ff7-b67c-d17f15cbc152/v2.0}

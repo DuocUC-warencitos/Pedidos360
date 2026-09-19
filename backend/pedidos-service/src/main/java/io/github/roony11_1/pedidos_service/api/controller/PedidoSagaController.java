@@ -3,6 +3,7 @@ package io.github.roony11_1.pedidos_service.api.controller;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,6 +35,7 @@ public class PedidoSagaController
     private final PedidoRepository pedidoRepository;
 
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','OPERADOR','CLIENTE')")
     public ResponseEntity<PedidoJobStatusResponse> crear(@RequestHeader("Idempotency-Key") String idempotencyKey, @Valid @RequestBody CrearPedidoRequest request)
     {
         // Check idempotencia: si ya existe pedido+job para este key, retorna existente con 200
@@ -44,7 +46,7 @@ public class PedidoSagaController
             if (existenteJob != null) {
                 String estadoPedido = existentePedido.getEstadoPedido().name();
                 return ResponseEntity.ok()
-                    .header("Location", "api/v1/pedidos/saga/jobs/" + existenteJob.getId())
+                    .header("Location", "/api/v1/pedidos/saga/jobs/" + existenteJob.getId())
                     .body(PedidoJobStatusResponse.from(existenteJob, estadoPedido));
             }
         }
@@ -67,16 +69,17 @@ public class PedidoSagaController
             String estadoPedidoExistente = pedidoRepository.findById(job.getPedidoId())
                 .map(p -> p.getEstadoPedido().name()).orElse(estadoPedido);
             return ResponseEntity.ok()
-                .header("Location", "api/v1/pedidos/saga/jobs/" + job.getId())
+                .header("Location", "/api/v1/pedidos/saga/jobs/" + job.getId())
                 .body(PedidoJobStatusResponse.from(job, estadoPedidoExistente));
         }
 
         return ResponseEntity.accepted()
-            .header("Location", "api/v1/pedidos/saga/jobs/" + job.getId())
+            .header("Location", "/api/v1/pedidos/saga/jobs/" + job.getId())
             .body(PedidoJobStatusResponse.from(job, estadoPedido));
     }
 
     @PatchMapping("/{pedidoId}/cancelar")
+    @PreAuthorize("hasAnyRole('ADMIN','OPERADOR','CLIENTE')")
     public ResponseEntity<Void> cancelarConCompensacion(@PathVariable UUID pedidoId) {
         pedidoSagaService.cancelarConCompensacion(pedidoId, "saga-cancel");
         return ResponseEntity.noContent().build();

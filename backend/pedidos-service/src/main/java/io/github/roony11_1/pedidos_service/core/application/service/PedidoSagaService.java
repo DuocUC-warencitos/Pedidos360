@@ -1,6 +1,7 @@
 package io.github.roony11_1.pedidos_service.core.application.service;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -66,7 +67,9 @@ public class PedidoSagaService
         var pedido = pedidoRepository.findByIdWithProductos(pedidoId)
                             .orElseThrow(() -> new IllegalArgumentException("Pedido no encontrado: " + pedidoId));
 
-        if (pedido.getEstadoPedido() == EstadoPedido.STOCK_RESERVADO)
+        // Siempre intenta liberar si pudo haber reserva: idempotente en producto-service (no-op si no existe)
+        var estadosConReserva = Set.of(EstadoPedido.STOCK_RESERVADO, EstadoPedido.ACEPTADO, EstadoPedido.CONFIRMADO, EstadoPedido.EN_PREPARACION, EstadoPedido.DESPACHADO);
+        if (estadosConReserva.contains(pedido.getEstadoPedido()))
         {
             var liberarReq = new ProductoClient.LiberarStockRequest(
                 pedido.getId(),
@@ -77,12 +80,12 @@ public class PedidoSagaService
             try
             {
                 productoClientResiliente.liberar(liberarReq);
-                log.info("Stock liberado para pedidoId={} items={}", pedidoId, liberarReq.items().size());
+                log.info("Stock liberado para pedidoId={} estado={} items={}", pedidoId, pedido.getEstadoPedido(), liberarReq.items().size());
             }
             catch (Exception ex)
             {
-                log.error("Fallo liberando stock pedido {}: {}", pedidoId, ex.getMessage(), ex);
-                // No se cancela localmente si la compensación falla: deja en STOCK_RESERVADO para retry manual
+                log.error("Fallo liberando stock pedido {} estado {}: {}", pedidoId, pedido.getEstadoPedido(), ex.getMessage(), ex);
+                // No se cancela localmente si la compensación falla: deja en estado actual para retry manual
                 // Lanza para que el controller mapee a 503 / 409 y el frontend pueda reintentar
                 throw new IllegalStateException("No se pudo liberar stock para cancelar pedido " + pedidoId + ": " + ex.getMessage(), ex);
             }

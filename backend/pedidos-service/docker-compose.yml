@@ -1,7 +1,7 @@
 services:
     pedidos-db:
       image: ${POSTGRES_VERSION:-postgres:15}
-      container_name: mascotas-db
+      container_name: pedidos-db
       environment:
         POSTGRES_DB: ${PEDIDOS_DB_NAME:-pedidos}
         POSTGRES_USER: ${PEDIDOS_DB_USER:-user}

@@ -21,11 +21,11 @@
       <h2 class="text-lg">Cargando pedidos...</h2>
     } @else if (pedidosQuery.isError()) {
       <h2 class="text-lg text-[#b3261e]">Error al cargar pedidos</h2>
-    } @else if ((pedidosQuery.data() ?? []).length === 0) {
+    } @else if (pedidosEnriquecidos().length === 0) {
       <h2 class="text-lg text-[#6b7280]">No hay pedidos</h2>
     } @else {
       <div class="flex flex-wrap gap-4">
-        @for (pedido of pedidosQuery.data(); track pedido.id) {
+        @for (pedido of pedidosEnriquecidos(); track pedido.id) {
           <app-pedido-card
             [pedido]="pedido"
             (avanzar)="avanzarMutation.mutate(pedido.id)"

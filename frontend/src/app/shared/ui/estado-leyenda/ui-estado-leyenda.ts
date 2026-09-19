@@ -17,7 +17,7 @@ import { Component } from '@angular/core';
         <span
           class="inline-block w-2.5 h-2.5 rounded-full bg-[#1f7a3f] shrink-0"
         ></span>
-        Confirmado
+        Aceptado
       </span>
       <span class="inline-flex items-center gap-1.5 cursor-default select-none">
         <span

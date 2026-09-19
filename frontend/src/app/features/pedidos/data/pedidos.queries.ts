@@ -5,10 +5,6 @@ import { lastValueFrom } from 'rxjs';
 import { PedidosService } from './pedidos.service';
 import { CrearPedidoRequest, PedidoJobStatusResponse, PedidoProductoRequest, PedidoResponse } from './pedidos.types';
 
-const ESTADOS_TERMINALES: ReadonlyArray<PedidoResponse['estado']> = ['ENTREGADO', 'CANCELADO'];
-
-const POLL_INTERVAL_MS = 3_000;
-
 export function usePedidosQuery() 
 {
     const service = inject(PedidosService);
@@ -26,18 +22,9 @@ export function usePedidosQuery()
                     new Date(a.createdAt).getTime(),
             );
         },
-        refetchInterval: (query) => 
-		{
-            const pedidos = query.state.data;
-
-            if (!pedidos || pedidos.length === 0)
-                return false;
-
-            const hayVivos = pedidos.some((p) => !ESTADOS_TERMINALES.includes(p.estado),);
-
-            return hayVivos ? POLL_INTERVAL_MS : false;
-        },
-        refetchOnWindowFocus: true,
+        refetchOnWindowFocus: false,
+        refetchInterval: false,
+        refetchIntervalInBackground: false,
     }));
 }
 
@@ -116,6 +103,7 @@ export function useCrearPedidoSagaMutation(
 			// El pedido ya existe (TX1 commiteada) → invalida la lista
 			// para que usePedidosQuery lo recoja antes del primer tick de polling.
 			qc.invalidateQueries({ queryKey: ['pedidos'] });
+			qc.invalidateQueries({ queryKey: ['productos'] });
 			onSuccessCb(job);
 		},
 		onError: onErrorCb,
@@ -130,7 +118,8 @@ export function useJobStatusQuery(jobId: () => string | null)
 		queryKey: ['pedido-job', jobId()],
 		enabled: !!jobId(),
 		queryFn: async (): Promise<PedidoJobStatusResponse> => lastValueFrom(service.obtenerEstadoJob(jobId()!)),
-		// Job vive pocos segundos: polleamos cada 1s hasta terminal.
-		refetchInterval: (q) => (q.state.data?.estadoJob === 'RUNNING' ? 1_000 : false),
+		refetchOnWindowFocus: false,
+		refetchInterval: false,
+		refetchIntervalInBackground: false,
 	}));
 }

@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class PedidoProductoResponse 
 {
+    private java.util.UUID productoId;
     private String nombreProducto;
     private int cantidad;
 }

@@ -9,6 +9,7 @@ export interface AuthUser
     email: string;
     tenantId: string;
     photoUrl?: string;
+    roles: string[];
 }
 
 export interface AuthenticationProvider

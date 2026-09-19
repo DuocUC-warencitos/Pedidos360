@@ -1,4 +1,4 @@
-import { Component, Signal } from '@angular/core';
+import { Component, computed, Signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { AuthService } from '@core/auth/auth.service';
@@ -16,6 +16,11 @@ export class HeaderComponent {
   get user(): Signal<AuthUser | null> {
     return this.authService.user;
   }
+
+  readonly rolesLabel = computed(() => {
+    const r = this.authService.roles;
+    return r.length ? r.join(', ') : '';
+  });
 
   login(): void {
     this.authService.login();
