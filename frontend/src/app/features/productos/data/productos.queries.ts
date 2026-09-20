@@ -75,3 +75,30 @@ export function useEliminarProductoMutation(
     onError: onErrorCb,
   }));
 }
+
+export function useProductoByIdQuery(id: () => string | null) {
+  const service = inject(ProductosService);
+  return injectQuery(() => ({
+    queryKey: ['producto', id()],
+    enabled: !!id(),
+    queryFn: async () => await lastValueFrom(service.obtenerProductoPorId(id()!)),
+  }));
+}
+
+export function useActualizarProductoMutation(
+  onSuccessCb: (producto: ProductoResponse) => void,
+  onErrorCb: (err: unknown) => void,
+) {
+  const service = inject(ProductosService);
+  const qc = inject(QueryClient);
+  return injectMutation(() => ({
+    mutationFn: ({ id, producto }: { id: string; producto: ProductoRequest }) =>
+      lastValueFrom(service.actualizarProducto(id, producto)),
+    onSuccess: (producto) => {
+      qc.invalidateQueries({ queryKey: ['productos'] });
+      qc.invalidateQueries({ queryKey: ['producto', producto.id] });
+      onSuccessCb(producto);
+    },
+    onError: onErrorCb,
+  }));
+}

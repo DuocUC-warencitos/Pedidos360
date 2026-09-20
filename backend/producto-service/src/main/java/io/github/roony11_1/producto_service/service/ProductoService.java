@@ -38,6 +38,7 @@ public class ProductoService
                 {
                     existente.setNombre(producto.getNombre());
                     existente.setPrecio(producto.getPrecio());
+                    existente.setStockDisponible(producto.getStockDisponible());
                     return productoRepository.save(existente);
                 });
     }

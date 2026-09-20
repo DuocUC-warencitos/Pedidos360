@@ -8,9 +8,20 @@ export interface ProductoRequest {
 
 // Responses
 
-export interface ProductoResponse {
+export interface ProductoResponse 
+{
   id: string;
   nombre: string;
   precio: number;
   stockDisponible: number;
 }
+
+export interface ProductoDetailResponse 
+{
+  id: string;
+  nombre: string;
+  precio: number;
+  stockDisponible: number;
+  stockReservado: number;
+}
+

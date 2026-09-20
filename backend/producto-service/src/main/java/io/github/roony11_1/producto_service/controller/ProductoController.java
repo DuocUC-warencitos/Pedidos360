@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.github.roony11_1.producto_service.dto.ProductoDetailResponse;
 import io.github.roony11_1.producto_service.dto.ProductoRequest;
 import io.github.roony11_1.producto_service.dto.ProductoResponse;
 import io.github.roony11_1.producto_service.model.Producto;
@@ -45,19 +46,29 @@ public class ProductoController
                 .stockDisponible(producto.getStockDisponible())
                 .build();
 
+    private final Function<Producto, ProductoDetailResponse> productoToDetailResponse = producto ->
+           ProductoDetailResponse.builder()
+                .id(producto.getId())
+                .nombre(producto.getNombre())
+                .precio(producto.getPrecio())
+                .stockDisponible(producto.getStockDisponible())
+                .stockReservado(producto.getStockReservado())
+                .build();
+
     @GetMapping
-    public List<ProductoResponse> listar()
+    public ResponseEntity<List<ProductoResponse>> listar()
     {
-        return productoService.listar()
-            .stream()
-            .map(productoToResponse::apply)
-            .collect(Collectors.toList());
+        return ResponseEntity.ok(
+            productoService.listar()
+                .stream()
+                .map(productoToResponse::apply)
+                .collect(Collectors.toList()));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductoResponse> obtenerPorId(@PathVariable UUID id) {
+    public ResponseEntity<ProductoDetailResponse> obtenerPorId(@PathVariable UUID id) {
         return productoService.obtenerPorId(id)
-            .map(productoToResponse::apply)
+            .map(productoToDetailResponse::apply)
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
     }

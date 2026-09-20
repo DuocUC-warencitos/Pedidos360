@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 
 import { apiProductos } from './productos.api';
 import {
+  ProductoDetailResponse,
   ProductoRequest,
   ProductoResponse,
 } from './productos.types';
@@ -18,8 +19,8 @@ export class ProductosService {
     );
   }
 
-  obtenerProductoPorId(id: string): Observable<ProductoResponse> {
-    return this.http.get<ProductoResponse>(
+  obtenerProductoPorId(id: string): Observable<ProductoDetailResponse> {
+    return this.http.get<ProductoDetailResponse>(
       apiProductos.get.byId(id),
     );
   }

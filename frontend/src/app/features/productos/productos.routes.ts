@@ -26,4 +26,12 @@ export const productosRoutes: Routes = [
         (m) => m.ProductosCreate,
       ),
   },
+
+  {
+    path: 'detalle/:id',
+    loadComponent: () =>
+      import('./pages/productos-detail/productos-detail').then(
+        (m) => m.ProductosDetail,
+      ),
+  },
 ];

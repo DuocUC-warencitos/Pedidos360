@@ -20,19 +20,35 @@
     </div>
   </header>
 
-  <div class="flex flex-col gap-1 py-4">
-    <span
-      class="text-[11px] font-bold tracking-wide text-[#6b7280]"
-    >
-      PRECIO
-    </span>
+  <div class="flex flex-row gap-6 py-4">
+      <div class="flex flex-col gap-1">
+          <span class="text-[11px] font-bold tracking-wide text-[#6b7280]">
+              PRECIO
+          </span>
 
-    <span class="text-lg font-bold">
-      ${{ producto().precio }}
-    </span>
+          <span class="text-lg font-bold">
+              ${{ producto().precio }}
+          </span>
+      </div>
+
+      <div class="flex flex-col gap-1">
+          <span class="text-[11px] font-bold tracking-wide text-[#6b7280]">
+              STOCK
+          </span>
+
+          <span class="text-lg font-bold">
+              {{ producto().stockDisponible }} unidades
+          </span>
+      </div>
   </div>
 
-  <div class="mt-auto pt-3 flex justify-end">
+  <div class="mt-auto pt-3 flex justify-between gap-2">
+    <a
+      [routerLink]="['/productos/detalle/', producto().id]"
+      class="px-4 py-2 rounded-md text-[13px] font-bold border bg-white text-[#1f2937] border-[#d1d5db] hover:bg-[#f8fafc] no-underline"
+    >
+      Ver detalles
+    </a>
     <button
       type="button"
       (click)="eliminar.emit()"

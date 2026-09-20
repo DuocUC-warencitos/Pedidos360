@@ -1,0 +1,95 @@
+<div class="w-full my-10">
+	<a
+		routerLink="/productos/lista"
+		class="inline-flex items-center gap-2 mb-6 px-4 py-2.5 rounded-md text-sm font-bold border border-[#d1d5db] bg-white text-[#1f2937] no-underline hover:bg-[#f8fafc] transition"
+		>← Ver productos</a
+	>
+
+	@if (productoQuery.isPending()) {
+		<p class="text-sm text-[#6b7280]">Cargando producto…</p>
+	} @else if (productoQuery.isError() || !productoQuery.data()) {
+		<p class="text-sm text-[#b91c1c]">No se encontró el producto.</p>
+	} @else {
+		@let producto = productoQuery.data()!;
+		<header class="mb-7">
+			<span class="block text-[11px] font-bold tracking-[1.5px] text-[#6b7280]"
+				>PRODUCTOS360</span
+			>
+			<h1 class="mt-1 mb-2 text-[32px] font-bold tracking-tight max-[600px]:text-[27px]">
+				{{ producto.nombre }}
+			</h1>
+			<p class="m-0 text-[#6b7280] leading-relaxed font-mono text-xs break-all">
+				ID: {{ producto.id }}
+			</p>
+		</header>
+
+		<section
+			class="bg-white border border-[var(--color-border)] rounded-xl p-6 shadow-sm max-[600px]:p-[18px] mb-6"
+		>
+			<h2 class="m-0 text-[19px] font-bold">Detalle</h2>
+			<div class="grid grid-cols-4 gap-4 py-5 max-[600px]:grid-cols-1">
+				<div class="flex flex-col gap-1.5">
+					<span class="text-[#6b7280] text-[10px] font-bold tracking-wide">Precio</span
+					><strong class="text-[13px]">${{ producto.precio }}</strong>
+				</div>
+				<div class="flex flex-col gap-1.5">
+					<span class="text-[#6b7280] text-[10px] font-bold tracking-wide">Stock</span
+					><strong class="text-[13px]">{{ producto.stockDisponible }}</strong>
+				</div>
+				<div class="flex flex-col gap-1.5">
+					<span class="text-[#6b7280] text-[10px] font-bold tracking-wide"
+						>Stock reservado</span
+					><strong class="text-[13px]">{{ producto.stockReservado }}</strong>
+				</div>
+			</div>
+		</section>
+
+		<section
+			class="bg-white border border-[var(--color-border)] rounded-xl p-6 shadow-sm max-[600px]:p-[18px]"
+		>
+			<h2 class="m-0 text-[19px] font-bold">Editar producto</h2>
+			<p class="mt-1.5 m-0 text-[#6b7280] text-[13px]">Solo ADMIN puede modificar.</p>
+			<div class="grid grid-cols-3 gap-4 mt-5 max-[600px]:grid-cols-1">
+				<div class="flex flex-col gap-1.5">
+					<label class="text-[13px] font-bold">Nombre</label
+					><input
+						type="text"
+						[ngModel]="formState().nombre"
+						(ngModelChange)="formState.update((s) => ({ ...s, nombre: $event }))"
+						class="w-full px-3 py-2.5 border border-[#d1d5db] rounded-md text-sm"
+					/>
+				</div>
+				<div class="flex flex-col gap-1.5">
+					<label class="text-[13px] font-bold">Precio</label
+					><input
+						type="number"
+						[ngModel]="formState().precio"
+						(ngModelChange)="formState.update((s) => ({ ...s, precio: +$event }))"
+						class="w-full px-3 py-2.5 border border-[#d1d5db] rounded-md text-sm"
+					/>
+				</div>
+				<div class="flex flex-col gap-1.5">
+					<label class="text-[13px] font-bold">Stock</label
+					><input
+						type="number"
+						[ngModel]="formState().stock"
+						(ngModelChange)="formState.update((s) => ({ ...s, stock: +$event }))"
+						class="w-full px-3 py-2.5 border border-[#d1d5db] rounded-md text-sm"
+					/>
+				</div>
+			</div>
+			<button
+				type="button"
+				(click)="guardar()"
+				[disabled]="actualizarMutation.isPending()"
+				class="mt-5 px-4 py-2.5 bg-[#1f2937] text-white rounded-md text-sm font-bold disabled:opacity-60"
+			>
+				@if (actualizarMutation.isPending()) {
+					Guardando…
+				} @else {
+					Guardar cambios
+				}
+			</button>
+		</section>
+	}
+</div>
