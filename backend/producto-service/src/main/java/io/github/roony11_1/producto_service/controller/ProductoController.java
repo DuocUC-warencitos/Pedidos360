@@ -22,6 +22,7 @@ import io.github.roony11_1.producto_service.dto.ProductoRequest;
 import io.github.roony11_1.producto_service.dto.ProductoResponse;
 import io.github.roony11_1.producto_service.model.Producto;
 import io.github.roony11_1.producto_service.service.ProductoService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -74,8 +75,8 @@ public class ProductoController
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ProductoResponse> crear(@jakarta.validation.Valid @RequestBody ProductoRequest request)
+    @PreAuthorize("hasRole('ADMIN', 'OPERADOR')")
+    public ResponseEntity<ProductoResponse> crear(@Valid @RequestBody ProductoRequest request)
     {
         Producto producto = requestToProducto.apply(request);
         Producto guardado = productoService.crear(producto);
@@ -84,7 +85,7 @@ public class ProductoController
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<ProductoResponse> actualizar(@PathVariable UUID id, @jakarta.validation.Valid @RequestBody ProductoRequest request)
     {
         Producto producto = requestToProducto.apply(request);

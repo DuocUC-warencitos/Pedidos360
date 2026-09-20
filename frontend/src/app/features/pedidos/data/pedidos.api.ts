@@ -5,7 +5,7 @@ const sagaBase = `${base}/saga`;
 
 export const apiPedidos = {
 	get: {
-		all: base,
+		all: base/all,
 		jobStatus: (jobId: string) => `${sagaBase}/jobs/${jobId}`,
 	},
 	post: {

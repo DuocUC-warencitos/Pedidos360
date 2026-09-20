@@ -28,7 +28,7 @@ public class PedidoController
     private final PedidoSagaService pedidoSagaService;
     private final Function<Pedido, PedidoResponse> pedidoResponseMapper;
 
-    @GetMapping
+    @GetMapping("/all")
     public ResponseEntity<List<PedidoResponse>> findAll()
     {
         var pedidos = pedidoService.findAll().stream()
@@ -60,7 +60,6 @@ public class PedidoController
     @PreAuthorize("hasAnyRole('ADMIN','OPERADOR','CLIENTE')")
     public ResponseEntity<Void> cancelar(@PathVariable UUID id)
     {
-        // Unificado: intenta liberar stock si hubo reserva (idempotente)
         pedidoSagaService.cancelarConCompensacion(id, "cancel");
 
         return ResponseEntity.noContent().build();
