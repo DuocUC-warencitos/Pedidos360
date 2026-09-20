@@ -1,74 +1,41 @@
 <div class="w-full mx-auto p-6">
+	<div class="flex justify-between items-center gap-6 flex-wrap mb-6">
+		<div>
+			<span class="block text-[11px] font-bold tracking-[1.5px] text-[#6b7280]">
+				PRODUCTOS360
+			</span>
 
-  <div class="flex justify-between items-center gap-6 flex-wrap mb-6">
+			<h1 class="m-0 mt-1 text-[28px] font-bold">Productos</h1>
+		</div>
 
-    <div>
-      <span
-        class="block text-[11px] font-bold tracking-[1.5px] text-[#6b7280]"
-      >
-        PRODUCTOS360
-      </span>
+		<a
+			routerLink="/productos/crear"
+			class="inline-flex items-center px-4 py-2.5 rounded-md text-sm font-bold bg-[#1f2937] text-white no-underline hover:bg-[#111827] transition"
+		>
+			+ Crear producto
+		</a>
+	</div>
 
-      <h1 class="m-0 mt-1 text-[28px] font-bold">
-        Productos
-      </h1>
-    </div>
+	@if (productosQuery.isLoading()) {
+		<h2 class="text-lg">Cargando productos...</h2>
+	} @else if (productosQuery.isError()) {
+		<h2 class="text-lg text-[#b3261e]">Error al cargar productos</h2>
+	} @else if ((productosQuery.data() ?? []).length === 0) {
+		<div
+			class="flex flex-col items-center text-center p-9 border border-dashed border-[#d1d5db] rounded-lg"
+		>
+			<strong class="text-sm"> No hay productos </strong>
 
-    @if (esAdmin()) {
-      <a
-        routerLink="/productos/crear"
-        class="inline-flex items-center px-4 py-2.5 rounded-md text-sm font-bold bg-[#1f2937] text-white no-underline hover:bg-[#111827] transition"
-      >
-        + Crear producto
-      </a>
-    }
-
-  </div>
-
-  @if (productosQuery.isLoading()) {
-
-    <h2 class="text-lg">
-      Cargando productos...
-    </h2>
-
-  } @else if (productosQuery.isError()) {
-
-    <h2 class="text-lg text-[#b3261e]">
-      Error al cargar productos
-    </h2>
-
-  } @else if ((productosQuery.data() ?? []).length === 0) {
-
-    <div
-      class="flex flex-col items-center text-center p-9 border border-dashed border-[#d1d5db] rounded-lg"
-    >
-      <strong class="text-sm">
-        No hay productos
-      </strong>
-
-      <p class="mt-1.5 m-0 text-[#6b7280] text-xs">
-        Todavía no se han registrado productos.
-      </p>
-    </div>
-
-  } @else {
-
-    <div class="flex flex-wrap gap-4">
-
-      @for (
-        producto of productosQuery.data();
-        track producto.id
-      ) {
-
-        <app-producto-card
-          [producto]="producto"
-          (eliminar)="eliminarProducto(producto.id)"
-        />
-
-      }
-
-    </div>
-
-  }
-
+			<p class="mt-1.5 m-0 text-[#6b7280] text-xs">Todavía no se han registrado productos.</p>
+		</div>
+	} @else {
+		<div class="flex flex-wrap gap-4">
+			@for (producto of productosQuery.data(); track producto.id) {
+				<app-producto-card
+					[producto]="producto"
+					(eliminar)="eliminarProducto(producto.id)"
+				/>
+			}
+		</div>
+	}
 </div>
