@@ -6,6 +6,7 @@ import org.springframework.transaction.annotation.Transactional;
 import io.github.roony11_1.producto_service.dto.LiberarStockRequest;
 import io.github.roony11_1.producto_service.dto.ReservaStockRequest;
 import io.github.roony11_1.producto_service.dto.ReservaStockResponse;
+import io.github.roony11_1.error.core.exceptions.NotFoundException;
 import io.github.roony11_1.producto_service.exception.StockInsuficienteException;
 import io.github.roony11_1.producto_service.model.EstadoReserva;
 import io.github.roony11_1.producto_service.model.ReservaStock;
@@ -33,7 +34,7 @@ public class StockService
         for (var producto : request.items())
         {
             var p = productoRepository.findById(producto.productoId())
-                .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado: " + producto.productoId()));
+                .orElseThrow(() -> new NotFoundException("Producto", producto.productoId()));
 
             if (p.getStockDisponible() < producto.cantidad())
                 throw new StockInsuficienteException(p.getId(), producto.cantidad(), p.getStockDisponible());
@@ -76,7 +77,7 @@ public class StockService
 
         for (var item : request.items()) {
             var p = productoRepository.findById(item.productoId())
-                .orElseThrow(() -> new IllegalArgumentException("Producto no encontrado: " + item.productoId()));
+                .orElseThrow(() -> new NotFoundException("Producto", item.productoId()));
             p.liberarStock(item.cantidad());
         }
 

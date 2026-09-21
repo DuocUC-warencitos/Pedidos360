@@ -75,7 +75,7 @@ public class ProductoController
     }
 
     @PostMapping
-    @PreAuthorize("hasRole('ADMIN', 'OPERADOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<ProductoResponse> crear(@Valid @RequestBody ProductoRequest request)
     {
         Producto producto = requestToProducto.apply(request);
@@ -85,7 +85,7 @@ public class ProductoController
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN', 'OPERADOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<ProductoResponse> actualizar(@PathVariable UUID id, @jakarta.validation.Valid @RequestBody ProductoRequest request)
     {
         Producto producto = requestToProducto.apply(request);

@@ -1,14 +1,14 @@
 // frontend/src/app/features/pedidos/pages/pedidos-create/pedidos-create.ts
 
-import { DatePipe } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { injectQuery } from '@tanstack/angular-query-experimental';
+import { Router } from '@angular/router';
+import { injectQuery, QueryClient } from '@tanstack/angular-query-experimental';
 import { lastValueFrom } from 'rxjs';
 
 import { LoggingService } from '@core/logging/logging.service';
 import { NotificationService } from '@core/notification/notification.service';
-import { useCrearPedidoSagaMutation } from '@features/pedidos/data/pedidos.queries';
+import { useCrearPedidoSagaMutation, useJobStatusQuery } from '@features/pedidos/data/pedidos.queries';
 import { CrearPedidoRequest, ItemPedido, PedidoJobStatusResponse } from '@features/pedidos/data/pedidos.types';
 import { PedidoTimeline } from '@features/pedidos/ui/pedido-card/pedido-timeline/pedido-timeline';
 import { ProductosService } from '@features/productos/data/productos.service';
@@ -37,9 +37,12 @@ export class PedidosCreate {
 	private logger = inject(LoggingService);
 	private notify = inject(NotificationService);
 	private productosService = inject(ProductosService);
+	private router = inject(Router);
+	private qc = inject(QueryClient);
 
 	/** Una key por intento de compra. Se regenera al limpiar el carrito. */
 	private idempotencyKey = crypto.randomUUID();
+	private navigatedForJobId: string | null = null;
 
 	readonly uiState = signal<PedidosFormUiState>({
 		productoIdSeleccionado: '',
@@ -62,6 +65,41 @@ export class PedidosCreate {
 		this.uiState().items.reduce((acc, it) => acc + it.producto.precio * it.cantidad, 0),
 	);
 
+	// Mimética a temp-monitor useCompactacionJob: polling del job activo
+	readonly jobId = computed(() => this.uiState().jobCreado?.jobId ?? null);
+	readonly jobQuery = useJobStatusQuery(() => this.jobId());
+
+	constructor() {
+		// Sincroniza polling con UI y navega automáticamente al completar (como temp-monitor + navegación pedida)
+		effect(() => {
+			const job = this.jobQuery.data();
+			if (!job) return;
+
+			// Actualiza timeline en vivo (RUNNING -> COMPLETED/FAILED)
+			const current = this.uiState().jobCreado;
+			if (current?.estadoJob !== job.estadoJob || current?.estadoPedido !== job.estadoPedido) {
+				this.uiState.update((s) => ({ ...s, jobCreado: job }));
+			}
+
+			if (job.estadoJob === 'COMPLETED' || job.estadoJob === 'FAILED') {
+				if (this.navigatedForJobId === job.jobId) return;
+				this.navigatedForJobId = job.jobId;
+
+				this.qc.invalidateQueries({ queryKey: ['pedidos'] });
+				this.qc.invalidateQueries({ queryKey: ['productos'] });
+
+				if (job.estadoJob === 'COMPLETED') {
+					this.notify.success('Pedido confirmado — redirigiendo a lista');
+				} else {
+					this.notify.error(job.error ?? 'Reserva de stock fallida');
+				}
+
+				// Navegación automática a lista tras finalizar saga
+				this.router.navigate(['/pedidos/lista']);
+			}
+		});
+	}
+
 	readonly crearPedidoMutation = useCrearPedidoSagaMutation(
 		(job) => 
 		{
@@ -71,8 +109,8 @@ export class PedidosCreate {
 		},
 		(error) => 
 		{
+			// ErrorResponse ya mostrado por interceptor global (modo dev: code/path/traceId)
 			this.logger.error('Error al crear pedido:', error);
-			this.notify.error('No se pudo crear el pedido');
 			this.uiState.update((s) => ({ ...s, guardando: false }));
 		},
 	);
@@ -149,14 +187,16 @@ export class PedidosCreate {
 			})),
 		};
 
+		this.navigatedForJobId = null;
 		this.uiState.update((s) => ({ ...s, guardando: true }));
 		this.crearPedidoMutation.mutate({ request, idempotencyKey: this.idempotencyKey });
 	}
 
-	nuevoPedido(): void 
+	nuevoPedido(): void
 	{
 		// Nuevo intento → nueva key de idempotencia
 		this.idempotencyKey = crypto.randomUUID();
+		this.navigatedForJobId = null;
 		this.uiState.set({
 			productoIdSeleccionado: '',
 			cantidad: 1,

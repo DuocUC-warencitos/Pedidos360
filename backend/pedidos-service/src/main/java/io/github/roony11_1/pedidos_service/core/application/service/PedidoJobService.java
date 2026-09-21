@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.github.roony11_1.error.core.exceptions.NotFoundException;
 import io.github.roony11_1.pedidos_service.core.domain.model.EstadoPedido;
 import io.github.roony11_1.pedidos_service.core.domain.model.Pedido;
 import io.github.roony11_1.pedidos_service.core.domain.model.PedidoJob;
@@ -55,7 +56,7 @@ public class PedidoJobService
         } catch (org.springframework.dao.DataIntegrityViolationException ex) {
             log.warn("DataIntegrityViolation crearEjecutar key={} -> recuperando existente", idempotencyKey, ex);
             return pedidoJobRepository.findByIdempotencyKey(idempotencyKey)
-                .orElseThrow(() -> ex);
+                .orElseThrow(() -> new NotFoundException("PedidoJob por IdempotencyKey", idempotencyKey));
         }
 
         PedidoJobService self = ctx.getBean(PedidoJobService.class);
@@ -69,12 +70,12 @@ public class PedidoJobService
     public void ejecutarAsync(UUID jobId)
     {
         PedidoJob job = pedidoJobRepository.findById(jobId)
-            .orElseThrow(() -> new IllegalStateException("No hay un job con id: " + jobId.toString()));
+            .orElseThrow(() -> new NotFoundException("PedidoJob", jobId));
 
         try
         {
             Pedido pedido = pedidoRepository.findByIdWithProductos(job.getPedidoId())
-                    .orElseThrow();
+                    .orElseThrow(() -> new NotFoundException("Pedido", job.getPedidoId()));
 
             productoClient.reservar(job.getIdempotencyKey(), new ProductoClient.ReservaStockRequest(
                     pedido.getId(),
@@ -98,12 +99,12 @@ public class PedidoJobService
     public void marcarCompletado(UUID jobId)
     {
         PedidoJob job = pedidoJobRepository.findById(jobId)
-            .orElseThrow(() -> new IllegalArgumentException("No hay un Job con id: " + jobId.toString()));
+            .orElseThrow(() -> new NotFoundException("PedidoJob", jobId));
 
         job.marcarCompletado();
 
         Pedido pedido = pedidoRepository.findById(job.getPedidoId())
-            .orElseThrow(() -> new IllegalArgumentException("No hay un pedido con id: " + job.getPedidoId().toString()));
+            .orElseThrow(() -> new NotFoundException("Pedido", job.getPedidoId()));
 
         // EP1: aparece aceptado automático. Hace STOCK_RESERVADO -> ACEPTADO en misma TX para respetar flujo CREADO->STOCK_RESERVADO->ACEPTADO
         if (pedido.getEstadoPedido() == EstadoPedido.CREADO) {
@@ -120,12 +121,12 @@ public class PedidoJobService
     public void marcarFallido(UUID jobId, String error)
     {
         PedidoJob job = pedidoJobRepository.findById(jobId)
-            .orElseThrow(() -> new IllegalArgumentException("No hay un Job con id: " + jobId.toString()));
+            .orElseThrow(() -> new NotFoundException("PedidoJob", jobId));
 
         job.marcarFallido(error);
 
         Pedido pedido = pedidoRepository.findById(job.getPedidoId())
-            .orElseThrow(() -> new IllegalArgumentException("No hay un pedido con id: " + job.getPedidoId().toString()));
+            .orElseThrow(() -> new NotFoundException("Pedido", job.getPedidoId()));
 
         pedido.cambiarEstado(EstadoPedido.STOCK_FALLIDO);
     }

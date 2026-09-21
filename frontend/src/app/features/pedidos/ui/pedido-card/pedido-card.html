@@ -54,7 +54,7 @@
         class="px-4 py-2.5 rounded-md text-[13px] font-bold border bg-[#1f7a3f] text-white border-[#1a6433] hover:bg-[#1a6433] disabled:opacity-60 disabled:cursor-not-allowed"
         (click)="avanzar.emit()"
         [disabled]="!puedeAvanzar()"
-        [title]="puedeAvanzar() ? 'Avanzar al siguiente estado (Operador/Admin)' : 'Solo Operador/Admin puede avanzar'"
+        [title]="puedeAvanzar() ? 'Avanzar al siguiente estado' : 'Estado final — no se puede avanzar'"
       >
         Avanzar estado
       </button>

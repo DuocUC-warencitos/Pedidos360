@@ -48,7 +48,7 @@ public class PedidoController
     }
 
     @PatchMapping("/{id}/avanzarEstado")
-    @PreAuthorize("hasAnyRole('ADMIN','OPERADOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<Void> avanzarEstado(@PathVariable UUID id)
     {
         pedidoService.avanzarEstado(id);
@@ -57,7 +57,7 @@ public class PedidoController
     }
 
     @PatchMapping("/{id}/cancelar")
-    @PreAuthorize("hasAnyRole('ADMIN','OPERADOR','CLIENTE')")
+    @PreAuthorize("hasAnyRole('ADMIN','OPERADOR')")
     public ResponseEntity<Void> cancelar(@PathVariable UUID id)
     {
         pedidoSagaService.cancelarConCompensacion(id, "cancel");

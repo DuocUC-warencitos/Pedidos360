@@ -7,6 +7,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.github.roony11_1.error.core.exceptions.InvalidInputException;
+import io.github.roony11_1.error.core.exceptions.NotFoundException;
 import io.github.roony11_1.pedidos_service.core.domain.model.EstadoPedido;
 import io.github.roony11_1.pedidos_service.core.domain.model.Pedido;
 import io.github.roony11_1.pedidos_service.core.domain.model.PedidoProducto;
@@ -41,7 +43,7 @@ public class PedidoService
         var saved = pedidoRepository.save(pedido);
 
         var pedidoCompleto = pedidoRepository.findByIdWithProductos(saved.getId())
-            .orElseThrow();
+            .orElseThrow(() -> new NotFoundException("Pedido", saved.getId()));
 
         return pedidoCompleto;
     }
@@ -82,10 +84,10 @@ public class PedidoService
     public void avanzarEstado(UUID id)
     {
         var pedido = pedidoRepository.findById(id)
-            .orElseThrow();
+            .orElseThrow(() -> new NotFoundException("Pedido", id));
 
         EstadoPedido siguiente = pedido.getEstadoPedido().siguiente()
-            .orElseThrow(() -> new IllegalStateException("El pedido ya está en un estado final: " + pedido.getEstadoPedido()));
+            .orElseThrow(() -> new InvalidInputException("El pedido ya está en un estado final: " + pedido.getEstadoPedido()));
 
         String comentario = userTokenService.getAuditComentario("Estado actualizado a " + siguiente + " por");
         pedido.avanzarEstado(comentario);
@@ -95,7 +97,7 @@ public class PedidoService
     public void cancelar(UUID id)
     {
         var pedido = pedidoRepository.findById(id)
-            .orElseThrow();
+            .orElseThrow(() -> new NotFoundException("Pedido", id));
 
         String comentario = userTokenService.getAuditComentario("Cancelado por");
         pedido.cancelar(comentario);

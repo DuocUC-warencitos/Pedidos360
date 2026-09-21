@@ -39,8 +39,8 @@ export class ProductosCreate {
 			this.notify.success('Producto creado correctamente');
 		},
 		(error) => {
+			// ErrorResponse ya mostrado por interceptor global
 			this.logger.error('Error al crear el producto: ', error);
-			this.notify.error('No se pudo crear el producto');
 		},
 	);
 	guardarProducto(): void {

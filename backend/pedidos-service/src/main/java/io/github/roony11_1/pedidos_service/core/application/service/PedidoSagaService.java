@@ -8,12 +8,14 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import io.github.roony11_1.error.core.exceptions.NotFoundException;
 import io.github.roony11_1.pedidos_service.core.domain.model.EstadoPedido;
 import io.github.roony11_1.pedidos_service.core.domain.model.Pedido;
 import io.github.roony11_1.pedidos_service.core.domain.model.PedidoProducto;
 import io.github.roony11_1.pedidos_service.core.domain.repository.PedidoRepository;
 import io.github.roony11_1.pedidos_service.infrastructure.client.ProductoClient;
 import io.github.roony11_1.pedidos_service.infrastructure.client.ProductoClientResiliente;
+import io.github.roony11_1.pedidos_service.infrastructure.client.ProductoServiceUnavailableException;
 import io.github.roony11_1.pedidos_service.kernel.IUserTokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -58,14 +60,14 @@ public class PedidoSagaService
             // Carrera: otro thread insertó misma key entre check y save (unique constraint)
             log.warn("DataIntegrityViolation por idempotencyKey={} -> recuperando existente", idempotencyKey, ex);
             return pedidoRepository.findByIdempotencyKey(idempotencyKey)
-                .orElseThrow(() -> ex);
+                .orElseThrow(() -> new NotFoundException("Pedido por IdempotencyKey", idempotencyKey));
         }
     }
 
     public void cancelarConCompensacion(UUID pedidoId, String motivo)
     {
         var pedido = pedidoRepository.findByIdWithProductos(pedidoId)
-                            .orElseThrow(() -> new IllegalArgumentException("Pedido no encontrado: " + pedidoId));
+                            .orElseThrow(() -> new NotFoundException("Pedido", pedidoId));
 
         // Siempre intenta liberar si pudo haber reserva: idempotente en producto-service (no-op si no existe)
         var estadosConReserva = Set.of(EstadoPedido.STOCK_RESERVADO, EstadoPedido.ACEPTADO, EstadoPedido.CONFIRMADO, EstadoPedido.EN_PREPARACION, EstadoPedido.DESPACHADO);
@@ -86,16 +88,16 @@ public class PedidoSagaService
             {
                 log.error("Fallo liberando stock pedido {} estado {}: {}", pedidoId, pedido.getEstadoPedido(), ex.getMessage(), ex);
                 // No se cancela localmente si la compensación falla: deja en estado actual para retry manual
-                // Lanza para que el controller mapee a 503 / 409 y el frontend pueda reintentar
-                throw new IllegalStateException("No se pudo liberar stock para cancelar pedido " + pedidoId + ": " + ex.getMessage(), ex);
+                // Mapea a 503 via ErrorResponse para que el front pueda reintentar
+                throw new ProductoServiceUnavailableException("No se pudo liberar stock para cancelar pedido " + pedidoId + ": " + ex.getMessage(), ex);
             }
         }
 
-        txTemplate.executeWithoutResult(status -> 
+        txTemplate.executeWithoutResult(status ->
         {
             // Recarga dentro de TX para asegurar versión fresca y dirty-check
             var pedidoTx = pedidoRepository.findById(pedidoId)
-                .orElseThrow(() -> new IllegalArgumentException("Pedido no encontrado: " + pedidoId));
+                .orElseThrow(() -> new NotFoundException("Pedido", pedidoId));
             pedidoTx.cancelar(userTokenService.getAuditComentario("Cancelado por: " + motivo));
         });
     }

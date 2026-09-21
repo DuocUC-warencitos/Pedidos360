@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 import io.github.roony11_1.pedidos_service.kernel.IUserTokenService;
 
-@Component 
+@Component
 public class SpringSecurityUserTokenService implements IUserTokenService
 {
     @Override
@@ -18,7 +18,7 @@ public class SpringSecurityUserTokenService implements IUserTokenService
         var authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !(authentication.getPrincipal() instanceof Jwt jwt))
-            throw new IllegalStateException("No hay un usuario autenticado");
+            throw new UnauthenticatedException("No hay un usuario autenticado");
 
         return jwt.getSubject();
     }
@@ -29,7 +29,7 @@ public class SpringSecurityUserTokenService implements IUserTokenService
         var authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || !(authentication.getPrincipal() instanceof Jwt jwt))
-            throw new IllegalStateException("No hay un usuario autenticado");
+            throw new UnauthenticatedException("No hay un usuario autenticado");
 
         List<String> roles = jwt.getClaimAsStringList("roles");
         String role = Optional.ofNullable(roles)

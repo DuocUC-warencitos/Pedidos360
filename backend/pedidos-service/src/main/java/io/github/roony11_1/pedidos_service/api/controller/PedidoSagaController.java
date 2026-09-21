@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.github.roony11_1.error.core.exceptions.NotFoundException;
 import io.github.roony11_1.pedidos_service.api.dto.request.CrearPedidoRequest;
 import io.github.roony11_1.pedidos_service.api.dto.response.PedidoJobStatusResponse;
 import io.github.roony11_1.pedidos_service.core.application.service.PedidoJobService;
@@ -89,7 +90,7 @@ public class PedidoSagaController
     public PedidoJobStatusResponse estado(@PathVariable UUID jobId)
     {
         PedidoJob job = pedidoJobRepository.findById(jobId)
-            .orElseThrow();
+            .orElseThrow(() -> new NotFoundException("PedidoJob", jobId));
 
         String estadoPedido = pedidoRepository.findById(job.getPedidoId())
             .map(p -> p.getEstadoPedido().name())

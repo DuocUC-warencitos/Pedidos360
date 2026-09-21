@@ -49,8 +49,8 @@ export class ProductosDetail {
 			this.notify.success('Producto actualizado correctamente');
 		},
 		(error) => {
+			// ErrorResponse ya mostrado por interceptor global
 			this.logger.error('Error actualizar', error);
-			this.notify.error('No se pudo actualizar el producto');
 		},
 	);
 

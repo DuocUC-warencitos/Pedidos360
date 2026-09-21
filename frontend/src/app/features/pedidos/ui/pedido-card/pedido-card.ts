@@ -1,9 +1,8 @@
 import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 
 import { UiBadge } from '@shared/ui/badge/ui-badge';
 import { PedidoResponse } from '@features/pedidos/data/pedidos.types';
-import { AuthService } from '@core/auth/auth.service';
 
 @Component({
   selector: 'app-pedido-card',
@@ -13,8 +12,6 @@ import { AuthService } from '@core/auth/auth.service';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PedidoCard {
-  private auth = inject(AuthService);
-
   readonly pedido = input.required<PedidoResponse>();
 
   readonly avanzar = output<void>();
@@ -41,8 +38,10 @@ export class PedidoCard {
   });
 
   readonly puedeAvanzar = computed(() => {
+    // Desbloqueado para CLIENTE: permite clickear y ver 403 del backend (ErrorResponse)
+    // Solo bloquea si terminal; el backend decide 403 via @PreAuthorize
     if (this.isTerminal()) return false;
-    return this.auth.hasAnyRole(['ADMIN', 'OPERADOR']);
+    return true;
   });
 
   readonly puedeCancelar = computed(() => !this.isTerminal());

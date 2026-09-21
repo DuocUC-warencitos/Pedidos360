@@ -8,6 +8,7 @@ import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import io.github.roony11_1.error.core.exceptions.InvalidInputException;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -71,7 +72,7 @@ public class Pedido
     public void cambiarEstado(EstadoPedido nuevo)
     {
         if (!this.estadoPedido.puedeTransicionarA(nuevo))
-            throw new IllegalArgumentException(this.estadoPedido + " no puede transicionar a: " + nuevo);
+            throw new InvalidInputException(this.estadoPedido + " no puede transicionar a: " + nuevo);
 
         this.estadoPedido = nuevo;
     }
@@ -89,7 +90,7 @@ public class Pedido
     public void avanzarEstado(String comentario)
     {
         EstadoPedido siguiente = this.estadoPedido.siguiente()
-            .orElseThrow(() -> new IllegalStateException("El pedido ya está en un estado final: " + this.estadoPedido));
+            .orElseThrow(() -> new InvalidInputException("El pedido ya está en un estado final: " + this.estadoPedido));
 
         cambiarEstado(siguiente);
         appendComentario(comentario);

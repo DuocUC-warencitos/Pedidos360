@@ -110,7 +110,7 @@ export function useCrearPedidoSagaMutation(
 	}));
 }
 
-export function useJobStatusQuery(jobId: () => string | null) 
+export function useJobStatusQuery(jobId: () => string | null)
 {
 	const service = inject(PedidosService);
 	return injectQuery(() => (
@@ -119,7 +119,13 @@ export function useJobStatusQuery(jobId: () => string | null)
 		enabled: !!jobId(),
 		queryFn: async (): Promise<PedidoJobStatusResponse> => lastValueFrom(service.obtenerEstadoJob(jobId()!)),
 		refetchOnWindowFocus: false,
-		refetchInterval: false,
+		// Mimética a temp-monitor useCompactacionJob: polling 2s solo mientras RUNNING
+		// Si data aún es undefined (primer fetch), también polléa para no quedar bloqueado
+		refetchInterval: (query) => {
+			const data = query.state.data as PedidoJobStatusResponse | undefined;
+			if (!data) return 2000;
+			return data.estadoJob === 'RUNNING' ? 2000 : false;
+		},
 		refetchIntervalInBackground: false,
 	}));
 }

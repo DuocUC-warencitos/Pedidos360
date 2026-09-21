@@ -20,6 +20,8 @@ spring:
             resourceserver:
                 jwt:
                     issuer-uri: ${JWT_ISSUER_URI:https://login.microsoftonline.com/1f3a849e-c198-4ff7-b67c-d17f15cbc152/v2.0}
+    jackson:
+        default-property-inclusion: non_null
     cloud:
         openfeign:
             client:

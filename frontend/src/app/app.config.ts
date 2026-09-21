@@ -2,6 +2,7 @@
 import {
 	HTTP_INTERCEPTORS,
 	provideHttpClient,
+	withInterceptors,
 	withInterceptorsFromDi
 } from '@angular/common/http';
 import { ApplicationConfig } from '@angular/core';
@@ -25,6 +26,8 @@ import {
 } from '@core/auth/msal.config';
 import { MsalAuthenticationProvider } from '@core/auth/providers/msalAuthenticationProvider';
 
+import { errorInterceptor } from '@core/interceptors/error.interceptor';
+
 import { routes } from './app.routes';
 
 export const appConfig: ApplicationConfig = 
@@ -32,7 +35,7 @@ export const appConfig: ApplicationConfig =
 	providers: 
 	[
 		provideRouter(routes),
-		provideHttpClient(withInterceptorsFromDi()),
+		provideHttpClient(withInterceptorsFromDi(), withInterceptors([errorInterceptor])),
 		provideTanStackQuery(new QueryClient()),
 		{
 			provide: AUTHENTICATION_PROVIDER,
