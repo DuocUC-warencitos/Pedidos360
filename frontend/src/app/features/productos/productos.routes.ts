@@ -19,9 +19,9 @@ export const productosRoutes: Routes = [
   },
 
   {
-    path: 'crear',
+    path: 'agregar',
     canActivate: [roleGuard],
-    data: { roles: ['ADMIN'] },
+    data: { roles: [] },
     loadComponent: () =>
       import('./pages/productos-create/productos-create').then(
         (m) => m.ProductosCreate,
