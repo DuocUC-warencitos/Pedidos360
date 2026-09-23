@@ -54,16 +54,3 @@ output "spring_datasource_url_pedidos" {
 output "spring_datasource_url_producto" {
   value = "jdbc:postgresql://${aws_db_instance.producto.address}:5432/${var.db_name_producto}?ssl=true&sslmode=require"
 }
-
-output "ec2_frontend_public_ip" {
-  value = aws_instance.frontend.public_ip
-}
-
-output "ec2_frontend_private_ip" {
-  value = aws_instance.frontend.private_ip
-}
-
-output "frontend_url" {
-  description = "URL frontend EC2 directa 80"
-  value       = "http://${aws_instance.frontend.public_ip}"
-}

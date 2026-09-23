@@ -117,35 +117,3 @@ resource "aws_security_group" "rds_producto" {
 
   tags = { Name = "${var.project}-rds-producto" }
 }
-
-# ---------- SG EC2 Frontend (80 publico) ----------
-resource "aws_security_group" "ec2_frontend" {
-  name_prefix = "${var.project}-ec2-frontend-"
-  description = "EC2 frontend: SSH + 80 HTTP"
-  vpc_id      = data.aws_vpc.default.id
-
-  ingress {
-    description = "SSH lab"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description = "HTTP 80"
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = { Name = "${var.project}-ec2-frontend" }
-}

@@ -118,17 +118,7 @@ variable "ghcr_image_producto" {
   default = "ghcr.io/duocuc-warencitos/producto-service:latest"
 }
 
-variable "ghcr_image_frontend" {
-  type    = string
-  default = "ghcr.io/duocuc-warencitos/frontend:latest"
-}
-
 variable "tag" {
   type    = string
   default = "latest"
-}
-
-variable "frontend_instance_type" {
-  type    = string
-  default = "t3.micro"
 }

@@ -37,5 +37,4 @@ cors_origins   = "http://localhost:4200,https://pedidos360.vercel.app"
 # GHCR — ya públicas ghcr.io/duocuc-warencitos/*
 ghcr_image_pedidos   = "ghcr.io/duocuc-warencitos/pedidos-service:latest"
 ghcr_image_producto  = "ghcr.io/duocuc-warencitos/producto-service:latest"
-ghcr_image_frontend  = "ghcr.io/duocuc-warencitos/frontend:latest"
 tag                  = "latest"

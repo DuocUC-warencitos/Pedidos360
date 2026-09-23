@@ -6,7 +6,6 @@ on:
     paths:
       - 'backend/pedidos-service/**'
       - 'backend/producto-service/**'
-      - 'frontend/**'
       - '.github/workflows/docker-publish.yml'
   workflow_dispatch:
 
@@ -20,7 +19,6 @@ jobs:
     outputs:
       pedidos: ${{ steps.filter.outputs.pedidos }}
       producto: ${{ steps.filter.outputs.producto }}
-      frontend: ${{ steps.filter.outputs.frontend }}
     steps:
       - uses: actions/checkout@v4
       - uses: dorny/paths-filter@v3
@@ -32,9 +30,6 @@ jobs:
               - '.github/workflows/docker-publish.yml'
             producto:
               - 'backend/producto-service/**'
-              - '.github/workflows/docker-publish.yml'
-            frontend:
-              - 'frontend/**'
               - '.github/workflows/docker-publish.yml'
 
   build-pedidos:
@@ -120,53 +115,3 @@ jobs:
           platforms: linux/amd64
           cache-from: type=gha
           cache-to: type=gha,mode=max
-
-  build-frontend:
-    needs: changes
-    if: needs.changes.outputs.frontend == 'true'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GHCR
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ghcr.io/duocuc-warencitos/frontend
-          tags: |
-            type=raw,value=latest
-            type=sha,prefix=sha-
-
-      - name: Build and push
-        uses: docker/build-push-action@v6
-        with:
-          context: ./frontend
-          file: ./frontend/Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          platforms: linux/amd64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: |
-            NG_APP_MSAL_CLIENT_ID=9da5f704-8e4f-493b-af75-812436921593
-            NG_APP_MSAL_TENANT_ID=1f3a849e-c198-4ff7-b67c-d17f15cbc152
-            NG_APP_MSAL_REDIRECT_URI=https://pedidos360-frontend.example.com
-            NG_APP_MSAL_API_SCOPE=api://374ba786-74ed-4b20-a6f5-b115c2e58625/Pedidos.Read
-            NG_APP_API_GATEWAY_URL=https://n4nrvecypi.execute-api.us-east-1.amazonaws.com/prod
-            NG_APP_LOG_LEVEL=INFO
-            NG_APP_PRODUCTION=true
