@@ -57,11 +57,19 @@ resource "aws_apigatewayv2_route" "productos" {
   authorization_type = "JWT"
 }
 
+resource "aws_apigatewayv2_integration" "health" {
+  api_id                 = aws_apigatewayv2_api.main.id
+  integration_type       = "HTTP_PROXY"
+  integration_method     = "ANY"
+  integration_uri        = "http://${aws_instance.pedidos.public_ip}:8080/actuator/health"
+  payload_format_version = "1.0"
+}
+
 # Ruta health sin auth para ALB checks
 resource "aws_apigatewayv2_route" "health" {
   api_id    = aws_apigatewayv2_api.main.id
   route_key = "GET /actuator/health"
-  target    = "integrations/${aws_apigatewayv2_integration.pedidos.id}"
+  target    = "integrations/${aws_apigatewayv2_integration.health.id}"
 }
 
 resource "aws_apigatewayv2_stage" "prod" {

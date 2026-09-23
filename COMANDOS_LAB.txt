@@ -1,0 +1,59 @@
+# Pedidos360 - Comandos Lab (Windows + AWS Learner Lab)
+# VPC: vpc-02700295831c98cda | Region: us-east-1 | Plan: 18 to add (2 EC2 + 2 RDS + 4 SG + API GW)
+# Generado: terraform plan OK en infra/terraform
+
+# ========= 1) Instalar Terraform via winget =========
+winget install -e --id Hashicorp.Terraform
+# Cierra y abre nueva pwsh para que PATH actualice
+terraform version
+
+# ========= 2) Instalar AWS CLI via winget =========
+winget install -e --id Amazon.AWSCLI
+# Cierra y abre nueva pwsh
+aws --version
+
+# ========= 3) Credenciales AWS Lab (copiar desde Cloud Access → Copy to ~/.aws/credentials) =========
+# Cloud Access → [default]
+# aws_access_key_id=ASIA...
+# aws_secret_access_key=...
+# aws_session_token=IQoJ...
+# Region us-east-1 | Account 618255781710 | Session 03:51:22
+# OPCION A - Env vars por sesion (recomendado Learner Lab, expira al cerrar pwsh):
+$env:AWS_ACCESS_KEY_ID="PEGA_AQUI_ASIA..."
+$env:AWS_SECRET_ACCESS_KEY="PEGA_AQUI_SECRET..."
+$env:AWS_SESSION_TOKEN="PEGA_AQUI_TOKEN_LARGO_IQoJ..."
+$env:AWS_REGION="us-east-1"
+$env:AWS_DEFAULT_REGION="us-east-1"
+aws sts get-caller-identity
+# OPCION B - Archivo persistente %USERPROFILE%\.aws\credentials (sobrevive reboot):
+# New-Item -ItemType Directory -Force -Path "$env:USERPROFILE\.aws"
+# @"
+# [default]
+# aws_access_key_id = PEGA_AQUI_ASIA...
+# aws_secret_access_key = PEGA_AQUI_SECRET...
+# aws_session_token = PEGA_AQUI_TOKEN...
+# "@ | Set-Content -Path "$env:USERPROFILE\.aws\credentials" -Encoding ascii
+# @"
+# [default]
+# region = us-east-1
+# output = json
+# "@ | Set-Content -Path "$env:USERPROFILE\.aws\config" -Encoding ascii
+
+# ========= 4) Terraform (desde Windows) =========
+cd infra/terraform
+Copy-Item terraform.tfvars.example terraform.tfvars
+notepad terraform.tfvars  # completa db_password (32 chars), key_name=vockey
+terraform init
+terraform validate
+terraform plan -out=tfplan
+terraform apply tfplan
+terraform output apigw_url           # -> NG_APP_API_GATEWAY_URL para Vercel
+terraform output rds_pedidos_endpoint
+terraform output ec2_pedidos_public_ip
+
+# ========= 5) Local test prod con GHCR (opcional) =========
+# cd ..\..
+# Copy-Item .env.example .env
+# notepad .env  # completa endpoints RDS de output
+# docker compose -f docker-compose.prod.yml --env-file .env pull
+# docker compose -f docker-compose.prod.yml --env-file .env up -d
