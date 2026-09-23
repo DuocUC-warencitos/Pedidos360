@@ -13,19 +13,11 @@ resource "aws_security_group" "ec2_pedidos" {
   }
 
   ingress {
-    description = "App 8080 desde cualquier origen (API Gateway público) - en prod con VPC Link restringir a sg_apigw"
+    description = "App 8080 desde API Gateway publico"
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  ingress {
-    description     = "Producto → Pedidos si necesitan callback (opcional)"
-    from_port       = 8080
-    to_port         = 8080
-    protocol        = "tcp"
-    security_groups = [aws_security_group.ec2_producto.id]
   }
 
   egress {
@@ -53,7 +45,7 @@ resource "aws_security_group" "ec2_producto" {
   }
 
   ingress {
-    description = "App 8080 desde API Gateway público"
+    description = "App 8080 desde API Gateway publico"
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
@@ -61,7 +53,7 @@ resource "aws_security_group" "ec2_producto" {
   }
 
   ingress {
-    description     = "Feign pedidos → producto"
+    description     = "Feign pedidos a producto"
     from_port       = 8080
     to_port         = 8080
     protocol        = "tcp"

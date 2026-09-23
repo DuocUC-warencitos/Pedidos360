@@ -36,7 +36,7 @@ data "aws_ami" "al2023" {
 }
 
 locals {
-  ami_id           = var.ami_id != "" ? var.ami_id : data.aws_ami.al2023[0].id
-  public_subnet_ids = length(data.aws_subnets.public.ids) > 0 ? data.aws_subnets.public.ids : data.aws_subnets.default.ids
+  ami_id                   = var.ami_id != "" ? var.ami_id : data.aws_ami.al2023[0].id
+  public_subnet_ids        = length(data.aws_subnets.public.ids) > 0 ? data.aws_subnets.public.ids : data.aws_subnets.default.ids
   db_password_producto_eff = var.db_password_producto != "" ? var.db_password_producto : var.db_password
 }

@@ -33,8 +33,8 @@ CORS_ALLOWED_ORIGINS=${cors_origins}
 TAG=${tag}
 ENVEOF
 
-# Copia docker-compose.prod.yml (si se sube vía s3/user_data, descomentar)
-# aws s3 cp s3://${s3_bucket}/docker-compose.prod.yml ./docker-compose.prod.yml
+# Copia docker-compose.prod.yml via S3 si lo subes (descomentar y reemplaza BUCKET)
+# aws s3 cp s3://BUCKET/docker-compose.prod.yml ./docker-compose.prod.yml
 
 # Si el compose está embebido, créalo mínimo:
 cat > docker-compose.prod.yml <<'COMPEOF'
