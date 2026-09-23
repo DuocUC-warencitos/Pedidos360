@@ -56,7 +56,7 @@ resource "aws_instance" "producto" {
 resource "aws_instance" "frontend" {
   ami                         = local.ami_id
   instance_type               = var.frontend_instance_type
-  subnet_id                   = try(local.public_subnet_ids[2], local.public_subnet_ids[0])
+  subnet_id                   = local.public_subnet_ids[0]
   vpc_security_group_ids      = [aws_security_group.ec2_frontend.id]
   key_name                    = var.key_name
   associate_public_ip_address = true
