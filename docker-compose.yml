@@ -1,0 +1,77 @@
+# Dev local rápido - sin .env necesario (usa application-dev.yml)
+# Uso: docker compose up --build  (PCs públicos)
+# Con env prod: docker compose --env-file .env up --build
+services:
+  pedidos-db:
+    image: ${POSTGRES_VERSION:-postgres:15}
+    container_name: pedidos-db
+    environment:
+      POSTGRES_DB: ${PEDIDOS_DB_NAME:-pedidos}
+      POSTGRES_USER: ${PEDIDOS_DB_USER:-user}
+      POSTGRES_PASSWORD: ${PEDIDOS_DB_PASS:-pass}
+    ports:
+      - "${PEDIDOS_DB_PORT:-5431}:${PEDIDOS_DB_INTERNAL_PORT:-5432}"
+    volumes:
+      - pedidos-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PEDIDOS_DB_USER:-user} -d ${PEDIDOS_DB_NAME:-pedidos}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  producto-service:
+    build:
+      context: ./backend/producto-service
+      dockerfile: Dockerfile
+    container_name: producto-service
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      # En dev sin .env usa application-dev.yml; si quieres overridear usa env vars:
+      # SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-}
+    ports:
+      - "8082:8082"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8082/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+  pedidos-service:
+    build:
+      context: ./backend/pedidos-service
+      dockerfile: Dockerfile
+    container_name: pedidos-service
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      PRODUCTO_SERVICE_URL: http://producto-service:8082
+    ports:
+      - "8081:8081"
+    depends_on:
+      producto-service:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 40s
+
+  pedidos-gateway:
+    build:
+      context: ./backend/pedidos-gateway
+      dockerfile: Dockerfile
+    container_name: pedidos-gateway
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      # Override rutas para docker network (application-dev.yml usa localhost para IDE)
+      PEDIDOS_SERVICE_URL: http://pedidos-service:8081
+      PRODUCTOS_SERVICE_URL: http://producto-service:8082
+    ports:
+      - "8080:8080"
+    depends_on:
+      - pedidos-service
+      - producto-service
+
+volumes:
+  pedidos-data:

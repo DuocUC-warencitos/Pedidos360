@@ -42,3 +42,8 @@ __screenshots__/
 # System files
 .DS_Store
 Thumbs.db
+
+# Env local (no commitear)
+.env
+!.env.example
+!.env.example.vercel

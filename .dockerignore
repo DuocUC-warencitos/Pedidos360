@@ -1,0 +1,10 @@
+.git
+.gitignore
+target
+node_modules
+dist
+.angular
+.env
+docs
+README.md
+*.http

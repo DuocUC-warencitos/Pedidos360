@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
+    "prebuild": "node scripts/generate-environment.js",
     "start": "ng serve",
     "start:prod": "ng serve --configuration production",
     "build": "ng build",
