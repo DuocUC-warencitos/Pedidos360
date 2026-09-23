@@ -1,0 +1,40 @@
+# ============================================================
+# Pedidos360 - terraform.tfvars.example
+# Copiar a terraform.tfvars y completar. Nunca commitear terraform.tfvars.
+# cp terraform.tfvars.example terraform.tfvars
+# ============================================================
+
+aws_region   = "us-east-1"
+environment  = "prod"
+project      = "pedidos360"
+
+# VPC default del lab (dejar vacío para auto-detectar)
+vpc_id = ""
+
+# EC2 — key pair del lab (Learner Lab usa "vockey")
+key_name      = "vockey"
+instance_type = "t3.micro"
+# ami_id = "" # vacío = Amazon Linux 2023 último
+
+# RDS — 2 instancias separadas
+rds_instance_class    = "db.t3.micro"
+rds_allocated_storage = 20
+
+db_name_pedidos        = "pedidos"
+db_username_pedidos    = "pedidos_user"
+db_name_producto       = "productos"
+db_username_producto   = "producto_user"
+
+# Passwords maestros — 32+ chars, sensibles
+db_password          = "CHANGEME_SUPER_SEGURO_32CHARS_PEDIDOS"
+db_password_producto = "" # vacío = reutiliza db_password
+
+# JWT / Entra ID
+jwt_issuer_uri = "https://login.microsoftonline.com/1f3a849e-c198-4ff7-b67c-d17f15cbc152/v2.0"
+jwt_audience   = "api://374ba786-74ed-4b20-a6f5-b115c2e58625/Pedidos.Read"
+cors_origins   = "http://localhost:4200,https://pedidos360.vercel.app"
+
+# GHCR — ya públicas ghcr.io/neytan2214/*
+ghcr_image_pedidos  = "ghcr.io/neytan2214/pedidos-service:latest"
+ghcr_image_producto = "ghcr.io/neytan2214/producto-service:latest"
+tag                 = "latest"

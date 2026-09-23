@@ -1,0 +1,64 @@
+#!/bin/bash
+set -eux
+
+# Actualiza e instala Docker + compose plugin (Amazon Linux 2023)
+yum update -y
+yum install -y docker git
+systemctl enable --now docker
+usermod -aG docker ec2-user
+
+# Instala docker compose plugin si no existe
+if ! docker compose version >/dev/null 2>&1; then
+  mkdir -p /usr/local/lib/docker/cli-plugins
+  curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose
+  chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+fi
+
+# Directorio app
+mkdir -p /opt/pedidos360
+cd /opt/pedidos360
+
+# Crea .env para docker-compose.prod.yml desde variables Terraform
+cat > .env <<'ENVEOF'
+SPRING_DATASOURCE_URL=${spring_datasource_url}
+SPRING_DATASOURCE_USERNAME=${db_username}
+SPRING_DATASOURCE_PASSWORD=${db_password}
+JWT_ISSUER_URI=${jwt_issuer_uri}
+JWT_AUDIENCE=${jwt_audience}
+SERVER_PORT=8080
+PEDIDOS_SERVER_PORT=8080
+PRODUCTO_SERVER_PORT=8080
+PRODUCTO_SERVICE_URL=${producto_service_url}
+CORS_ALLOWED_ORIGINS=${cors_origins}
+TAG=${tag}
+ENVEOF
+
+# Copia docker-compose.prod.yml (si se sube vía s3/user_data, descomentar)
+# aws s3 cp s3://${s3_bucket}/docker-compose.prod.yml ./docker-compose.prod.yml
+
+# Si el compose está embebido, créalo mínimo:
+cat > docker-compose.prod.yml <<'COMPEOF'
+services:
+  app:
+    image: ${ghcr_image}
+    env_file: .env
+    environment:
+      SERVER_PORT: 8080
+      SPRING_DATASOURCE_URL: $${SPRING_DATASOURCE_URL}
+      SPRING_DATASOURCE_USERNAME: $${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: $${SPRING_DATASOURCE_PASSWORD}
+      JWT_ISSUER_URI: $${JWT_ISSUER_URI}
+%{ if producto_service_url != "" ~}
+      PRODUCTO_SERVICE_URL: $${PRODUCTO_SERVICE_URL}
+%{ endif ~}
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+COMPEOF
+
+# Pull y levantar (GHCR públicas no requieren login)
+docker compose --env-file .env pull || true
+docker compose --env-file .env up -d
+
+# Logs
+docker ps -a
