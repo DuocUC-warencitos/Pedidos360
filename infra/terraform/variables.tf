@@ -110,17 +110,17 @@ variable "cors_origins" {
 # ---------- GHCR / App ----------
 variable "ghcr_image_pedidos" {
   type    = string
-  default = "ghcr.io/neytan2214/pedidos-service:latest"
+  default = "ghcr.io/duocuc-warencitos/pedidos-service:latest"
 }
 
 variable "ghcr_image_producto" {
   type    = string
-  default = "ghcr.io/neytan2214/producto-service:latest"
+  default = "ghcr.io/duocuc-warencitos/producto-service:latest"
 }
 
 variable "ghcr_image_frontend" {
   type    = string
-  default = "ghcr.io/neytan2214/frontend:latest"
+  default = "ghcr.io/duocuc-warencitos/frontend:latest"
 }
 
 variable "tag" {

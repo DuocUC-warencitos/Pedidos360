@@ -41,4 +41,4 @@ docker compose -f ../../docker-compose.prod.yml --env-file ../../.env pull && up
 - RDS solo desde su EC2 (`sg-rds-*` ingress `sg-ec2-*`).
 - EC2 `8080` desde `0.0.0.0/0` (API Gateway público lab); con VPC Link restringir a `sg_apigw`.
 - API Gateway JWT `issuer https://login.microsoftonline.com/1f3a.../v2.0` + audience `api://374ba...`.
-- GHCR públicas `ghcr.io/neytan2214/*` sin login en EC2.
+- GHCR públicas `ghcr.io/duocuc-warencitos/*` sin login en EC2.

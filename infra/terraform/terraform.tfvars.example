@@ -34,7 +34,8 @@ jwt_issuer_uri = "https://login.microsoftonline.com/1f3a849e-c198-4ff7-b67c-d17f
 jwt_audience   = "api://374ba786-74ed-4b20-a6f5-b115c2e58625/Pedidos.Read"
 cors_origins   = "http://localhost:4200,https://pedidos360.vercel.app"
 
-# GHCR — ya públicas ghcr.io/neytan2214/*
-ghcr_image_pedidos  = "ghcr.io/neytan2214/pedidos-service:latest"
-ghcr_image_producto = "ghcr.io/neytan2214/producto-service:latest"
-tag                 = "latest"
+# GHCR — ya públicas ghcr.io/duocuc-warencitos/*
+ghcr_image_pedidos   = "ghcr.io/duocuc-warencitos/pedidos-service:latest"
+ghcr_image_producto  = "ghcr.io/duocuc-warencitos/producto-service:latest"
+ghcr_image_frontend  = "ghcr.io/duocuc-warencitos/frontend:latest"
+tag                  = "latest"
