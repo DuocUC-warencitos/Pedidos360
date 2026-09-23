@@ -10,7 +10,7 @@ infra/terraform/
 ├── apigw.tf (HTTP API + JWT Authorizer Entra ID)
 ├── user_data.sh.tmpl
 ├── terraform.tfvars.example  -> copiar a terraform.tfvars (gitignored)
-└── .env.example              -> .env EC2 generado vía user_data
+└── (usa ../../.env.example — fuente única) -> .env EC2 generado vía user_data
 ```
 
 ## Uso lab (VPC default)
@@ -31,8 +31,8 @@ terraform output apigw_url  # → NG_APP_API_GATEWAY_URL para Vercel
 terraform output rds_pedidos_endpoint
 
 # En EC2, el .env se crea automático vía user_data.sh
-# Local prueba prod:
-cp .env.example ../../.env
+# Local prueba prod (fuente única ../../.env.example):
+cp ../../.env.example ../../.env
 nano ../../.env
 docker compose -f ../../docker-compose.prod.yml --env-file ../../.env pull && up -d
 ```
