@@ -1,68 +1,37 @@
 ### Variables
-@host = http://localhost:8082
-@baseUrl = {{host}}/api/v1/productos
-@contentType = application/json
+@gateway = https://n4nrvecypi.execute-api.us-east-1.amazonaws.com/prod
+@token = PEGA_AQUI_TU_ACCESS_TOKEN
 
-### Crear producto
-POST {{baseUrl}}
-Content-Type: {{contentType}}
+### Crear pedido
+POST {{gateway}}/api/v1/pedidos
+Authorization: Bearer {{token}}
+Content-Type: application/json
 
-{
-    "nombre": "Leche",
-    "precio": 1500
-}
-
-###
-
-### Crear otro producto
-POST {{baseUrl}}
-Content-Type: {{contentType}}
-
-{
-    "nombre": "Pan",
-    "precio": 800
-}
-
-###
-
-### Crear un tercer producto
-POST {{baseUrl}}
-Content-Type: {{contentType}}
-
-{
-    "nombre": "Huevos",
-    "precio": 120
-}
+[
+    {
+        "nombreProducto": "Leche",
+        "cantidad": 2
+    },
+    {
+        "nombreProducto": "Pan",
+        "cantidad": 1
+    },
+    {
+        "nombreProducto": "Huevos",
+        "cantidad": 12
+    }
+]
 
 ###
 
-### Obtener todos los productos
-GET {{baseUrl}}
-Accept: application/json
+### Obtener todos los pedidos
+GET {{gateway}}/api/v1/pedidos
+Authorization: Bearer {{token}}
 
 ###
 
-### Obtener producto por ID
-# Reemplaza el UUID por uno real devuelto por el POST o el GET
-GET {{baseUrl}}/c0899a63-4e2b-4ca9-9bf2-c63209835855
-Accept: application/json
-
-###
-
-### Actualizar producto
-# Reemplaza el UUID por uno real
-PUT {{baseUrl}}/00000000-0000-0000-0000-000000000000
-Content-Type: {{contentType}}
-
-{
-    "nombre": "Leche descremada",
-    "precio": 1700
-}
-
-###
-
-### Eliminar producto
-# Reemplaza el UUID por uno real
-DELETE {{baseUrl}}/00000000-0000-0000-0000-000000000000
+### Eliminar todos los pedidos
+DELETE {{gateway}}/api/v1/pedidos/all
+Authorization: Bearer {{token}}
 
 ###

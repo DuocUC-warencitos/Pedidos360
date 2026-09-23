@@ -11,7 +11,7 @@ export const environment =
         // Directory (tenant) ID del tenant utilizado en Microsoft Entra ID
         tenantId: '1f3a849e-c198-4ff7-b67c-d17f15cbc152',
 
-        redirectUri: 'http://localhost:4200',
+        redirectUri: 'https://pedidos360-three.vercel.app/',
 
         // Scope expuesto por la App Registration de la API
         apiScope:
