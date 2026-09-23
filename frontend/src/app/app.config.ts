@@ -25,7 +25,6 @@ import {
   MSALInterceptorConfigFactory,
 } from '@core/auth/msal.config';
 import { MsalAuthenticationProvider } from '@core/auth/providers/msalAuthenticationProvider';
-
 import { errorInterceptor } from '@core/interceptors/error.interceptor';
 
 import { routes } from './app.routes';

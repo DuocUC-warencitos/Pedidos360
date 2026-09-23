@@ -16,7 +16,7 @@ export const routes: Routes =
 	},
 	{
 		path:'pedidos',
-		canActivate: [authGuard],
+		canActivate: [],
 		loadChildren:()=> import('./features/pedidos/pedidos.routes')
 			.then(m=>m.pedidosRoutes)
 	 },
