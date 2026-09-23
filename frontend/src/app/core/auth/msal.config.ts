@@ -12,6 +12,23 @@ import {
 import { environment } from '@env/environment';
 
 export function MSALInstanceFactory(): IPublicClientApplication {
+  
+  // 🛠️ PARCHE PARA ENTORNOS HTTP (EVITA EL ERROR CRYPTO_NONEXISTENT)
+  if (typeof window !== 'undefined' && !window.crypto) {
+    (window as any).crypto = {
+      getRandomValues: (bucket: any) => {
+        for (let i = 0; i < bucket.length; i++) {
+          bucket[i] = Math.floor(Math.random() * 256);
+        }
+        return bucket;
+      },
+      subtle: {} as any
+    };
+  } else if (typeof window !== 'undefined' && window.crypto && !window.crypto.subtle) {
+    // Si crypto existe pero subtle está bloqueado por el navegador por ser HTTP
+    (window.crypto as any).subtle = {} as any;
+  }
+
   return new PublicClientApplication({
     auth: {
       clientId: environment.msal.clientId,
