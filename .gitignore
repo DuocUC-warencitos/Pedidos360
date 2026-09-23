@@ -13,3 +13,5 @@ target/
 dist/
 node_modules/
 .angular/
+
+tfplan
