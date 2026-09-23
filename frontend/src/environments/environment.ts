@@ -18,7 +18,7 @@ export const environment =
           'api://374ba786-74ed-4b20-a6f5-b115c2e58625/Pedidos.Read'
     },
     // Backend Spring Boot de la Sesión 3
-    apiGatewayUrl: 'http://localhost:8080',
+    apiGatewayUrl: 'https://n4nrvecypi.execute-api.us-east-1.amazonaws.com/prod',
     logging:
     {
         minLevel: LogLevel.DEBUG
