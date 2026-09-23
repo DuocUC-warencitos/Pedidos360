@@ -96,9 +96,9 @@ variable "jwt_issuer_uri" {
 }
 
 variable "jwt_audience" {
-  description = "Audience del Access Token (api://...)"
+  description = "Audience del Access Token (Client ID de la API en Entra ID)"
   type        = string
-  default     = "api://374ba786-74ed-4b20-a6f5-b115c2e58625/Pedidos.Read"
+  default     = "374ba786-74ed-4b20-a6f5-b115c2e58625"
 }
 
 variable "cors_origins" {
