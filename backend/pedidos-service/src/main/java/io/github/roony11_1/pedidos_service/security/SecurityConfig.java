@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -33,6 +34,7 @@ public class SecurityConfig
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception
     {
         http
+            .cors(Customizer.withDefaults())
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
@@ -57,14 +59,12 @@ public class SecurityConfig
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter()
     {
-        // Convierte scp/scope -> SCOPE_xxx
         JwtGrantedAuthoritiesConverter scopesConverter = new JwtGrantedAuthoritiesConverter();
 
-        // Convierte el claim "roles" -> ROLE_xxx
-        Converter<Jwt, Collection<GrantedAuthority>> rolesConverter = jwt -> 
+        Converter<Jwt, Collection<GrantedAuthority>> rolesConverter = jwt ->
         {
             List<String> roles = jwt.getClaimAsStringList("roles");
-            if (roles == null) 
+            if (roles == null)
                 return List.of();
 
             return roles.stream()
@@ -72,15 +72,12 @@ public class SecurityConfig
                 .collect(Collectors.toList());
         };
 
-        // Combinamos ambos
         JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
-        converter.setJwtGrantedAuthoritiesConverter(jwt -> 
+        converter.setJwtGrantedAuthoritiesConverter(jwt ->
         {
             var authorities = new java.util.ArrayList<GrantedAuthority>();
-
             authorities.addAll(scopesConverter.convert(jwt));
             authorities.addAll(rolesConverter.convert(jwt));
-
             return authorities;
         });
         return converter;
