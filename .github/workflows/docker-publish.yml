@@ -57,7 +57,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/roony11-1/pedidos-service
+          images: ghcr.io/neytan2214/pedidos-service
           tags: |
             type=raw,value=latest
             type=sha,prefix=sha-
@@ -99,7 +99,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ghcr.io/roony11-1/producto-service
+          images: ghcr.io/neytan2214/producto-service
           tags: |
             type=raw,value=latest
             type=sha,prefix=sha-

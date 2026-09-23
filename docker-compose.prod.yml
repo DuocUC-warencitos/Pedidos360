@@ -1,4 +1,4 @@
-# Prod EC2 - pull desde GHCR ghcr.io/roony11-1/* (públicas)
+# Prod EC2 - pull desde GHCR ghcr.io/neytan2214/* (públicas)
 # Requiere .env en host EC2 (scp tu .env). Nunca bakeado en imagen.
 # Uso en EC2 Linux:
 #   docker compose -f docker-compose.prod.yml --env-file .env pull
@@ -6,7 +6,7 @@
 # O con export: export $(cat .env | xargs) && docker compose -f docker-compose.prod.yml up -d
 services:
   producto-service:
-    image: ghcr.io/roony11-1/producto-service:${TAG:-latest}
+    image: ghcr.io/neytan2214/producto-service:${TAG:-latest}
     container_name: producto-service
     env_file: .env
     environment:
@@ -26,7 +26,7 @@ services:
       start_period: 60s
 
   pedidos-service:
-    image: ghcr.io/roony11-1/pedidos-service:${TAG:-latest}
+    image: ghcr.io/neytan2214/pedidos-service:${TAG:-latest}
     container_name: pedidos-service
     env_file: .env
     environment:
@@ -52,7 +52,7 @@ services:
   # Gateway NO incluido en prod (reemplazado por AWS API Gateway)
   # Si quieres probar gateway en EC2, descomenta:
   # pedidos-gateway:
-  #   image: ghcr.io/roony11-1/pedidos-gateway:${TAG:-latest}
+  #   image: ghcr.io/neytan2214/pedidos-gateway:${TAG:-latest}
   #   env_file: .env
   #   ports: ["8080:8080"]
   #   restart: unless-stopped
