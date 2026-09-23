@@ -118,6 +118,39 @@ resource "aws_apigatewayv2_route" "health" {
   target    = "integrations/${aws_apigatewayv2_integration.health.id}"
 }
 
+# ──────────────────────────────────────────────────────────────
+# RUTAS OPTIONS (preflight CORS) — SIN autorización
+# ──────────────────────────────────────────────────────────────
+
+# Para subrutas: /api/v1/pedidos/*
+resource "aws_apigatewayv2_route" "pedidos_options" {
+  api_id    = aws_apigatewayv2_api.main.id
+  route_key = "OPTIONS /api/v1/pedidos/{proxy+}"
+  target    = "integrations/${aws_apigatewayv2_integration.pedidos.id}"
+  # Sin authorizer_id ni authorization_type → NONE
+}
+
+# Para raíz: /api/v1/pedidos
+resource "aws_apigatewayv2_route" "pedidos_root_options" {
+  api_id    = aws_apigatewayv2_api.main.id
+  route_key = "OPTIONS /api/v1/pedidos"
+  target    = "integrations/${aws_apigatewayv2_integration.pedidos_root.id}"
+}
+
+# Para subrutas: /api/v1/productos/*
+resource "aws_apigatewayv2_route" "productos_options" {
+  api_id    = aws_apigatewayv2_api.main.id
+  route_key = "OPTIONS /api/v1/productos/{proxy+}"
+  target    = "integrations/${aws_apigatewayv2_integration.productos.id}"
+}
+
+# Para raíz: /api/v1/productos
+resource "aws_apigatewayv2_route" "productos_root_options" {
+  api_id    = aws_apigatewayv2_api.main.id
+  route_key = "OPTIONS /api/v1/productos"
+  target    = "integrations/${aws_apigatewayv2_integration.productos_root.id}"
+}
+
 resource "aws_apigatewayv2_stage" "prod" {
   api_id      = aws_apigatewayv2_api.main.id
   name        = "prod"
