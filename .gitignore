@@ -1,12 +1,7 @@
 # Docs - ignorado local (no trackeado en git)
 docs/
 
-# Env - nunca commitear .env con secretos
-.env
-**/.env
-!.env.example
-**/.env.example
-!**/.env.example
+!./infra/docker/.env
 
 # Build
 target/

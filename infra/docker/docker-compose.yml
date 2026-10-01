@@ -8,3 +8,20 @@ services:
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL_PEDIDOS:-}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME_PEDIDOS:-}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD_PEDIDOS:-}
+    ports:
+      - "8081:8080"
+
+  pedidos-angular-app:
+    build:
+      context: ../../frontend
+    container_name: pedidos-angular-app
+    environment:
+      MSAL_CLIENT_ID: ${MSAL_CLIENT_ID:-}
+      MSAL_TENANT_ID: ${MSAL_TENANT_ID:-}
+      MSAL_REDIRECT_URI: ${MSAL_REDIRECT_URI:-}
+      MSAL_API_SCOPE: ${MSAL_API_SCOPE:-}
+      API_GATEWAY_URL: ${API_GATEWAY_URL:-}
+      ANGULAR_LOG_LEVEL: ${ANGULAR_LOG_LEVEL}
+      ANGULAR_IS_PRODUCTION: ${ANGULAR_IS_PRODUCTION:-}
+    ports:
+      - "80:80"
