@@ -1,0 +1,10 @@
+services:
+  pedidos-service:
+    build: 
+      context: ../../backend/pedidos-service
+    container_name: pedidos-service
+    environment:
+      JWT_ISSUER_URI: ${JWT_ISSUER_URI:-}
+      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL_PEDIDOS:-}
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME_PEDIDOS:-}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD_PEDIDOS:-}
