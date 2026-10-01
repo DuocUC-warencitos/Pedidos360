@@ -7,7 +7,7 @@
   },
   "newProjectRoot": "projects",
   "projects": {
-    "dsy1107-msal-angular": {
+    "pedidos360": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -57,10 +57,10 @@
           "builder": "@angular/build:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "dsy1107-msal-angular:build:production"
+              "buildTarget": "pedidos360:build:production"
             },
             "development": {
-              "buildTarget": "dsy1107-msal-angular:build:development"
+              "buildTarget": "pedidos360:build:development"
             }
           },
           "defaultConfiguration": "development"

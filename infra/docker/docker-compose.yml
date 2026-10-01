@@ -19,6 +19,18 @@ services:
       PRODUCTOS_SERVICE_URL: http://producto-service:8082
     ports:
       - "8080:8080"
-    depends_on:
-      - pedidos-service
-      - producto-service
+
+  pedidos-angular-app:
+    build:
+      context: ../../frontend
+    container_name: pedidos-angular-app
+    environment:
+      MSAL_CLIENT_ID: ${MSAL_CLIENT_ID:-}
+      MSAL_TENANT_ID: ${MSAL_TENANT_ID:-}
+      MSAL_REDIRECT_URI: ${MSAL_REDIRECT_URI:-}
+      MSAL_API_SCOPE: ${MSAL_API_SCOPE:-}
+      API_GATEWAY_URL: ${API_GATEWAY_URL:-}
+      ANGULAR_LOG_LEVEL: ${ANGULAR_LOG_LEVEL}
+      ANGULAR_IS_PRODUCTION: ${ANGULAR_IS_PRODUCTION:-}
+    ports:
+      - "80:80"

@@ -1,26 +1,41 @@
 import { LogLevel } from "../app/core/logging/logLevel";
 
+declare global 
+{
+    interface Window 
+    {
+        __env: 
+        {
+            MSAL_CLIENT_ID: string;
+            MSAL_TENANT_ID: string;
+            MSAL_REDIRECT_URI: string;
+            MSAL_API_SCOPE: string;
+            API_GATEWAY_URL: string;
+            ANGULAR_LOG_LEVEL: string;
+            ANGULAR_IS_PRODUCTION: string;
+        };
+    }
+}
+
 export const environment = 
 {
-    production: false,
+    production: window.__env.ANGULAR_IS_PRODUCTION === "true",
+
     msal: 
     {
-        // App Registration del FRONTEND Angular
-        clientId: '9da5f704-8e4f-493b-af75-812436921593',
-
-        // Directory (tenant) ID del tenant utilizado en Microsoft Entra ID
-        tenantId: '1f3a849e-c198-4ff7-b67c-d17f15cbc152',
-
-        redirectUri: 'https://pedidos360-three.vercel.app/',
-
-        // Scope expuesto por la App Registration de la API
-        apiScope:
-          'api://374ba786-74ed-4b20-a6f5-b115c2e58625/Pedidos.Read'
+        clientId: window.__env.MSAL_CLIENT_ID,
+        tenantId: window.__env.MSAL_TENANT_ID,
+        redirectUri: window.__env.MSAL_REDIRECT_URI,
+        apiScope: window.__env.MSAL_API_SCOPE
     },
-    // Backend Spring Boot de la Sesión 3
-    apiGatewayUrl: 'https://n4nrvecypi.execute-api.us-east-1.amazonaws.com/prod',
-    logging:
+
+    apiGatewayUrl: window.__env.API_GATEWAY_URL,
+
+    logging: 
     {
-        minLevel: LogLevel.DEBUG
+        minLevel:
+            LogLevel[
+                window.__env.ANGULAR_LOG_LEVEL as keyof typeof LogLevel
+            ]
     }
 };
