@@ -8,3 +8,17 @@ services:
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL_PEDIDOS:-}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME_PEDIDOS:-}
       SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD_PEDIDOS:-}
+  pedidos-gateway:
+    build:
+      context: ../../backend/pedidos-gateway
+      dockerfile: Dockerfile
+    container_name: pedidos-gateway
+    environment:
+      JWT_ISSUER_URI: ${JWT_ISSUER_URI}
+      PEDIDOS_SERVICE_URL: http://pedidos-service:8081
+      PRODUCTOS_SERVICE_URL: http://producto-service:8082
+    ports:
+      - "8080:8080"
+    depends_on:
+      - pedidos-service
+      - producto-service
