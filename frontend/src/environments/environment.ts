@@ -10,6 +10,7 @@ declare global
             MSAL_TENANT_ID: string;
             MSAL_REDIRECT_URI: string;
             MSAL_API_SCOPE: string;
+            MSAL_POST_LOGOUT_URI: string;
             API_GATEWAY_URL: string;
             ANGULAR_LOG_LEVEL: string;
             ANGULAR_IS_PRODUCTION: string;
@@ -26,7 +27,8 @@ export const environment =
         clientId: window.__env.MSAL_CLIENT_ID,
         tenantId: window.__env.MSAL_TENANT_ID,
         redirectUri: window.__env.MSAL_REDIRECT_URI,
-        apiScope: window.__env.MSAL_API_SCOPE
+        apiScope: window.__env.MSAL_API_SCOPE,
+        postLogoutRedirectUri: window.__env.MSAL_POST_LOGOUT_URI
     },
 
     apiGatewayUrl: window.__env.API_GATEWAY_URL,

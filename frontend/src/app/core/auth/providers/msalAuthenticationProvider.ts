@@ -49,7 +49,7 @@ export class MsalAuthenticationProvider implements AuthenticationProvider
     {
         this.msalService.logoutRedirect(
         {
-            postLogoutRedirectUri: 'http://localhost:4200'
+            postLogoutRedirectUri: environment.msal.postLogoutRedirectUri
         });
     }
 
