@@ -1,50 +1,60 @@
 services:
-  pedidos-service:
-    build: 
-      context: ../../backend/pedidos-service
-    container_name: pedidos-service
-    environment:
-      JWT_ISSUER_URI: ${JWT_ISSUER_URI:-}
-      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL_PEDIDOS:-}
-      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME_PEDIDOS:-}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD_PEDIDOS:-}
-  pedidos-gateway:
-    build:
-      context: ../../backend/pedidos-gateway
-      dockerfile: Dockerfile
-    container_name: pedidos-gateway
-    environment:
-      JWT_ISSUER_URI: ${JWT_ISSUER_URI}
-      PEDIDOS_SERVICE_URL: http://pedidos-service:8080
-      PRODUCTOS_SERVICE_URL: http://producto-service:8080
-    ports:
-      - "8080:8080"
-    depends_on:
-      - producto-service
-      - pedidos-service
-  producto-service:
-    build: 
-      context: ../../backend/producto-service
-    container_name: producto-service
-    environment:
-      JWT_ISSUER_URI: ${JWT_ISSUER_URI:-}
-      SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL_PRODUCTOS:-}
-      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME_PRODUCTOS:-}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD_PRODUCTOS:-}
+    pedidos-angular-app:
+        build:
+            context: ../../frontend
+        container_name: pedidos-angular-app
+        environment:
+            MSAL_CLIENT_ID: ${MSAL_CLIENT_ID:-}
+            MSAL_TENANT_ID: ${MSAL_TENANT_ID:-}
+            MSAL_REDIRECT_URI: ${MSAL_REDIRECT_URI:-}
+            MSAL_API_SCOPE: ${MSAL_API_SCOPE:-}
+            API_GATEWAY_URL: ${API_GATEWAY_URL:-}
+            ANGULAR_LOG_LEVEL: ${ANGULAR_LOG_LEVEL}
+            ANGULAR_IS_PRODUCTION: ${ANGULAR_IS_PRODUCTION:-}
+        ports:
+            - "80:80"
+        depends_on:
+            - pedidos-gateway
 
-  pedidos-angular-app:
-    build:
-      context: ../../frontend
-    container_name: pedidos-angular-app
-    environment:
-      MSAL_CLIENT_ID: ${MSAL_CLIENT_ID:-}
-      MSAL_TENANT_ID: ${MSAL_TENANT_ID:-}
-      MSAL_REDIRECT_URI: ${MSAL_REDIRECT_URI:-}
-      MSAL_API_SCOPE: ${MSAL_API_SCOPE:-}
-      API_GATEWAY_URL: ${API_GATEWAY_URL:-}
-      ANGULAR_LOG_LEVEL: ${ANGULAR_LOG_LEVEL}
-      ANGULAR_IS_PRODUCTION: ${ANGULAR_IS_PRODUCTION:-}
-    ports:
-      - "80:80"
-    depends_on:
-      - pedidos-gateway
+    pedidos-gateway:
+        build:
+            context: ../../backend/pedidos-gateway
+            dockerfile: Dockerfile
+        container_name: pedidos-gateway
+        environment:
+            JWT_ISSUER_URI: ${JWT_ISSUER_URI}
+            PEDIDOS_SERVICE_URL: ${PEDIDOS_SERVICE_HOST:-}
+            PRODUCTOS_SERVICE_URL: ${PRODUCTO_SERVICE_HOST:-}
+            CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS_GATEWAY:-}
+        ports:
+            - "8080:8080"
+        depends_on:
+            - producto-service
+            - pedidos-service
+
+    pedidos-service:
+        build:
+            context: ../../backend/pedidos-service
+        container_name: pedidos-service
+        environment:
+            JWT_ISSUER_URI: ${JWT_ISSUER_URI:-}
+            SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL_PEDIDOS:-}
+            SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME_PEDIDOS:-}
+            SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD_PEDIDOS:-}
+            CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS_PEDIDOS:-}
+            PRODUCTO_SERVICE_URL: ${PRODUCTO_SERVICE_HOST:-}
+            CORS_ENABLED: false
+        depends_on:
+            - producto-service
+
+    producto-service:
+        build:
+            context: ../../backend/producto-service
+        container_name: producto-service
+        environment:
+            JWT_ISSUER_URI: ${JWT_ISSUER_URI:-}
+            SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL_PRODUCTOS:-}
+            SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME_PRODUCTOS:-}
+            SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD_PRODUCTOS:-}
+            CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS_PRODUCTOS:-}
+            CORS_ENABLED: false

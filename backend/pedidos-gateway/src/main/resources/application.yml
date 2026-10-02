@@ -25,3 +25,8 @@ spring:
               uri: ${PRODUCTOS_SERVICE_URL:http://producto-service:8080}
               predicates:
                 - Path=/api/v1/productos/**
+
+app:
+  security:
+    cors:
+      allowed-origins: ${CORS_ALLOWED_ORIGINS:}

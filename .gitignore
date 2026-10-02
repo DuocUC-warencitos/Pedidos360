@@ -1,12 +1,79 @@
-# Docs - ignorado local (no trackeado en git)
+# =========================
+# Documentation
+# =========================
+
 docs/
 
-!./infra/docker/.env
+# =========================
+# Environment / Secrets
+# =========================
 
-# Build
+.env
+
+# Keep Docker environment template/config if explicitly tracked
+!infra/docker/.env
+
+# =========================
+# Build / Dependencies
+# =========================
+
 target/
 dist/
+build/
 node_modules/
 .angular/
 
+# Keep source build directories if needed
+!**/src/main/**/target/
+!**/src/test/**/target/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# =========================
+# Terraform
+# =========================
+
 tfplan
+
+# =========================
+# Maven
+# =========================
+
+.mvn/wrapper/maven-wrapper.jar
+
+# =========================
+# Spring / STS
+# =========================
+
+HELP.md
+.apt_generated/
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+
+# =========================
+# IntelliJ IDEA
+# =========================
+
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# =========================
+# NetBeans
+# =========================
+
+/nbproject/private/
+/nbbuild/
+/nbdist/
+/.nb-gradle/
+
+# =========================
+# VS Code
+# =========================
+
+.vscode/
