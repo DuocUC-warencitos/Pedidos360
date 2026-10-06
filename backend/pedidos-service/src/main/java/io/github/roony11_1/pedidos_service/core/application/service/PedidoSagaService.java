@@ -20,6 +20,7 @@ import io.github.roony11_1.pedidos_service.core.domain.repository.PedidoReposito
 import io.github.roony11_1.pedidos_service.infrastructure.client.ProductoClient;
 import io.github.roony11_1.pedidos_service.infrastructure.client.ProductoClientResiliente;
 import io.github.roony11_1.pedidos_service.infrastructure.client.ProductoServiceUnavailableException;
+import io.github.roony11_1.pedidos_service.infrastructure.mensajeria.PedidoEventoProducer;
 import io.github.roony11_1.pedidos_service.kernel.IUserTokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +35,7 @@ public class PedidoSagaService
     private final IUserTokenService userTokenService;
     private final TransactionTemplate txTemplate;
     private final ProductoClientResiliente productoClientResiliente;
+    private final PedidoEventoProducer eventoProducer;
 
     public Pedido crearPedido(List<PedidoProducto> productos, String idempotencyKey, String correlationId)
     {
@@ -47,6 +49,8 @@ public class PedidoSagaService
 
             return pedido;
         }
+
+        eventoProducer.publicar();
 
         try 
         {

@@ -125,6 +125,11 @@
             <artifactId>roony-specification-spring</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
+
 		<!-- Tests -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

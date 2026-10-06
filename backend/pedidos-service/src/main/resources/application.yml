@@ -30,6 +30,15 @@ spring:
                         connect-timeout: 2000
                         read-timeout: 3000
                         logger-level: basic
+    rabbitmq:
+        host: rabbitmq
+        port: 5672
+        username: guest
+        password: guest
+        listener:
+            simple:
+                acknowledge-mode: manual
+                prefetch: 1
 
 app:
     security:
