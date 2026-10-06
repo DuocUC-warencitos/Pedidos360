@@ -83,8 +83,6 @@ public class PedidoJobService
     @Async("pedidoExecutor")
     public void ejecutarAsync(UUID jobId)
     {
-
-
         PedidoJob job = obtenerJob(jobId)
             .orElseThrow(() -> new NotFoundException("PedidoJob", jobId));
 

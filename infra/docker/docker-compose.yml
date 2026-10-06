@@ -27,8 +27,6 @@ services:
             PEDIDOS_SERVICE_URL: ${PEDIDOS_SERVICE_HOST:-}
             PRODUCTOS_SERVICE_URL: ${PRODUCTO_SERVICE_HOST:-}
             CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS_GATEWAY:-}
-        ports:
-            - "8080:8080"
         depends_on:
             - producto-service
             - pedidos-service

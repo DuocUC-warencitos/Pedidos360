@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
@@ -65,5 +67,31 @@ public class SpringSecurityUserTokenService implements IUserTokenService
         return new FilterSpecificationBuilder<T>()
             .withCondition(new FilterCondition("userId", FilterOperator.EQ,userId))
             .build();
+    }
+
+    @Override
+    public boolean hasRole(String role) 
+    {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null) 
+            return false;
+
+        return authentication.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(authority ->authority.equals("ROLE_" + role));
+    }
+
+    @Override
+    public boolean hasAnyRole(String... roles) 
+    {
+        for (String role : roles) 
+        {
+            if (hasRole(role))
+                return true;
+        }
+
+        return false;
     }
 }

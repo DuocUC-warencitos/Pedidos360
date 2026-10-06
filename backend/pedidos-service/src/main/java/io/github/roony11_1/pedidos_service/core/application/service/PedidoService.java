@@ -47,8 +47,11 @@ public class PedidoService
     }
 
     @Transactional(readOnly = true)
-    public List<Pedido> findAll()
+    public List<Pedido> findAll() 
     {
+        if (userTokenService.hasAnyRole("ADMIN", "OPERADOR")) 
+            return pedidoRepository.findAll();
+
         return pedidoRepository.findAll(userTokenService.getUserSpecification());
     }
 

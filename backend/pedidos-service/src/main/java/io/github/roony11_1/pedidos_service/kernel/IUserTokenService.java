@@ -14,4 +14,8 @@ public interface IUserTokenService
     String getAuditComentario(String prefijo);
 
     <T> Specification<T> getUserSpecification();
+
+    boolean hasRole(String role);
+
+    boolean hasAnyRole(String... roles);
 }
