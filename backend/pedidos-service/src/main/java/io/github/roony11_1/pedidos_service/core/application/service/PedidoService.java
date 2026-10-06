@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,6 +16,7 @@ import io.github.roony11_1.pedidos_service.core.domain.model.PedidoProducto;
 import io.github.roony11_1.pedidos_service.core.domain.repository.PedidoRepository;
 import io.github.roony11_1.pedidos_service.infrastructure.client.ProductoClient;
 import io.github.roony11_1.pedidos_service.infrastructure.client.ProductoClientResiliente;
+import io.github.roony11_1.pedidos_service.infrastructure.spec.SpecificationFactory;
 import io.github.roony11_1.pedidos_service.kernel.IUserTokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +33,6 @@ public class PedidoService
     @Transactional
     public Pedido save(List<PedidoProducto> productos) 
     {
-
         var pedido = new Pedido();
 
         productos.forEach(pedido::addProducto);
@@ -42,49 +43,51 @@ public class PedidoService
 
         var saved = pedidoRepository.save(pedido);
 
-        var pedidoCompleto = pedidoRepository.findByIdWithProductos(saved.getId())
-            .orElseThrow(() -> new NotFoundException("Pedido", saved.getId()));
-
-        return pedidoCompleto;
+        return saved;
     }
 
     @Transactional(readOnly = true)
     public List<Pedido> findAll()
     {
-        return pedidoRepository.findAllWithProductos();
+        return pedidoRepository.findAll(userTokenService.getUserSpecification());
     }
 
     @Transactional
     public void deleteAll()
     {
-        var pedidos = pedidoRepository.findAllWithProductos();
+        var pedidos = pedidoRepository.findAll();
+
         var estadosConReserva = Set.of(EstadoPedido.STOCK_RESERVADO, EstadoPedido.ACEPTADO, EstadoPedido.CONFIRMADO, EstadoPedido.EN_PREPARACION, EstadoPedido.DESPACHADO);
-        for (var pedido : pedidos) {
-            if (estadosConReserva.contains(pedido.getEstadoPedido()) && !pedido.getProductos().isEmpty()) {
+        for (var pedido : pedidos) 
+        {
+            if (estadosConReserva.contains(pedido.getEstadoPedido()) && !pedido.getProductos().isEmpty()) 
+            {
                 var liberarReq = new ProductoClient.LiberarStockRequest(
                     pedido.getId(),
                     pedido.getProductos().stream()
                         .map(pp -> new ProductoClient.LiberarStockRequest.Item(pp.getProductoId(), pp.getCantidad()))
                         .toList()
                 );
-                try {
+
+                try 
+                {
                     productoClientResiliente.liberar(liberarReq);
                     log.info("Stock liberado deleteAll pedidoId={} estado={} items={}", pedido.getId(), pedido.getEstadoPedido(), liberarReq.items().size());
-                } catch (Exception ex) {
+                } 
+                catch (Exception ex) 
+                {
                     log.warn("Fallo liberando stock deleteAll pedido {} estado {}: {}", pedido.getId(), pedido.getEstadoPedido(), ex.getMessage());
-                    // continúa borrando aunque falle un pedido (idempotente, puede reintentar después)
                 }
             }
         }
-        pedidoRepository.deleteAllProductos();
-        pedidoRepository.deleteAllPedidos();
+
+        pedidoRepository.deleteAll();
     }
 
     @Transactional
     public void avanzarEstado(UUID id)
     {
-        var pedido = pedidoRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException("Pedido", id));
+        var pedido = obtenerPedido(id);
 
         EstadoPedido siguiente = pedido.getEstadoPedido().siguiente()
             .orElseThrow(() -> new InvalidInputException("El pedido ya está en un estado final: " + pedido.getEstadoPedido()));
@@ -96,10 +99,27 @@ public class PedidoService
     @Transactional
     public void cancelar(UUID id)
     {
-        var pedido = pedidoRepository.findById(id)
-            .orElseThrow(() -> new NotFoundException("Pedido", id));
+        var pedido = obtenerPedido(id);
 
         String comentario = userTokenService.getAuditComentario("Cancelado por");
         pedido.cancelar(comentario);
+    }
+
+    private Pedido obtenerPedido(UUID id) 
+    {
+        return pedidoRepository.findById(id)
+            .orElseThrow(() ->
+                new NotFoundException("Pedido", id));
+    }
+
+    private Pedido obtenerPedidoDelUsuario(UUID id) 
+    {
+        Specification<Pedido> specification =
+            userTokenService.<Pedido>getUserSpecification()
+                .and(SpecificationFactory.<Pedido>byId(id));
+
+        return pedidoRepository.findOne(specification)
+            .orElseThrow(() ->
+                new NotFoundException("Pedido", id));
     }
 }

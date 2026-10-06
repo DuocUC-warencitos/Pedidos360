@@ -1,5 +1,7 @@
 package io.github.roony11_1.pedidos_service.kernel;
- 
+
+import org.springframework.data.jpa.domain.Specification;
+
 public interface IUserTokenService 
 {
     String getUserId();
@@ -10,4 +12,6 @@ public interface IUserTokenService
      * @param prefijo ej. "Estado actualizado por" o "Cancelado por"
      */
     String getAuditComentario(String prefijo);
+
+    <T> Specification<T> getUserSpecification();
 }

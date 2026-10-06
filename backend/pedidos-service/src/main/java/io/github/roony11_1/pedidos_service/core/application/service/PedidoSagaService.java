@@ -1,6 +1,7 @@
 package io.github.roony11_1.pedidos_service.core.application.service;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -9,9 +10,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import io.github.roony11_1.error.core.exceptions.NotFoundException;
+import io.github.roony11_1.pedidos_service.api.dto.response.PedidoJobStatusResponse;
 import io.github.roony11_1.pedidos_service.core.domain.model.EstadoPedido;
 import io.github.roony11_1.pedidos_service.core.domain.model.Pedido;
+import io.github.roony11_1.pedidos_service.core.domain.model.PedidoJob;
 import io.github.roony11_1.pedidos_service.core.domain.model.PedidoProducto;
+import io.github.roony11_1.pedidos_service.core.domain.repository.PedidoJobRepository;
 import io.github.roony11_1.pedidos_service.core.domain.repository.PedidoRepository;
 import io.github.roony11_1.pedidos_service.infrastructure.client.ProductoClient;
 import io.github.roony11_1.pedidos_service.infrastructure.client.ProductoClientResiliente;
@@ -26,25 +30,32 @@ import lombok.extern.slf4j.Slf4j;
 public class PedidoSagaService 
 {
     private final PedidoRepository pedidoRepository;
+    private final PedidoJobRepository pedidoJobRepository;
     private final IUserTokenService userTokenService;
     private final TransactionTemplate txTemplate;
     private final ProductoClientResiliente productoClientResiliente;
 
     public Pedido crearPedido(List<PedidoProducto> productos, String idempotencyKey, String correlationId)
     {
-        // Fast-path: idempotencia sin crear duplicado
-        var existenteOpt = pedidoRepository.findByIdempotencyKey(idempotencyKey);
-        if (existenteOpt.isPresent()) {
-            log.info("Idempotency hit crearPedido key={} -> pedidoId={}", idempotencyKey, existenteOpt.get().getId());
-            return existenteOpt.get();
+        Optional<Pedido> pedidoOpt = pedidoRepository.findByIdempotencyKey(idempotencyKey);
+
+        if (pedidoOpt.isPresent()) 
+        {
+            Pedido pedido = pedidoOpt.get();
+
+            log.info("Idempotency hit crearPedido key={} -> pedidoId={}", idempotencyKey, pedido.getId());
+
+            return pedido;
         }
 
-        try {
+        try 
+        {
             return txTemplate.execute(status ->
             {
-                // Re-check dentro de TX por carrera
                 var existenteTx = pedidoRepository.findByIdempotencyKey(idempotencyKey);
-                if (existenteTx.isPresent()) return existenteTx.get();
+
+                if (existenteTx.isPresent()) 
+                    return existenteTx.get();
 
                 var pedido = new Pedido();
                 productos.forEach(pedido::addProducto);
@@ -56,8 +67,9 @@ public class PedidoSagaService
 
                 return pedidoRepository.save(pedido);
             });
-        } catch (DataIntegrityViolationException ex) {
-            // Carrera: otro thread insertó misma key entre check y save (unique constraint)
+        } 
+        catch (DataIntegrityViolationException ex) 
+        {
             log.warn("DataIntegrityViolation por idempotencyKey={} -> recuperando existente", idempotencyKey, ex);
             return pedidoRepository.findByIdempotencyKey(idempotencyKey)
                 .orElseThrow(() -> new NotFoundException("Pedido por IdempotencyKey", idempotencyKey));
@@ -66,11 +78,11 @@ public class PedidoSagaService
 
     public void cancelarConCompensacion(UUID pedidoId, String motivo)
     {
-        var pedido = pedidoRepository.findByIdWithProductos(pedidoId)
+        var pedido = pedidoRepository.findById(pedidoId)
                             .orElseThrow(() -> new NotFoundException("Pedido", pedidoId));
 
-        // Siempre intenta liberar si pudo haber reserva: idempotente en producto-service (no-op si no existe)
         var estadosConReserva = Set.of(EstadoPedido.STOCK_RESERVADO, EstadoPedido.ACEPTADO, EstadoPedido.CONFIRMADO, EstadoPedido.EN_PREPARACION, EstadoPedido.DESPACHADO);
+
         if (estadosConReserva.contains(pedido.getEstadoPedido()))
         {
             var liberarReq = new ProductoClient.LiberarStockRequest(
@@ -79,6 +91,7 @@ public class PedidoSagaService
                     .map(pp -> new ProductoClient.LiberarStockRequest.Item(pp.getProductoId(), pp.getCantidad()))
                     .toList()
             );
+            
             try
             {
                 productoClientResiliente.liberar(liberarReq);
@@ -87,8 +100,7 @@ public class PedidoSagaService
             catch (Exception ex)
             {
                 log.error("Fallo liberando stock pedido {} estado {}: {}", pedidoId, pedido.getEstadoPedido(), ex.getMessage(), ex);
-                // No se cancela localmente si la compensación falla: deja en estado actual para retry manual
-                // Mapea a 503 via ErrorResponse para que el front pueda reintentar
+
                 throw new ProductoServiceUnavailableException("No se pudo liberar stock para cancelar pedido " + pedidoId + ": " + ex.getMessage(), ex);
             }
         }
@@ -98,7 +110,20 @@ public class PedidoSagaService
             // Recarga dentro de TX para asegurar versión fresca y dirty-check
             var pedidoTx = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() -> new NotFoundException("Pedido", pedidoId));
+                
             pedidoTx.cancelar(userTokenService.getAuditComentario("Cancelado por: " + motivo));
         });
+    }
+
+    public PedidoJobStatusResponse estado(UUID jobId)
+    {
+        PedidoJob job = pedidoJobRepository.findById(jobId)
+            .orElseThrow(() -> new NotFoundException("PedidoJob", jobId));
+
+        String estadoPedido = pedidoRepository.findById(job.getPedidoId())
+            .map(p -> p.getEstadoPedido().name())
+            .orElse("DESCONOCIDO");
+
+        return PedidoJobStatusResponse.from(job, estadoPedido);
     }
 }

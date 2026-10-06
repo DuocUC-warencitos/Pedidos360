@@ -1,9 +1,11 @@
 package io.github.roony11_1.pedidos_service.core.application.service;
 
 import java.time.Instant;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.context.ApplicationContext;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -16,7 +18,11 @@ import io.github.roony11_1.pedidos_service.core.domain.model.PedidoJob;
 import io.github.roony11_1.pedidos_service.core.domain.repository.PedidoJobRepository;
 import io.github.roony11_1.pedidos_service.core.domain.repository.PedidoRepository;
 import io.github.roony11_1.pedidos_service.infrastructure.client.ProductoClient;
+import io.github.roony11_1.pedidos_service.infrastructure.spec.SpecificationFactory;
 import io.github.roony11_1.pedidos_service.kernel.IUserTokenService;
+import io.github.roony11_1.specification.core.FilterCondition;
+import io.github.roony11_1.specification.core.FilterOperator;
+import io.github.roony11_1.specification.spring.FilterSpecificationBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -33,9 +39,10 @@ public class PedidoJobService
 
     public PedidoJob crearEjecutar(UUID pedidodId, String idempotencyKey, String correlationId)
     {
-        // Idempotencia: si ya existe job para este key, retorna existente sin crear duplicado
-        var existente = pedidoJobRepository.findByIdempotencyKey(idempotencyKey);
-        if (existente.isPresent()) {
+        var existente = obtenerJob(idempotencyKey);
+
+        if (existente.isPresent()) 
+        {
             log.info("Idempotency hit crearEjecutar key={} -> jobId={}", idempotencyKey, existente.get().getId());
             return existente.get();
         }
@@ -51,13 +58,20 @@ public class PedidoJobService
             .idempotencyKey(idempotencyKey)
             .build();
 
-        try {
+        try 
+        {
             job = pedidoJobRepository.save(job);
-        } catch (org.springframework.dao.DataIntegrityViolationException ex) {
+        } 
+        catch (org.springframework.dao.DataIntegrityViolationException ex) 
+        {
             log.warn("DataIntegrityViolation crearEjecutar key={} -> recuperando existente", idempotencyKey, ex);
+
             return pedidoJobRepository.findByIdempotencyKey(idempotencyKey)
                 .orElseThrow(() -> new NotFoundException("PedidoJob por IdempotencyKey", idempotencyKey));
         }
+
+        // Extrae el Bean y ejecuta en el contexto de Spring
+        // No se puede llamar local Spring no lo interpreta
 
         PedidoJobService self = ctx.getBean(PedidoJobService.class);
 
@@ -69,12 +83,14 @@ public class PedidoJobService
     @Async("pedidoExecutor")
     public void ejecutarAsync(UUID jobId)
     {
-        PedidoJob job = pedidoJobRepository.findById(jobId)
+
+
+        PedidoJob job = obtenerJob(jobId)
             .orElseThrow(() -> new NotFoundException("PedidoJob", jobId));
 
         try
         {
-            Pedido pedido = pedidoRepository.findByIdWithProductos(job.getPedidoId())
+            Pedido pedido = pedidoRepository.findById(job.getPedidoId())
                     .orElseThrow(() -> new NotFoundException("Pedido", job.getPedidoId()));
 
             productoClient.reservar(job.getIdempotencyKey(), new ProductoClient.ReservaStockRequest(
@@ -91,6 +107,7 @@ public class PedidoJobService
         catch (Exception ex)
         {
             log.error("Job {} falló para pedido {}", jobId, job.getPedidoId(), ex);
+
             ctx.getBean(PedidoJobService.class).marcarFallido(job.getId(), ex.getMessage());
         }
     }
@@ -98,7 +115,7 @@ public class PedidoJobService
     @Transactional (propagation = Propagation.REQUIRES_NEW)
     public void marcarCompletado(UUID jobId)
     {
-        PedidoJob job = pedidoJobRepository.findById(jobId)
+        PedidoJob job = obtenerJob(jobId)
             .orElseThrow(() -> new NotFoundException("PedidoJob", jobId));
 
         job.marcarCompletado();
@@ -107,12 +124,13 @@ public class PedidoJobService
             .orElseThrow(() -> new NotFoundException("Pedido", job.getPedidoId()));
 
         // EP1: aparece aceptado automático. Hace STOCK_RESERVADO -> ACEPTADO en misma TX para respetar flujo CREADO->STOCK_RESERVADO->ACEPTADO
-        if (pedido.getEstadoPedido() == EstadoPedido.CREADO) {
+        if (pedido.getEstadoPedido() == EstadoPedido.CREADO) 
             pedido.cambiarEstado(EstadoPedido.STOCK_RESERVADO);
-        }
-        if (pedido.getEstadoPedido() == EstadoPedido.STOCK_RESERVADO) {
+
+        if (pedido.getEstadoPedido() == EstadoPedido.STOCK_RESERVADO) 
+        {
             pedido.cambiarEstado(EstadoPedido.ACEPTADO);
-            // comentario de auditoría opcional para trazabilidad
+            
             pedido.setComentario((pedido.getComentario() != null ? pedido.getComentario() + "\n" : "") + "Aceptado automáticamente tras reserva de stock");
         }
     }
@@ -120,7 +138,7 @@ public class PedidoJobService
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void marcarFallido(UUID jobId, String error)
     {
-        PedidoJob job = pedidoJobRepository.findById(jobId)
+        PedidoJob job = obtenerJob(jobId)
             .orElseThrow(() -> new NotFoundException("PedidoJob", jobId));
 
         job.marcarFallido(error);
@@ -129,5 +147,32 @@ public class PedidoJobService
             .orElseThrow(() -> new NotFoundException("Pedido", job.getPedidoId()));
 
         pedido.cambiarEstado(EstadoPedido.STOCK_FALLIDO);
+    }
+
+    private Optional<PedidoJob> obtenerJob(UUID jobId) 
+    {
+        Specification<PedidoJob> specification = userTokenService.<PedidoJob>getUserSpecification().and(SpecificationFactory.<PedidoJob>byId(jobId));
+
+        return pedidoJobRepository
+            .findOne(specification);
+    }
+
+    private Optional<PedidoJob> obtenerJob(String idempotencyKey) 
+    {
+        Specification<PedidoJob> specification = userTokenService.<PedidoJob>getUserSpecification()
+                .and(
+                    new FilterSpecificationBuilder<PedidoJob>()
+                        .withCondition(
+                            new FilterCondition(
+                                "idempotencyKey",
+                                FilterOperator.EQ,
+                                idempotencyKey
+                            )
+                        )
+                        .build()
+                );
+
+        return pedidoJobRepository
+            .findOne(specification);
     }
 }

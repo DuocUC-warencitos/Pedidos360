@@ -39,7 +39,7 @@ public class Pedido
     @Column
     private String userId;
 
-    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "pedido", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
     private List<PedidoProducto> productos = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)

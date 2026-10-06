@@ -3,11 +3,15 @@ package io.github.roony11_1.pedidos_service.infrastructure.security;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 
 import io.github.roony11_1.pedidos_service.kernel.IUserTokenService;
+import io.github.roony11_1.specification.core.FilterCondition;
+import io.github.roony11_1.specification.core.FilterOperator;
+import io.github.roony11_1.specification.spring.FilterSpecificationBuilder;
 
 @Component
 public class SpringSecurityUserTokenService implements IUserTokenService
@@ -51,5 +55,15 @@ public class SpringSecurityUserTokenService implements IUserTokenService
         firstName = firstName.toUpperCase();
 
         return String.format("%s %s %s", prefijo, role, firstName);
+    }
+
+    @Override
+    public <T> Specification<T> getUserSpecification() 
+    {
+        String userId = getUserId();
+
+        return new FilterSpecificationBuilder<T>()
+            .withCondition(new FilterCondition("userId", FilterOperator.EQ,userId))
+            .build();
     }
 }
