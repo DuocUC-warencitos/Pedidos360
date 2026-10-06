@@ -149,28 +149,11 @@ public class PedidoJobService
 
     private Optional<PedidoJob> obtenerJob(UUID jobId) 
     {
-        Specification<PedidoJob> specification = userTokenService.<PedidoJob>getUserSpecification().and(SpecificationFactory.<PedidoJob>byId(jobId));
-
-        return pedidoJobRepository
-            .findOne(specification);
+        return pedidoJobRepository.findById(jobId);
     }
 
     private Optional<PedidoJob> obtenerJob(String idempotencyKey) 
     {
-        Specification<PedidoJob> specification = userTokenService.<PedidoJob>getUserSpecification()
-                .and(
-                    new FilterSpecificationBuilder<PedidoJob>()
-                        .withCondition(
-                            new FilterCondition(
-                                "idempotencyKey",
-                                FilterOperator.EQ,
-                                idempotencyKey
-                            )
-                        )
-                        .build()
-                );
-
-        return pedidoJobRepository
-            .findOne(specification);
+        return pedidoJobRepository.findByIdempotencyKey(idempotencyKey);
     }
 }
