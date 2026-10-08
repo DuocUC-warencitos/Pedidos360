@@ -1,0 +1,22 @@
+server:
+  port: ${RABBITMQ_ADMIN_PORT:8080}
+
+spring:
+  application:
+    name: rabbitmq_admin_service
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    port: ${RABBITMQ_PORT}
+    username: ${RABBITMQ_USERNAME}
+    password: ${RABBITMQ_PASSWORD}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    neytan.rabbitmq_admin_service: INFO
