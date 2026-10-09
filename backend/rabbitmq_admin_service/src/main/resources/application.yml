@@ -2,10 +2,36 @@ server:
   port: ${RABBITMQ_ADMIN_PORT:8080}
 
 spring:
-  application:
-    name: rabbitmq_admin_service
+   datasource:
+        url: ${SPRING_DATASOURCE_URL:}
+        username: ${SPRING_DATASOURCE_USERNAME:}
+        password: ${SPRING_DATASOURCE_PASSWORD:}
+        driver-class-name: org.postgresql.Driver
+   application:
+        name: rabbitmq_admin_service
+   jpa:
+        hibernate:
+            ddl-auto: update
+        show-sql: false
+        open-in-view: false
+        database-platform: org.hibernate.dialect.PostgreSQLDialect
+   security:
+        oauth2:
+            resourceserver:
+                jwt:
+                    issuer-uri: ${JWT_ISSUER_URI:}
+   jackson:
+        default-property-inclusion: non_null
+   cloud:
+        openfeign:
+            client:
+                config:
+                    productoService:
+                        connect-timeout: 2000
+                        read-timeout: 3000
+                        logger-level: basic
 
-  rabbitmq:
+   rabbitmq:
     host: ${RABBITMQ_HOST}
     port: ${RABBITMQ_PORT}
     username: ${RABBITMQ_USERNAME}

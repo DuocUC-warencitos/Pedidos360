@@ -25,5 +25,12 @@ export const routes: Routes =
 		canActivate: [authGuard],
 		loadChildren: () => import('./features/productos/productos.routes')
 			.then(m => m.productosRoutes)
+	},
+	{
+	path: 'rabbitmq-admin',
+	canActivate: [authGuard],
+	loadChildren: () =>
+		import('./features/rabbitmq-admin/rabbitmq-admin.routes')
+		.then(m => m.rabbitmqAdminRoutes)
 	}
 ];

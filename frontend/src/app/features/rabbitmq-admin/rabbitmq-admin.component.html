@@ -1,0 +1,259 @@
+<main class="admin-page">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">PEDIDOS360 · PANEL DE CONTROL</p>
+      <h1>Administración de RabbitMQ</h1>
+      <p class="subtitle">
+        Administra colas, exchanges y bindings de la mensajería.
+      </p>
+    </div>
+  </header>
+
+  <section class="notice">
+    <strong>Importante:</strong>
+    las operaciones se ejecutan sobre el RabbitMQ configurado en el backend.
+    Verifica los nombres antes de eliminar recursos.
+  </section>
+
+  <section class="feedback success" *ngIf="mensaje" role="status">
+    {{ mensaje }}
+  </section>
+
+  <section class="feedback error" *ngIf="error" role="alert">
+    {{ error }}
+  </section>
+
+  <div class="admin-grid">
+    <!-- CREAR COLA -->
+    <section class="admin-card">
+      <div class="card-heading">
+        <span class="icon">▤</span>
+        <div>
+          <h2>Crear cola</h2>
+          <p>Configura una nueva cola de mensajes.</p>
+        </div>
+      </div>
+
+      <form #queueForm="ngForm" (ngSubmit)="crearCola()">
+        <label for="queueName">Nombre de la cola</label>
+        <input
+          id="queueName"
+          name="queueName"
+          [(ngModel)]="cola.name"
+          required
+          maxlength="100"
+          pattern="[a-zA-Z0-9._-]+"
+          placeholder="pedidos360.notificaciones.queue"
+        />
+
+        <label class="check-row">
+          <input
+            type="checkbox"
+            name="queueDurable"
+            [(ngModel)]="cola.durable"
+          />
+          Cola durable
+        </label>
+
+        <label class="check-row">
+          <input
+            type="checkbox"
+            name="queueExclusive"
+            [(ngModel)]="cola.exclusive"
+          />
+          Cola exclusiva
+        </label>
+
+        <label class="check-row">
+          <input
+            type="checkbox"
+            name="queueAutoDelete"
+            [(ngModel)]="cola.autoDelete"
+          />
+          Eliminar automáticamente cuando deje de usarse
+        </label>
+
+        <button
+          type="submit"
+          [disabled]="queueForm.invalid || procesando"
+        >
+          {{ procesando ? 'Procesando...' : 'Crear cola' }}
+        </button>
+      </form>
+    </section>
+
+    <!-- ELIMINAR COLA -->
+    <section class="admin-card">
+      <div class="card-heading">
+        <span class="icon">⌫</span>
+        <div>
+          <h2>Eliminar cola</h2>
+          <p>Elimina una cola por su nombre exacto.</p>
+        </div>
+      </div>
+
+      <form #deleteQueueForm="ngForm" (ngSubmit)="eliminarCola()">
+        <label for="deleteQueueName">Nombre de la cola</label>
+        <input
+          id="deleteQueueName"
+          name="deleteQueueName"
+          [(ngModel)]="colaEliminar"
+          required
+          maxlength="100"
+          placeholder="Nombre exacto de la cola"
+        />
+
+        <button
+          type="submit"
+          class="danger-button"
+          [disabled]="deleteQueueForm.invalid || procesando"
+        >
+          Eliminar cola
+        </button>
+      </form>
+    </section>
+
+    <!-- CREAR EXCHANGE -->
+    <section class="admin-card">
+      <div class="card-heading">
+        <span class="icon">⑂</span>
+        <div>
+          <h2>Crear exchange</h2>
+          <p>Define cómo se enrutarán los mensajes.</p>
+        </div>
+      </div>
+
+      <form #exchangeForm="ngForm" (ngSubmit)="crearExchange()">
+        <label for="exchangeName">Nombre del exchange</label>
+        <input
+          id="exchangeName"
+          name="exchangeName"
+          [(ngModel)]="exchange.name"
+          required
+          maxlength="100"
+          pattern="[a-zA-Z0-9._-]+"
+          placeholder="pedidos360.topic.exchange"
+        />
+
+        <label for="exchangeType">Tipo</label>
+        <select
+          id="exchangeType"
+          name="exchangeType"
+          [(ngModel)]="exchange.type"
+          required
+        >
+          <option value="direct">Direct</option>
+          <option value="topic">Topic</option>
+          <option value="fanout">Fanout</option>
+        </select>
+
+        <label class="check-row">
+          <input
+            type="checkbox"
+            name="exchangeDurable"
+            [(ngModel)]="exchange.durable"
+          />
+          Exchange durable
+        </label>
+
+        <button
+          type="submit"
+          [disabled]="exchangeForm.invalid || procesando"
+        >
+          Crear exchange
+        </button>
+      </form>
+    </section>
+
+    <!-- ELIMINAR EXCHANGE -->
+    <section class="admin-card">
+      <div class="card-heading">
+        <span class="icon">⌫</span>
+        <div>
+          <h2>Eliminar exchange</h2>
+          <p>Elimina un exchange por su nombre.</p>
+        </div>
+      </div>
+
+      <form #deleteExchangeForm="ngForm" (ngSubmit)="eliminarExchange()">
+        <label for="deleteExchangeName">Nombre del exchange</label>
+        <input
+          id="deleteExchangeName"
+          name="deleteExchangeName"
+          [(ngModel)]="exchangeEliminar"
+          required
+          maxlength="100"
+          placeholder="Nombre exacto del exchange"
+        />
+
+        <button
+          type="submit"
+          class="danger-button"
+          [disabled]="deleteExchangeForm.invalid || procesando"
+        >
+          Eliminar exchange
+        </button>
+      </form>
+    </section>
+
+    <!-- CREAR BINDING -->
+    <section class="admin-card">
+      <div class="card-heading">
+        <span class="icon">⇄</span>
+        <div>
+          <h2>Crear binding</h2>
+          <p>Conecta una cola con un exchange.</p>
+        </div>
+      </div>
+
+      <form #bindingForm="ngForm" (ngSubmit)="crearBinding()">
+        <label for="bindingQueue">Nombre de la cola</label>
+        <input
+          id="bindingQueue"
+          name="bindingQueue"
+          [(ngModel)]="binding.queueName"
+          required
+          maxlength="100"
+          placeholder="pedidos360.notificaciones.queue"
+        />
+
+        <label for="bindingExchange">Nombre del exchange</label>
+        <input
+          id="bindingExchange"
+          name="bindingExchange"
+          [(ngModel)]="binding.exchangeName"
+          required
+          maxlength="100"
+          placeholder="pedidos360.topic.exchange"
+        />
+
+        <label for="bindingRoutingKey">Routing key</label>
+        <input
+          id="bindingRoutingKey"
+          name="bindingRoutingKey"
+          [(ngModel)]="binding.routingKey"
+          maxlength="100"
+          placeholder="pedido.*"
+        />
+
+        <button type="submit" [disabled]="bindingForm.invalid || procesando">
+          Crear binding
+        </button>
+      </form>
+
+      <hr />
+
+      <button
+        type="button"
+        class="danger-button"
+        [disabled]="procesando"
+        (click)="eliminarBinding()"
+      >
+        Eliminar binding indicado
+      </button>
+      <p class="help-text">
+        Utiliza los mismos nombres y routing key con los que se creó el binding.
+      </p>
+    </section>
+  </div>
+</main>
