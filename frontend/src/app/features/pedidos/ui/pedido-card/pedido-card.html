@@ -1,75 +1,129 @@
 <section
-  class="flex flex-col bg-white border border-[var(--color-border)] rounded-xl max-w-[453px] min-h-[420px] p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg hover:border-[#c7ced8]"
+    class="group flex flex-col h-full min-w-0 bg-surface border border-border rounded-2xl p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md hover:border-[#c7ced8]"
 >
-  <header class="flex justify-between items-start gap-4 pb-4 border-b border-[#e5e7eb]">
-    <div class="min-w-0 flex-1">
-      <p class="m-0 mb-1 text-xs font-bold tracking-widest text-[#6b7280]">PEDIDO</p>
-      <h2 class="m-0 text-[22px] truncate min-w-0" [title]="pedido().id">{{ nombreDisplay() }}</h2>
-    </div>
+    <header class="flex items-start justify-between gap-3 pb-4 border-b border-border">
+        <div class="min-w-0 flex-1">
+            <p class="m-0 mb-2 text-[10px] font-bold tracking-[0.18em] text-muted uppercase">
+                Pedido
+            </p>
 
-    <div class="flex flex-col items-end gap-2 shrink-0">
-      <ui-badge [estado]="pedido().estado" />
-    </div>
-  </header>
-
-  <div class="grid grid-cols-2 gap-3 py-4">
-    <div class="flex flex-col gap-1.5">
-      <span class="text-[11px] font-bold tracking-wide text-[#6b7280]">FECHA</span>
-      <span class="text-sm">{{ pedido().createdAt | date: 'dd/MM/yyyy HH:mm' }}</span>
-    </div>
-    <div class="flex flex-col gap-1.5">
-      <span class="text-[11px] font-bold tracking-wide text-[#6b7280]">PRODUCTOS</span>
-      <span class="text-sm">{{ pedido().productos.length }}</span>
-    </div>
-  </div>
-
-  <div class="pt-1 flex-1 flex flex-col">
-    <h3 class="m-0 mb-3 text-base">Productos</h3>
-
-    @if (pedido().productos.length === 0) {
-      <p class="m-0 p-4 h-[145px] flex items-center justify-center border border-dashed border-[#d1d5db] rounded-lg text-center text-[#6b7280]">
-        No hay productos
-      </p>
-    } @else {
-      <ul
-        class="flex flex-col h-[145px] m-0 p-0 list-none border border-[#e5e7eb] rounded-lg overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-track-transparent"
-        style="scrollbar-width: thin; scrollbar-color: #c7ced8 transparent;"
-      >
-        @for (producto of pedido().productos; track producto.productoId) {
-          <li
-            class="flex justify-between items-center gap-4 min-h-12 px-4 py-3 bg-[#fafafa] hover:bg-[#f1f3f5] hover:pl-5 transition not-first:border-t not-first:border-[#e5e7eb]"
-          >
-            <span class="font-bold">{{ producto.nombreProducto }}</span>
-            <span
-              class="text-[13px] text-[#6b7280] group-hover:text-[#1f2937] transition"
-              >x{{ producto.cantidad }}</span
+            <h2
+                class="m-0 text-base font-bold text-primary leading-snug wrap-break-word"
+                [title]="pedido().id"
             >
-          </li>
-        }
-      </ul>
-    }
+                {{ nombreDisplay() }}
+            </h2>
+        </div>
 
-    <div class="flex justify-center items-center gap-3 mt-5">
-      <button
-        class="px-4 py-2.5 rounded-md text-[13px] font-bold border bg-[#1f7a3f] text-white border-[#1a6433] hover:bg-[#1a6433] disabled:opacity-60 disabled:cursor-not-allowed"
-        (click)="avanzar.emit()"
-        [disabled]="!puedeAvanzar()"
-        [title]="puedeAvanzar() ? 'Avanzar al siguiente estado' : 'Estado final — no se puede avanzar'"
-      >
-        Avanzar estado
-      </button>
+        <div class="shrink-0">
+            <ui-badge [estado]="pedido().estado" />
+        </div>
+    </header>
 
-      <button
-        class="px-4 py-2.5 rounded-md text-[13px] font-bold border bg-white text-[#b3261e] border-[#f5c6c3] hover:bg-[#fdecec] disabled:opacity-60 disabled:cursor-not-allowed"
-        (click)="cancelar.emit()"
-        [disabled]="!puedeCancelar()"
-      >
-        Cancelar
-      </button>
+    <div class="grid grid-cols-2 gap-4 py-5">
+        <div class="min-w-0 flex flex-col gap-2">
+            <span class="text-[10px] font-bold tracking-widest text-muted uppercase">
+                Fecha
+            </span>
+
+            <span class="text-sm font-medium text-primary">
+                {{ pedido().createdAt | date: 'dd/MM/yyyy' }}
+            </span>
+
+            <span class="text-xs text-muted">
+                {{ pedido().createdAt | date: 'HH:mm' }} hrs.
+            </span>
+        </div>
+
+        <div class="min-w-0 flex flex-col gap-2">
+            <span class="text-[10px] font-bold tracking-widest text-muted uppercase">
+                Productos
+            </span>
+
+            <strong class="text-xl font-bold text-primary tracking-tight">
+                {{ pedido().productos.length }}
+            </strong>
+
+            <span class="text-[11px] text-muted">
+                {{ pedido().productos.length === 1 ? 'producto' : 'productos' }}
+            </span>
+        </div>
     </div>
-  </div>
 
-  <p class="mt-4 p-2.5 bg-[#f8fafc] border border-[#e5e7eb] rounded-md text-xs text-[#4b5563] italic break-words leading-snug whitespace-pre-wrap">
-    {{ pedido().comentario ?? 'Sin comentarios' }}
-  </p>
+    <div class="flex-1 flex flex-col pt-1">
+        <div class="flex items-center justify-between gap-3 mb-3">
+            <h3 class="m-0 text-sm font-bold text-primary">
+                Detalle del pedido
+            </h3>
+
+            <span class="text-[10px] font-semibold text-muted uppercase tracking-wide">
+                {{ pedido().productos.length }} ítems
+            </span>
+        </div>
+
+        @if (pedido().productos.length === 0) {
+            <div
+                class="flex flex-col items-center justify-center flex-1 min-h-36 p-4 border border-dashed border-border-strong rounded-xl bg-surface-secondary text-center"
+            >
+                <p class="m-0 text-sm font-medium text-muted">
+                    No hay productos en este pedido
+                </p>
+            </div>
+        } @else {
+            <ul
+                class="flex flex-col h-36 overflow-y-auto overflow-x-hidden m-0 p-0 list-none border border-border rounded-xl bg-surface-secondary"
+                style="scrollbar-width: thin; scrollbar-color: #c7ced8 transparent;"
+            >
+                @for (producto of pedido().productos; track producto.productoId) {
+                    <li
+                        class="flex justify-between items-center gap-3 min-h-12 px-3 py-3 bg-surface hover:bg-[#f1f3f5] transition-colors not-first:border-t not-first:border-border"
+                    >
+                        <span class="min-w-0 text-sm font-medium text-primary wrap-break-word">
+                            {{ producto.nombreProducto }}
+                        </span>
+
+                        <span
+                            class="shrink-0 inline-flex items-center justify-center min-w-9 px-2 py-1 rounded-md bg-surface border border-border text-xs font-bold text-muted"
+                        >
+                            x{{ producto.cantidad }}
+                        </span>
+                    </li>
+                }
+            </ul>
+        }
+
+        <div class="grid grid-cols-2 gap-2 mt-5">
+            <button
+                type="button"
+                class="inline-flex items-center justify-center px-3 py-2.5 rounded-lg text-xs font-semibold border border-[#1a6433] bg-success text-white hover:bg-[#1a6433] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                (click)="avanzar.emit()"
+                [disabled]="!puedeAvanzar()"
+                [title]="puedeAvanzar() ? 'Avanzar al siguiente estado' : 'Estado final: no se puede avanzar'"
+            >
+                Avanzar estado
+            </button>
+
+            <button
+                type="button"
+                class="inline-flex items-center justify-center px-3 py-2.5 rounded-lg text-xs font-semibold border border-danger-border bg-surface text-danger hover:bg-danger-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                (click)="cancelar.emit()"
+                [disabled]="!puedeCancelar()"
+                title="Cancelar pedido"
+            >
+                Cancelar pedido
+            </button>
+        </div>
+    </div>
+
+    <div class="mt-4 p-3 bg-surface-secondary border border-border rounded-lg">
+        <span class="block mb-1 text-[10px] font-bold tracking-widest text-muted uppercase">
+            Comentario
+        </span>
+
+        <p
+            class="m-0 text-xs text-muted leading-relaxed whitespace-pre-wrap wrap-break-word"
+        >
+            {{ pedido().comentario ?? 'Sin comentarios' }}
+        </p>
+    </div>
 </section>

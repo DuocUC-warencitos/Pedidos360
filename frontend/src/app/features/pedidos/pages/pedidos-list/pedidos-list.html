@@ -1,38 +1,104 @@
 <div class="w-full mx-auto p-6">
-  <button
-    (click)="eliminarTodosMutation.mutate()"
-    [disabled]="eliminarTodosMutation.isPending()"
-    class="mb-4 px-4 py-2 rounded-md text-sm font-bold border bg-white text-[#b3261e] border-[#f5c6c3] hover:bg-[#fdecec] disabled:opacity-60 disabled:cursor-not-allowed"
-  >
-    @if (eliminarTodosMutation.isPending()) {
-      Eliminando...
-    } @else {
-      Eliminar todos
-    }
-  </button>
+    <header class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5 mb-8">
+        <div>
+            <span class="block text-xs font-bold tracking-[2px] text-muted uppercase mb-2">
+                Pedidos360
+            </span>
 
-  <div class="flex justify-between items-center gap-6 flex-wrap mb-6">
-    <h1 class="m-0 text-[28px] font-bold">Pedidos realizados</h1>
-    <ui-estado-leyenda />
-  </div>
+            <h1 class="m-0 text-3xl font-bold tracking-tight">
+                Pedidos realizados
+            </h1>
 
-  <div>
-    @if (pedidosQuery.isLoading()) {
-      <h2 class="text-lg">Cargando pedidos...</h2>
-    } @else if (pedidosQuery.isError()) {
-      <h2 class="text-lg text-[#b3261e]">Error al cargar pedidos</h2>
-    } @else if (pedidosEnriquecidos().length === 0) {
-      <h2 class="text-lg text-[#6b7280]">No hay pedidos</h2>
-    } @else {
-      <div class="flex flex-wrap gap-4">
-        @for (pedido of pedidosEnriquecidos(); track pedido.id) {
-          <app-pedido-card
-            [pedido]="pedido"
-            (avanzar)="avanzarMutation.mutate(pedido.id)"
-            (cancelar)="cancelarMutation.mutate(pedido.id)"
-          />
+            <p class="mt-2 mb-0 text-sm text-muted">
+                Consulta los pedidos y revisa su estado actual.
+            </p>
+        </div>
+
+        <button
+            type="button"
+            (click)="eliminarTodosMutation.mutate()"
+            [disabled]="eliminarTodosMutation.isPending()"
+            class="inline-flex items-center justify-center px-4 py-2.5 rounded-xl text-sm font-semibold border border-danger-border bg-surface text-danger hover:bg-danger-light transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        >
+            @if (eliminarTodosMutation.isPending()) {
+                Eliminando pedidos...
+            } @else {
+                Eliminar todos
+            }
+        </button>
+    </header>
+
+    <section class="rounded-2xl border border-border bg-surface p-5 sm:p-6">
+        <div class="flex flex-col gap-4 mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                    <h2 class="m-0 text-lg font-semibold">
+                        Historial de pedidos
+                    </h2>
+
+                    <p class="mt-1 mb-0 text-sm text-muted">
+                        Seguimiento y gestión de pedidos registrados.
+                    </p>
+                </div>
+
+                @if (!pedidosQuery.isLoading() && !pedidosQuery.isError()) {
+                    <span class="inline-flex self-start items-center px-3 py-1.5 rounded-full border border-border text-xs font-semibold text-muted">
+                        {{ pedidosEnriquecidos().length }}
+                        {{ pedidosEnriquecidos().length === 1 ? 'pedido' : 'pedidos' }}
+                    </span>
+                }
+            </div>
+
+            <div class="rounded-xl border border-border bg-surface-secondary p-3 sm:p-4">
+                <ui-estado-leyenda />
+            </div>
+        </div>
+
+        @if (pedidosQuery.isLoading()) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                @for (item of [1, 2, 3, 4, 5, 6]; track item) {
+                    <div class="rounded-xl border border-border p-5 animate-pulse">
+                        <div class="h-4 w-2/3 rounded bg-border mb-4"></div>
+                        <div class="h-3 w-1/3 rounded bg-border mb-6"></div>
+                        <div class="h-8 w-1/2 rounded bg-border mb-5"></div>
+                        <div class="h-10 w-full rounded bg-border"></div>
+                    </div>
+                }
+            </div>
+        } @else if (pedidosQuery.isError()) {
+            <div class="flex flex-col items-center text-center py-12 px-5 rounded-xl border border-dashed border-border">
+                <h3 class="m-0 text-base font-semibold">
+                    No se pudieron cargar los pedidos
+                </h3>
+
+                <p class="mt-2 mb-0 text-sm text-muted">
+                    Comprueba la conexión e inténtalo nuevamente.
+                </p>
+            </div>
+        } @else if (pedidosEnriquecidos().length === 0) {
+            <div class="flex flex-col items-center text-center py-14 px-5 rounded-xl border border-dashed border-border">
+                <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-surface-secondary border border-border mb-4">
+                    <span class="text-2xl">—</span>
+                </div>
+
+                <h3 class="m-0 text-base font-semibold">
+                    Todavía no hay pedidos
+                </h3>
+
+                <p class="mt-2 mb-0 text-sm text-muted max-w-sm">
+                    Cuando se registren pedidos, aparecerán aquí para que puedas consultar su estado y gestionarlos.
+                </p>
+            </div>
+        } @else {
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 items-stretch">
+                @for (pedido of pedidosEnriquecidos(); track pedido.id) {
+                    <app-pedido-card
+                        [pedido]="pedido"
+                        (avanzar)="avanzarMutation.mutate(pedido.id)"
+                        (cancelar)="cancelarMutation.mutate(pedido.id)"
+                    />
+                }
+            </div>
         }
-      </div>
-    }
-  </div>
+    </section>
 </div>
