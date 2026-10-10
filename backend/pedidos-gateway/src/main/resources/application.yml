@@ -26,6 +26,11 @@ spring:
               predicates:
                 - Path=/api/v1/productos/**
 
+            - id: rabbit-admin-service
+              uri: ${RABBIT_SERVICE_HOST:http://rabbit-admin-service:8080}
+              predicates:
+                - Path=/api/admin/rabbit/**
+
 app:
   security:
     cors:

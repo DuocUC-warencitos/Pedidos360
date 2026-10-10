@@ -26,10 +26,12 @@ services:
             JWT_ISSUER_URI: ${JWT_ISSUER_URI}
             PEDIDOS_SERVICE_URL: ${PEDIDOS_SERVICE_HOST:-}
             PRODUCTOS_SERVICE_URL: ${PRODUCTO_SERVICE_HOST:-}
+            RABBIT_SERVICE_HOST: ${RABBIT_SERVICE_HOST:-}
             CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS_GATEWAY:-}
         depends_on:
             - producto-service
             - pedidos-service
+            - rabbit-admin-service
 
     pedidos-service:
         build:
@@ -42,6 +44,10 @@ services:
             SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD_PEDIDOS:-}
             PRODUCTO_SERVICE_URL: ${PRODUCTO_SERVICE_HOST:-}
             CORS_ENABLED: false
+            RABBITMQ_HOST: rabbitmq
+            RABBITMQ_PORT: 5672
+            RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
+            RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
         depends_on:
             - producto-service
             - rabbitmq
@@ -57,15 +63,32 @@ services:
             SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD_PRODUCTOS:-}
             CORS_ENABLED: false
 
+    rabbit-admin-service:
+        build:
+            context: ../../backend/rabbitmq_admin_service
+        container_name: rabbit-admin-service
+        environment:
+            JWT_ISSUER_URI: ${JWT_ISSUER_URI:-}
+            SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL_RABBIT:-}
+            SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME_RABBIT:-}
+            SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD_RABBIT:-}
+            CORS_ENABLED: false
+            RABBITMQ_HOST: rabbitmq
+            RABBITMQ_PORT: 5672
+            RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
+            RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+        depends_on:
+            - rabbitmq
+
     rabbitmq:
         image: rabbitmq:3-management
-        container_name: dsy1107-rabbitmq
+        container_name: rabbitmq
         ports:
             - "5672:5672"
             - "15672:15672"
         environment:
-            RABBITMQ_DEFAULT_USER: guest
-            RABBITMQ_DEFAULT_PASS: guest
+            RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
+            RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
         volumes:
             - rabbitmq_data:/var/lib/rabbitmq
 

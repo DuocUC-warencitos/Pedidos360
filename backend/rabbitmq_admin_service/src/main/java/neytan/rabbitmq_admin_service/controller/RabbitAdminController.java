@@ -6,19 +6,17 @@ import neytan.rabbitmq_admin_service.dto.CreateQueueRequest;
 import neytan.rabbitmq_admin_service.service.RabbitAdminService;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController 
-@RequestMapping ("/api/admin")
+@RequestMapping ("/api/admin/rabbit")
+@RequiredArgsConstructor 
 public class RabbitAdminController {
      private final RabbitAdminService service;
-
-    public RabbitAdminController(RabbitAdminService service) {
-        this.service = service;
-    }
 
     @PostMapping("/queues")
     public ResponseEntity<ApiMessage> crearCola(

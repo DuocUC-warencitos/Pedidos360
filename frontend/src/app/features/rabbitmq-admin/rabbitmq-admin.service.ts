@@ -1,6 +1,8 @@
-import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+
+import { environment } from '@env/environment';
 
 export interface ApiMessage {
   message: string;
@@ -32,9 +34,7 @@ export interface CreateBindingRequest {
 export class RabbitmqAdminService {
   private readonly http = inject(HttpClient);
 
-  // URL local del microservicio administrador.
-  // En Docker o cloud, configurar según el entorno.
-  private readonly baseUrl = 'http://localhost:8080/api/admin';
+  private readonly baseUrl = `${environment.apiGatewayUrl}/admin/rabbit`;
 
   crearCola(request: CreateQueueRequest): Observable<ApiMessage> {
     return this.http.post<ApiMessage>(
