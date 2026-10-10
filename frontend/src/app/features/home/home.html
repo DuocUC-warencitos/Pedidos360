@@ -1,11 +1,42 @@
-<section class="min-h-[70vh] flex items-center justify-center text-center">
-    <div class="max-w-162.5">
-        <h2 class="text-[42px] mb-4 text-primary font-bold">
-            Bienvenido a Pedidos360
-        </h2>
 
-        <p class="text-lg mb-8">
-            Gestiona tus pedidos de forma simple y rápida.
+<section class="relative flex min-h-[65vh] items-center justify-center overflow-hidden px-6 py-20 text-center">
+    <div class="max-w-4xl">
+        <span
+            class="mb-6 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-2 text-sm font-semibold text-primary"
+        >
+            <span class="h-2 w-2 rounded-full bg-primary"></span>
+            Gestión inteligente de pedidos
+        </span>
+
+        <h1 class="text-5xl font-bold tracking-tight text-primary sm:text-6xl lg:text-7xl">
+            Todo tu negocio,
+            <span class="block mt-2">en un solo lugar.</span>
+        </h1>
+
+        <p class="mx-auto mt-6 max-w-2xl text-lg leading-8 text-gray-500 sm:text-xl">
+            Administra pedidos, consulta productos y mantén cada operación
+            bajo control desde una plataforma simple y centralizada.
+        </p>
+
+        <div class="mt-10 flex flex-wrap items-center justify-center gap-4">
+            <a
+                routerLink="/pedidos"
+                class="inline-flex items-center justify-center rounded-xl bg-primary px-7 py-3.5 font-semibold text-white shadow-sm transition hover:opacity-90"
+            >
+                Ver pedidos
+                <span class="ml-2" aria-hidden="true">→</span>
+            </a>
+
+            <a
+                routerLink="/productos"
+                class="inline-flex items-center justify-center rounded-xl border border-gray-200 px-7 py-3.5 font-semibold transition hover:bg-gray-50"
+            >
+                Explorar productos
+            </a>
+        </div>
+
+        <p class="mt-8 text-sm text-gray-400">
+            Pedidos · Productos · Seguimiento
         </p>
     </div>
 </section>
