@@ -1,43 +1,99 @@
 <div class="w-full mx-auto p-6">
-    <div class="flex justify-between items-center gap-6 flex-wrap mb-6">
+    <header class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-5 mb-8">
         <div>
-            <span class="block text-[11px] font-bold tracking-[1.5px] text-muted">
-                PRODUCTOS360
+            <span class="block text-xs font-bold tracking-[2px] text-muted uppercase mb-2">
+                Productos360
             </span>
 
-            <h1 class="m-0 mt-1 text-[28px] font-bold">Productos</h1>
+            <h1 class="text-3xl font-bold tracking-tight m-0">
+                Catálogo de productos
+            </h1>
+
+            <p class="text-sm text-muted mt-2 mb-0">
+                Administra y consulta los productos del catálogo.
+            </p>
         </div>
 
         <a
             routerLink="/productos/agregar"
-            class="inline-flex items-center px-4 py-2.5 rounded-md text-sm font-bold bg-[#1f2937] text-white no-underline hover:bg-[#111827] transition"
+            class="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold bg-[#1f2937] text-white no-underline hover:bg-[#111827] transition-colors shadow-sm"
         >
-            + Crear producto
+            <span class="text-lg leading-none">+</span>
+            Crear producto
         </a>
-    </div>
+    </header>
 
-    @if (productosQuery.isLoading()) {
-        <h2 class="text-lg">Cargando productos...</h2>
-    } @else if (productosQuery.isError()) {
-        <h2 class="text-lg text-danger">Error al cargar productos</h2>
-    } @else if ((productosQuery.data() ?? []).length === 0) {
-        <div
-            class="flex flex-col items-center text-center p-9 border border-dashed border-border-strong rounded-lg"
-        >
-            <strong class="text-sm">No hay productos</strong>
+    <section class="rounded-2xl border border-border bg-surface p-5 sm:p-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+            <div>
+                <h2 class="text-lg font-semibold m-0">
+                    Todos los productos
+                </h2>
 
-            <p class="mt-1.5 m-0 text-muted text-xs">
-                Todavía no se han registrado productos.
-            </p>
-        </div>
-    } @else {
-        <div class="flex flex-wrap gap-4">
-            @for (producto of productosQuery.data(); track producto.id) {
-                <app-producto-card
-                    [producto]="producto"
-                    (eliminar)="eliminarProducto(producto.id)"
-                />
+                <p class="text-sm text-muted mt-1 mb-0">
+                    Productos registrados en el sistema
+                </p>
+            </div>
+
+            @if (!productosQuery.isLoading() && !productosQuery.isError()) {
+                <span class="inline-flex items-center self-start sm:self-auto rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-muted">
+                    {{ (productosQuery.data() ?? []).length }}
+                    productos
+                </span>
             }
         </div>
-    }
+
+        @if (productosQuery.isLoading()) {
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                @for (item of [1, 2, 3, 4, 5, 6]; track item) {
+                    <div class="rounded-xl border border-border p-5 animate-pulse">
+                        <div class="h-4 w-2/3 rounded bg-border mb-4"></div>
+                        <div class="h-3 w-1/3 rounded bg-border mb-6"></div>
+                        <div class="h-7 w-1/2 rounded bg-border mb-5"></div>
+                        <div class="h-9 w-full rounded bg-border"></div>
+                    </div>
+                }
+            </div>
+        } @else if (productosQuery.isError()) {
+            <div class="flex flex-col items-center text-center py-12 px-5 rounded-xl border border-dashed border-border">
+                <h3 class="text-base font-semibold m-0">
+                    No se pudieron cargar los productos
+                </h3>
+
+                <p class="text-sm text-muted mt-2 mb-0">
+                    Comprueba tu conexión e inténtalo nuevamente.
+                </p>
+            </div>
+        } @else if ((productosQuery.data() ?? []).length === 0) {
+            <div class="flex flex-col items-center text-center py-14 px-5 rounded-xl border border-dashed border-border">
+                <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-surface-secondary border border-border mb-4">
+                    <span class="text-2xl">+</span>
+                </div>
+
+                <h3 class="text-base font-semibold m-0">
+                    Tu catálogo está vacío
+                </h3>
+
+                <p class="text-sm text-muted mt-2 mb-5 max-w-sm">
+                    Todavía no tienes productos registrados. Crea el primero para comenzar.
+                </p>
+
+                <a
+                    routerLink="/productos/agregar"
+                    class="inline-flex items-center justify-center px-4 py-2.5 rounded-lg text-sm font-semibold bg-[#1f2937] text-white no-underline hover:bg-[#111827] transition-colors"
+                >
+                    Crear primer producto
+                </a>
+            </div>
+        } @else {
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 items-stretch">
+                @for (producto of productosQuery.data(); track producto.id) {
+                    <app-producto-card
+                        [producto]="producto"
+                        (eliminar)="eliminarProducto(producto.id)"
+                    />
+                }
+            </div>
+        }
+    </section>
 </div>
