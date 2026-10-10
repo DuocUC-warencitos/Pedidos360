@@ -29,17 +29,36 @@ export class ProductosDetail {
 
 	readonly esAdmin = computed(() => this.auth.hasRole('ADMIN'));
 
-	readonly formState = signal({ nombre: '', precio: 0, stock: 0 });
+	readonly formState = signal({
+		nombre: '',
+		precio: 0,
+		stock: 0,
+		sku: '',
+		categoria: '',
+		descripcion: '',
+		stockMinimo: null as number | null,
+		activo: true,
+	});
 
-	constructor() {
-		effect(() => {
+	constructor()
+	{
+		effect(() =>
+		{
 			const p = this.productoQuery.data();
+
 			if (p)
+			{
 				this.formState.set({
 					nombre: p.nombre,
 					precio: p.precio,
 					stock: p.stockDisponible,
+					sku: p.sku ?? '',
+					categoria: p.categoria ?? '',
+					descripcion: p.descripcion ?? '',
+					stockMinimo: p.stockMinimo ?? null,
+					activo: p.activo ?? true,
 				});
+			}
 		});
 	}
 

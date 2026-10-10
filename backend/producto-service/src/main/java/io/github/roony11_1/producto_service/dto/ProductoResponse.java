@@ -11,10 +11,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductoResponse 
+public class ProductoResponse
 {
     private UUID id;
     private String nombre;
     private int precio;
     private int stockDisponible;
+    private String sku;
+    private boolean activo;
 }

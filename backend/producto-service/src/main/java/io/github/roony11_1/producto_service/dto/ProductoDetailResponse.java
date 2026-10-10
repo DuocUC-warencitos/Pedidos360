@@ -1,5 +1,6 @@
 package io.github.roony11_1.producto_service.dto;
 
+import java.time.Instant;
 import java.util.UUID;
 
 import lombok.AllArgsConstructor;
@@ -18,4 +19,11 @@ public class ProductoDetailResponse
     private int precio;
     private int stockDisponible;
     private int stockReservado;
+    private String sku;
+    private String categoria;
+    private String descripcion;
+    private int stockMinimo;
+    private boolean activo;
+    private Instant createdAt;
+    private Instant updatedAt;
 }

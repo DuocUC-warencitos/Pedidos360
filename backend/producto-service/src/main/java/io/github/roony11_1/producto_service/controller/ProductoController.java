@@ -36,25 +36,40 @@ public class ProductoController
         Producto.builder()
             .nombre(request.getNombre())
             .precio(request.getPrecio())
+            .sku(request.getSku())
+            .categoria(request.getCategoria())
+            .descripcion(request.getDescripcion())
             .stockDisponible(request.getStock())
+            .stockReservado(0)
+            .stockMinimo(request.getStockMinimo())
+            .activo(true)
             .build();
 
     private final Function<Producto, ProductoResponse> productoToResponse = producto ->
-           ProductoResponse.builder()
-                .id(producto.getId())
-                .nombre(producto.getNombre())
-                .precio(producto.getPrecio())
-                .stockDisponible(producto.getStockDisponible())
-                .build();
+        ProductoResponse.builder()
+            .id(producto.getId())
+            .nombre(producto.getNombre())
+            .precio(producto.getPrecio())
+            .stockDisponible(producto.getStockDisponible())
+            .sku(producto.getSku())
+            .activo(producto.isActivo())
+            .build();
 
     private final Function<Producto, ProductoDetailResponse> productoToDetailResponse = producto ->
-           ProductoDetailResponse.builder()
-                .id(producto.getId())
-                .nombre(producto.getNombre())
-                .precio(producto.getPrecio())
-                .stockDisponible(producto.getStockDisponible())
-                .stockReservado(producto.getStockReservado())
-                .build();
+        ProductoDetailResponse.builder()
+            .id(producto.getId())
+            .nombre(producto.getNombre())
+            .precio(producto.getPrecio())
+            .stockDisponible(producto.getStockDisponible())
+            .stockReservado(producto.getStockReservado())
+            .sku(producto.getSku())
+            .categoria(producto.getCategoria())
+            .descripcion(producto.getDescripcion())
+            .stockMinimo(producto.getStockMinimo())
+            .activo(producto.isActivo())
+            .createdAt(producto.getCreatedAt())
+            .updatedAt(producto.getUpdatedAt())
+            .build();
 
     @GetMapping
     public ResponseEntity<List<ProductoResponse>> listar()

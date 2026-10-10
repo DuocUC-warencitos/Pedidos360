@@ -1,39 +1,40 @@
 // Requests
 
-export interface ProductoRequest {
-  nombre: string;
-  precio: number;
-  stock: number;
-  descripcion?: string;
-  sku?: string;
-  categoria?: string;
-  stockMinimo?: number;
-  activo?: boolean;
+export interface ProductoRequest
+{
+    nombre: string;
+    precio: number;
+    stock: number;
+    descripcion?: string;
+    sku?: string;
+    categoria?: string;
+    stockMinimo?: number | null;
 }
 
 // Responses
 
-export interface ProductoResponse 
+export interface ProductoResponse
 {
-  id: string;
-  nombre: string;
-  precio: number;
-  stockDisponible: number;
-  sku?: string;
-  activo?: boolean;
+    id: string;
+    nombre: string;
+    precio: number;
+    stockDisponible: number;
+    sku?: string;
+    activo?: boolean;
 }
 
-export interface ProductoDetailResponse 
+export interface ProductoDetailResponse
 {
-  id: string;
-  nombre: string;
-  precio: number;
-  stockDisponible: number;
-  stockReservado: number;
-  descripcion?: string;
-  sku?: string;
-  categoria?: string;
-  stockMinimo?: number;
-  activo?: boolean;
+    id: string;
+    nombre: string;
+    precio: number;
+    stockDisponible: number;
+    stockReservado: number;
+    descripcion?: string;
+    sku?: string;
+    categoria?: string;
+    stockMinimo?: number | null;
+    activo?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
 }
-

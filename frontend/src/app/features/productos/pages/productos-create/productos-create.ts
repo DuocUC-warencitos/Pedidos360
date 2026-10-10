@@ -6,11 +6,16 @@ import { LoggingService } from '@core/logging/logging.service';
 import { NotificationService } from '@core/notification/notification.service';
 import { useCrearProductoMutation } from '@features/productos/data/productos.queries';
 import { ProductoResponse } from '@features/productos/data/productos.types';
-export interface ProductosFormUiState {
-	nombre: string;
-	precio: number;
-	stock: number;
-	productoGuardado: ProductoResponse | null;
+export interface ProductosFormUiState
+{
+    nombre: string;
+    precio: number;
+    stock: number;
+    sku: string;
+    categoria: string;
+    descripcion: string;
+    stockMinimo: number | null;
+    productoGuardado: ProductoResponse | null;
 }
 @Component({
 	selector: 'app-productos-create',
@@ -26,6 +31,10 @@ export class ProductosCreate {
 		precio: 0,
 		stock: 0,
 		productoGuardado: null,
+		sku: '',
+		categoria: '',
+		descripcion: '',
+		stockMinimo: null,
 	});
 	readonly crearProductoMutation = useCrearProductoMutation(
 		(producto) => {
@@ -36,6 +45,10 @@ export class ProductosCreate {
 				nombre: '',
 				precio: 0,
 				stock: 0,
+				sku: '',
+				categoria: '',
+				descripcion: '',
+				stockMinimo: null
 			}));
 			this.notify.success('Producto creado correctamente');
 		},
