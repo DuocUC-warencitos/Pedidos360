@@ -1,3 +1,4 @@
+import { CurrencyPipe } from '@angular/common';
 import {
   Component,
   computed,
@@ -11,7 +12,7 @@ import { ProductoResponse } from '@features/productos/data/productos.types';
 @Component({
   selector: 'app-producto-card',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, CurrencyPipe],
   templateUrl: './producto-card.html',
 })
 export class ProductoCard {

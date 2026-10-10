@@ -1,60 +1,79 @@
-<section
-  class="flex flex-col bg-white border border-[var(--color-border)] rounded-xl w-[300px] min-h-[220px] p-5 shadow-sm transition hover:-translate-y-1 hover:shadow-lg hover:border-[#c7ced8]"
+<div
+	class="flex flex-col bg-white border border-border rounded-xl w-75 min-h-55 p-5 shadow-sm transition duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-[#c7ced8]"
 >
-  <header
-    class="flex justify-between items-start gap-4 pb-4 border-b border-[#e5e7eb]"
-  >
-    <div class="min-w-0 flex-1">
-      <p
-        class="m-0 mb-1 text-[11px] font-bold tracking-widest text-[#6b7280]"
-      >
-        PRODUCTO
-      </p>
+	<header class="flex justify-between items-start gap-3 pb-4 border-b border-border-light">
+		<div class="min-w-0 flex-1">
+			<p class="m-0 mb-1.5 text-[10px] font-bold tracking-[0.15em] text-muted">PRODUCTO</p>
 
-      <h2
-        class="m-0 text-[20px] font-bold truncate"
-        [title]="producto().nombre"
-      >
-        {{ producto().nombre }}
-      </h2>
-    </div>
-  </header>
+			<h2 class="m-0 text-lg font-bold text-[#1f2937] truncate" [title]="producto().nombre">
+				{{ producto().nombre || 'Sin nombre' }}
+			</h2>
 
-  <div class="flex flex-row gap-6 py-4">
-      <div class="flex flex-col gap-1">
-          <span class="text-[11px] font-bold tracking-wide text-[#6b7280]">
-              PRECIO
-          </span>
+			<p class="m-0 mt-1 text-xs font-mono text-muted">
+				SKU: {{ producto().sku || 'No disponible' }}
+			</p>
+		</div>
 
-          <span class="text-lg font-bold">
-              ${{ producto().precio }}
-          </span>
-      </div>
+        <div class="shrink-0 flex flex-col items-end gap-2">
+            <span
+                class="px-2 py-1 rounded-md bg-[#f3f4f6] border border-border-light font-mono text-[10px] text-muted"
+                [title]="'ID: ' + producto().id"
+            >
+                #{{ idCorto() }}
+            </span>
 
-      <div class="flex flex-col gap-1">
-          <span class="text-[11px] font-bold tracking-wide text-[#6b7280]">
-              STOCK
-          </span>
+            @if (producto().activo === true) {
+                <span class="text-[10px] font-medium text-[#047857]">
+                    Activo
+                </span>
+            } @else if (producto().activo === false) {
+                <span class="text-[10px] font-medium text-[#b91c1c]">
+                    Inactivo
+                </span>
+            }
+        </div>
+	</header>
 
-          <span class="text-lg font-bold">
-              {{ producto().stockDisponible }} unidades
-          </span>
-      </div>
-  </div>
+	<div class="grid grid-cols-2 gap-4 py-5">
+		<div class="min-w-0 flex flex-col gap-1">
+			<span class="text-[10px] font-bold tracking-widest text-muted"> PRECIO </span>
 
-  <div class="mt-auto pt-3 flex justify-between gap-2">
-    <a
-      [routerLink]="['/productos/detalle/', producto().id]"
-      class="px-4 py-2 rounded-md text-[13px] font-bold border bg-white text-[#1f2937] border-[#d1d5db] hover:bg-[#f8fafc] no-underline"
+			<strong class="text-xl font-bold text-[#1f2937]">
+				{{ producto().precio | currency: 'CLP' : 'symbol-narrow' : '1.0-0' }}
+			</strong>
+		</div>
+
+		<div class="min-w-0 flex flex-col gap-1">
+			<span class="text-[10px] font-bold tracking-widest text-muted"> STOCK DISPONIBLE </span>
+
+			<strong class="text-xl font-bold text-[#1f2937]">
+				{{ producto().stockDisponible }}
+			</strong>
+
+			@if (producto().stockDisponible !== undefined) {
+				<span class="text-[11px] text-muted">
+					{{ producto().stockDisponible === 1 ? 'unidad' : 'unidades' }}
+				</span>
+			}
+		</div>
+	</div>
+
+    <footer
+        class="mt-auto pt-3 border-t border-border-light flex items-center justify-end gap-2"
     >
-      Ver detalles
-    </a>
-    <button
-      type="button"
-      (click)="eliminar.emit()"
-      class="px-4 py-2 rounded-md text-[13px] font-bold border bg-white text-[#b3261e] border-[#f5c6c3] hover:bg-[#fdecec] transition"
-    >
-      Eliminar
-    </button>
-  </div>
-</section>
+        <a
+            [routerLink]="['/productos/detalle/', producto().id]"
+            class="px-3 py-2 rounded-md text-xs font-bold border bg-white text-[#1f2937] border-border-strong hover:bg-[#f8fafc] no-underline transition"
+        >
+            Ver detalles
+        </a>
+
+        <button
+            type="button"
+            (click)="eliminar.emit()"
+            class="px-3 py-2 rounded-md text-xs font-bold border bg-white text-danger border-danger-border hover:bg-danger-light transition"
+        >
+            Eliminar
+        </button>
+    </footer>
+</div>

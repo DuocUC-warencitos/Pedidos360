@@ -1,80 +1,149 @@
 <div class="w-full my-10">
 	<a
 		routerLink="/productos/lista"
-		class="inline-flex items-center gap-2 mb-6 px-4 py-2.5 rounded-md text-sm font-bold border border-[#d1d5db] bg-white text-[#1f2937] no-underline hover:bg-[#f8fafc] transition"
+		class="inline-flex items-center gap-2 mb-6 px-4 py-2.5 rounded-md text-sm font-bold border border-border-strong bg-white text-[#1f2937] no-underline hover:bg-[#f8fafc] transition"
 		>← Ver productos</a
 	>
 
 	@if (productoQuery.isPending()) {
-		<p class="text-sm text-[#6b7280]">Cargando producto…</p>
+		<section
+			class="bg-white border border-border rounded-xl p-6 shadow-sm max-[600px]:p-4.5"
+		>
+			<p class="m-0 text-sm text-muted">Cargando producto…</p>
+		</section>
 	} @else if (productoQuery.isError() || !productoQuery.data()) {
-		<p class="text-sm text-[#b91c1c]">No se encontró el producto.</p>
+		<section
+			class="bg-white border border-danger-border rounded-xl p-6 shadow-sm max-[600px]:p-4.5"
+		>
+			<p class="m-0 text-sm text-[#b91c1c]">No se encontró el producto.</p>
+		</section>
 	} @else {
 		@let producto = productoQuery.data()!;
 		<header class="mb-7">
-			<span class="block text-[11px] font-bold tracking-[1.5px] text-[#6b7280]"
+			<span class="block text-[11px] font-bold tracking-[1.5px] text-muted"
 				>PRODUCTOS360</span
 			>
 			<h1 class="mt-1 mb-2 text-[32px] font-bold tracking-tight max-[600px]:text-[27px]">
 				{{ producto.nombre }}
 			</h1>
-			<p class="m-0 text-[#6b7280] leading-relaxed font-mono text-xs break-all">
+			<p class="m-0 text-muted leading-relaxed font-mono text-xs break-all">
 				ID: {{ producto.id }}
 			</p>
 		</header>
 
+
 		<section
-			class="bg-white border border-[var(--color-border)] rounded-xl p-6 shadow-sm max-[600px]:p-[18px] mb-6"
+			class="bg-white border border-border rounded-xl p-6 shadow-sm max-[600px]:p-4.5 mb-6"
 		>
 			<h2 class="m-0 text-[19px] font-bold">Detalle</h2>
+
 			<div class="grid grid-cols-4 gap-4 py-5 max-[600px]:grid-cols-1">
 				<div class="flex flex-col gap-1.5">
-					<span class="text-[#6b7280] text-[10px] font-bold tracking-wide">Precio</span
-					><strong class="text-[13px]">${{ producto.precio }}</strong>
+					<span class="text-muted text-[10px] font-bold tracking-wide">Precio</span>
+					<strong class="text-[13px]">
+						${{ producto.precio }}
+					</strong>
 				</div>
+
 				<div class="flex flex-col gap-1.5">
-					<span class="text-[#6b7280] text-[10px] font-bold tracking-wide">Stock</span
-					><strong class="text-[13px]">{{ producto.stockDisponible }}</strong>
+					<span class="text-muted text-[10px] font-bold tracking-wide">Stock</span>
+					<strong class="text-[13px]">
+						{{ producto.stockDisponible }}
+					</strong>
 				</div>
+
 				<div class="flex flex-col gap-1.5">
-					<span class="text-[#6b7280] text-[10px] font-bold tracking-wide"
-						>Stock reservado</span
-					><strong class="text-[13px]">{{ producto.stockReservado }}</strong>
+					<span class="text-muted text-[10px] font-bold tracking-wide">Stock reservado</span>
+					<strong class="text-[13px]">
+						{{ producto.stockReservado }}
+					</strong>
 				</div>
+
+				<div class="flex flex-col gap-1.5">
+					<span class="text-muted text-[10px] font-bold tracking-wide">SKU</span>
+					<strong class="text-[13px] font-mono break-all">
+						{{ producto.sku || 'No disponible' }}
+					</strong>
+				</div>
+
+				<div class="flex flex-col gap-1.5">
+					<span class="text-muted text-[10px] font-bold tracking-wide">Categoría</span>
+					<strong class="text-[13px]">
+						{{ producto.categoria || 'No disponible' }}
+					</strong>
+				</div>
+
+				<div class="flex flex-col gap-1.5">
+					<span class="text-muted text-[10px] font-bold tracking-wide">Stock mínimo</span>
+					<strong class="text-[13px]">
+						{{ producto.stockMinimo ?? 'No disponible' }}
+					</strong>
+				</div>
+
+				<div class="flex flex-col gap-1.5">
+					<span class="text-muted text-[10px] font-bold tracking-wide">Estado</span>
+					<strong class="text-[13px]">
+						{{
+							producto.activo === undefined
+								? 'No disponible'
+								: producto.activo
+								? 'Activo'
+								: 'Inactivo'
+						}}
+					</strong>
+				</div>
+			</div>
+
+			<div class="pt-4 border-t border-border-light">
+				<span class="text-muted text-[10px] font-bold tracking-wide">Descripción</span>
+				<p class="m-0 pt-2 text-[#1f2937] text-[13px] leading-relaxed">
+					{{ producto.descripcion || 'Descripción no disponible' }}
+				</p>
 			</div>
 		</section>
 
 		<section
-			class="bg-white border border-[var(--color-border)] rounded-xl p-6 shadow-sm max-[600px]:p-[18px]"
+			class="bg-white border border-border rounded-xl p-6 shadow-sm max-[600px]:p-4.5"
 		>
 			<h2 class="m-0 text-[19px] font-bold">Editar producto</h2>
-			<p class="mt-1.5 m-0 text-[#6b7280] text-[13px]">Solo ADMIN puede modificar.</p>
+			<p class="mt-1.5 m-0 text-muted text-[13px]">Solo ADMIN puede modificar.</p>
 			<div class="grid grid-cols-3 gap-4 mt-5 max-[600px]:grid-cols-1">
 				<div class="flex flex-col gap-1.5">
-					<label class="text-[13px] font-bold">Nombre</label
+					<label for="producto-nombre" class="text-[13px] font-bold">Nombre</label
 					><input
+						id="producto-nombre"
 						type="text"
 						[ngModel]="formState().nombre"
 						(ngModelChange)="formState.update((s) => ({ ...s, nombre: $event }))"
-						class="w-full px-3 py-2.5 border border-[#d1d5db] rounded-md text-sm"
+						placeholder="Nombre del producto"
+						autocomplete="off"
+						class="w-full px-3 py-2.5 border border-border-strong rounded-md bg-white text-[#1f2937] text-sm placeholder:text-muted-2 focus:outline-none focus:border-[#1f2937] focus:ring-2 focus:ring-[rgba(31,41,55,0.08)] transition"
 					/>
 				</div>
 				<div class="flex flex-col gap-1.5">
-					<label class="text-[13px] font-bold">Precio</label
+					<label for="producto-precio" class="text-[13px] font-bold">Precio</label
 					><input
+						id="producto-precio"
 						type="number"
 						[ngModel]="formState().precio"
 						(ngModelChange)="formState.update((s) => ({ ...s, precio: +$event }))"
-						class="w-full px-3 py-2.5 border border-[#d1d5db] rounded-md text-sm"
+						min="0"
+						step="1"
+						placeholder="Ej: 2990"
+						class="w-full px-3 py-2.5 border border-border-strong rounded-md bg-white text-[#1f2937] text-sm placeholder:text-muted-2 focus:outline-none focus:border-[#1f2937] focus:ring-2 focus:ring-[rgba(31,41,55,0.08)] transition"
 					/>
 				</div>
 				<div class="flex flex-col gap-1.5">
-					<label class="text-[13px] font-bold">Stock</label
+					<label for="producto-stock" class="text-[13px] font-bold">Stock</label
 					><input
+						id="producto-stock"
 						type="number"
 						[ngModel]="formState().stock"
 						(ngModelChange)="formState.update((s) => ({ ...s, stock: +$event }))"
-						class="w-full px-3 py-2.5 border border-[#d1d5db] rounded-md text-sm"
+						min="0"
+						step="1"
+						placeholder="Ej: 50"
+						class="w-full px-3 py-2.5 border border-border-strong rounded-md bg-white text-[#1f2937] text-sm placeholder:text-muted-2 focus:outline-none focus:border-[#1f2937] focus:ring-2 focus:ring-[rgba(31,41,55,0.08)] transition"
 					/>
 				</div>
 			</div>
@@ -82,7 +151,7 @@
 				type="button"
 				(click)="guardar()"
 				[disabled]="actualizarMutation.isPending()"
-				class="mt-5 px-4 py-2.5 bg-[#1f2937] text-white rounded-md text-sm font-bold disabled:opacity-60"
+				class="mt-5 px-4 py-2.5 bg-[#1f2937] text-white rounded-md text-sm font-bold hover:bg-[#111827] disabled:opacity-60 transition"
 			>
 				@if (actualizarMutation.isPending()) {
 					Guardando…
