@@ -18,26 +18,26 @@ declare global
     }
 }
 
-export const environment = 
+export const environment =
 {
-    production: window.__env.ANGULAR_IS_PRODUCTION === "true",
+    production: window.__env?.ANGULAR_IS_PRODUCTION === "true",
 
-    msal: 
+    msal:
     {
-        clientId: window.__env.MSAL_CLIENT_ID,
-        tenantId: window.__env.MSAL_TENANT_ID,
-        redirectUri: window.__env.MSAL_REDIRECT_URI,
-        apiScope: window.__env.MSAL_API_SCOPE,
-        postLogoutRedirectUri: window.__env.MSAL_POST_LOGOUT_URI
+        clientId: window.__env?.MSAL_CLIENT_ID,
+        tenantId: window.__env?.MSAL_TENANT_ID,
+        redirectUri: window.__env?.MSAL_REDIRECT_URI ?? window.location.origin,
+        apiScope: window.__env?.MSAL_API_SCOPE,
+        postLogoutRedirectUri: window.__env?.MSAL_POST_LOGOUT_URI ?? window.location.origin
     },
 
-    apiGatewayUrl: window.__env.API_GATEWAY_URL,
+    apiGatewayUrl: window.__env?.API_GATEWAY_URL,
 
-    logging: 
+    logging:
     {
         minLevel:
             LogLevel[
-                window.__env.ANGULAR_LOG_LEVEL as keyof typeof LogLevel
-            ]
+                (window.__env?.ANGULAR_LOG_LEVEL) as keyof typeof LogLevel
+            ] ?? LogLevel.INFO
     }
 };
