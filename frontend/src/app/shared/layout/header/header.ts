@@ -1,5 +1,5 @@
 import { Component, computed, Signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 
 import { AuthService } from '@core/auth/auth.service';
 import { AuthUser } from '@core/auth/authenticationProvider';
@@ -7,7 +7,7 @@ import { AuthUser } from '@core/auth/authenticationProvider';
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, RouterLinkActive],
   templateUrl: './header.html',
 })
 export class HeaderComponent {

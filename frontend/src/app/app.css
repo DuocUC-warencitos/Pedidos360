@@ -1,10 +1,17 @@
+
 :host {
-  display: block;
-  min-height: 100vh;
+    display: block;
+    min-height: 100vh;
 }
 
 .contenedor {
-  width: 100%;
-  min-height: 100vh;
-  padding: 32px;
+    width: 100%;
+    min-height: 100vh;
+    padding: 0 8px 8px;
+}
+
+@media (max-width: 700px) {
+    .contenedor {
+        padding: 0 16px 24px;
+    }
 }

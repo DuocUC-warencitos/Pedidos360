@@ -1,33 +1,109 @@
-<header class="flex justify-between items-center w-full px-8 py-6 mb-2.5 max-[700px]:flex-col max-[700px]:items-start max-[700px]:gap-4 max-[700px]:px-4 max-[700px]:py-5">
-  <a routerLink="/" class="flex items-center gap-3 text-inherit no-underline hover:no-underline">
-    <img src="/favicon.svg" alt="Pedidos360" class="block w-[42px] h-[42px]" />
-    <h1 class="m-0 text-[28px] font-bold tracking-tight">Pedidos360</h1>
-  </a>
 
-  <nav class="flex items-center gap-3 max-[700px]:w-full max-[700px]:flex-wrap">
-    @if (user(); as usuario) {
-      <div class="flex flex-col max-w-[280px] overflow-hidden text-ellipsis whitespace-nowrap max-[700px]:max-w-full">
-        <strong class="text-sm">{{ usuario.name }}</strong>
-        @if (rolesLabel()) {
-          <span class="text-[11px] font-bold tracking-wide text-[#6b7280]">{{ rolesLabel() }}</span>
-        }
-      </div>
-      <button
-        type="button"
-        (click)="logout()"
-        class="px-3.5 py-2 border border-[#d1d5db] rounded-md bg-white text-[#1f2937] text-[13px] hover:bg-[#f3f4f6]"
-      >
-        Cerrar sesión
-      </button>
-    } @else {
-      <b class="text-[#6b7280] text-[13px]">No hay sesión activa!</b>
-      <button
-        type="button"
-        (click)="login()"
-        class="px-3.5 py-2 border border-[#d1d5db] rounded-md bg-white text-[#1f2937] text-[13px] hover:bg-[#f3f4f6]"
-      >
-        Inicia Sesión
-      </button>
-    }
-  </nav>
+<header class="sticky top-0 z-50 w-full border-b border-border bg-white/95 backdrop-blur-md">
+    <div class="mx-auto flex min-h-18 max-w-7xl items-center justify-between gap-6 px-6 max-[900px]:flex-wrap max-[900px]:py-4">
+        <a
+            routerLink="/"
+            class="flex items-center gap-1 text-inherit no-underline"
+        >
+            <div class="flex size-11 items-center justify-center rounded-xl bg-primary text-white shadow-sm">
+                <img
+                    src="/favicon.svg"
+                    alt=""
+                    class="size-7"
+                />
+            </div>
+
+            <div class="flex flex-col">
+                <span class="text-xl font-extrabold tracking-tight">
+                    Pedidos360
+                </span>
+                <span class="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">
+                    La mejor página para comprar
+                </span>
+            </div>
+        </a>
+
+        <nav
+            class="flex items-center gap-1 rounded-xl bg-[#f3f4f6] p-1
+                max-[900px]:order-3 max-[900px]:w-full max-[900px]:flex-wrap"
+        >
+            <a
+                routerLink="/example"
+                routerLinkActive="!bg-white !text-primary shadow-sm"
+                [routerLinkActiveOptions]="{ exact: true }"
+                class="whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-semibold text-[#6b7280] no-underline transition hover:text-primary max-[500px]:flex-1 max-[500px]:text-center"
+            >
+                Ejemplo
+            </a>
+
+            <a
+                routerLink="/pedidos"
+                routerLinkActive="!bg-white !text-primary shadow-sm"
+                class="whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-semibold text-[#6b7280] no-underline transition hover:text-primary max-[500px]:flex-1 max-[500px]:text-center"
+            >
+                Pedidos
+            </a>
+
+            <a
+                routerLink="/productos"
+                routerLinkActive="!bg-white !text-primary shadow-sm"
+                class="whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-semibold text-[#6b7280] no-underline transition hover:text-primary max-[500px]:flex-1 max-[500px]:text-center"
+            >
+                Productos
+            </a>
+
+            <a
+                routerLink="/rabbitmq-admin"
+                routerLinkActive="!bg-white !text-primary shadow-sm"
+                class="whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-semibold text-[#6b7280] no-underline transition hover:text-primary max-[500px]:flex-1 max-[500px]:text-center"
+            >
+                Administración
+            </a>
+        </nav>
+
+        <div class="flex shrink-0 items-center gap-3">
+            @if (user(); as usuario) 
+            {
+                <div class="flex items-center gap-3">
+                    <div class="flex size-10 items-center justify-center rounded-full bg-primary/10 text-sm font-bold text-primary">
+                        {{ usuario.name.charAt(0).toUpperCase() }}
+                    </div>
+
+                    <div class="flex max-w-40 flex-col max-[600px]:hidden">
+                        <span
+                            class="truncate text-sm font-bold text-[#1f2937]"
+                            [title]="usuario.name"
+                        >
+                            {{ usuario.name.split(' ')[0] }}
+                        </span>
+
+                        @if (rolesLabel()) 
+                        {
+                            <span class="truncate text-xs text-muted">
+                                {{ rolesLabel() }}
+                            </span>
+                        }
+                    </div>
+
+                    <button
+                        type="button"
+                        (click)="logout()"
+                        class="rounded-lg border border-border px-3 py-2 text-sm font-semibold text-[#374151] transition hover:border-red-200 hover:bg-red-50 hover:text-red-600"
+                    >
+                        Salir
+                    </button>
+                </div>
+            } 
+            @else 
+            {
+                <button
+                    type="button"
+                    (click)="login()"
+                    class="rounded-lg bg-primary px-4 py-2.5 text-sm font-bold text-white shadow-sm transition hover:brightness-110"
+                >
+                    Iniciar sesión
+                </button>
+            }
+        </div>
+    </div>
 </header>
