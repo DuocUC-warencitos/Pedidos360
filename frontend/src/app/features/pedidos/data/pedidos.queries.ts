@@ -11,10 +11,29 @@ export function usePedidosQuery()
 
     return injectQuery(() => (
 	{
-        queryKey: ['pedidos'],
+        queryKey: ['pedidos-adm'],
         queryFn: async (): Promise<PedidoResponse[]> => 
 		{
             const pedidos = await lastValueFrom(service.obtenerPedidos());
+
+            return pedidos;
+        },
+        refetchOnWindowFocus: false,
+        refetchInterval: false,
+        refetchIntervalInBackground: false,
+    }));
+}
+
+export function usePedidosPorUserQuery() 
+{
+    const service = inject(PedidosService);
+
+    return injectQuery(() => (
+	{
+        queryKey: ['pedidos'],
+        queryFn: async (): Promise<PedidoResponse[]> => 
+		{
+            const pedidos = await lastValueFrom(service.obtenerPedidosPorIdUsuario());
 
             return pedidos;
         },

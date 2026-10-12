@@ -62,6 +62,12 @@ public class PedidoService
         return pedidoRepository.findAll(userTokenService.getUserSpecification());
     }
 
+    @Transactional(readOnly = true)
+    public List<Pedido> findAllByUserId() 
+    {
+        return pedidoRepository.findAll(userTokenService.getUserSpecification());
+    }
+
     @Transactional
     public void deleteAll()
     {

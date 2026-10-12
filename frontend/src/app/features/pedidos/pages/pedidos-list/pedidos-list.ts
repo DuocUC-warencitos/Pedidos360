@@ -1,11 +1,12 @@
 import { Component, computed } from '@angular/core';
 
+import { RouterLink } from '@angular/router';
 import { QueryState } from '@shared/components/query-state/query-state';
 import {
     useAvanzarMutation,
     useCancelarMutation,
     useEliminarTodosMutation,
-    usePedidosQuery,
+    usePedidosPorUserQuery
 } from '@features/pedidos/data/pedidos.queries';
 import { PedidoCard } from '@features/pedidos/ui/pedido-card/pedido-card';
 
@@ -15,12 +16,13 @@ import { PedidoCard } from '@features/pedidos/ui/pedido-card/pedido-card';
     imports: [
         PedidoCard,
         QueryState,
+        RouterLink
     ],
     templateUrl: './pedidos-list.html',
 })
 export class PedidosList
 {
-    readonly pedidosQuery = usePedidosQuery();
+    readonly pedidosQuery = usePedidosPorUserQuery();
 
     readonly eliminarTodosMutation = useEliminarTodosMutation();
     readonly avanzarMutation = useAvanzarMutation();

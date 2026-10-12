@@ -36,6 +36,10 @@ export class PedidosService {
 		return this.http.get<PedidoResponse[]>(apiPedidos.get.all);
 	}
 
+	obtenerPedidosPorIdUsuario(): Observable<PedidoResponse[]> {
+		return this.http.get<PedidoResponse[]>(apiPedidos.get.userId);
+	}
+
 	obtenerPedidoPorId(id: string): Observable<PedidoDetailResponse>
 	{
 		return this.http.get<PedidoDetailResponse>(apiPedidos.get.byId(id));

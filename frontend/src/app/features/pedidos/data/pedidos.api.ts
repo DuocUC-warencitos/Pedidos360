@@ -6,6 +6,7 @@ const sagaBase = `${base}/saga`;
 export const apiPedidos = {
 	get: {
 		all: `${base}/all`,
+		userId: `${base}/userId`,
 		byId: (id: string) => `${base}/${id}`,
 		jobStatus: (jobId: string) => `${sagaBase}/jobs/${jobId}`,
 	},

@@ -48,6 +48,16 @@ public class PedidoController
         return ResponseEntity.ok(pedidos);
     }
 
+    @GetMapping("/userId")
+    public ResponseEntity<List<PedidoResponse>> findAllByUserId()
+    {
+        var pedidos = pedidoService.findAllByUserId().stream()
+            .map(pedidoResponseMapper::apply)
+            .toList();
+
+        return ResponseEntity.ok(pedidos);
+    }
+
     @DeleteMapping("/all")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> deleteAll()
