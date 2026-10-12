@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { MsalGuard } from '@azure/msal-angular';
 
 import { roleGuard } from '@core/auth/guards/role.guard';
 
@@ -36,7 +35,7 @@ export const productosRoutes: Routes = [
 
   {
     path: 'detalle/:id',
-    canActivate: [MsalGuard],
+    canActivate: [],
     loadComponent: () =>
       import('./pages/productos-detail/productos-detail').then(
         (m) => m.ProductosDetail,

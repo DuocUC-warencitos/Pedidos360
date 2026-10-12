@@ -1,218 +1,177 @@
-<div class="w-full my-10">
-	<a
-		routerLink="/productos/lista"
-		class="inline-flex items-center gap-2 mb-6 px-4 py-2.5 rounded-md text-sm font-bold border border-border-strong bg-white text-[#1f2937] no-underline hover:bg-[#f8fafc] transition"
-		>← Ver productos</a
-	>
+<main class="mx-auto my-10 w-full max-w-6xl px-6 max-[600px]:px-4">
 
-	@if (productoQuery.isPending()) {
-		<section
-			class="bg-white border border-border rounded-xl p-6 shadow-sm max-[600px]:p-4.5"
-		>
-			<p class="m-0 text-sm text-muted">Cargando producto…</p>
-		</section>
-	} @else if (productoQuery.isError() || !productoQuery.data()) {
-		<section
-			class="bg-white border border-danger-border rounded-xl p-6 shadow-sm max-[600px]:p-4.5"
-		>
-			<p class="m-0 text-sm text-[#b91c1c]">No se encontró el producto.</p>
-		</section>
-	} @else {
-		@let producto = productoQuery.data()!;
-		<header class="mb-7">
-			<span class="block text-[11px] font-bold tracking-[1.5px] text-muted"
-				>PRODUCTOS360</span
-			>
-			<h1 class="mt-1 mb-2 text-[32px] font-bold tracking-tight max-[600px]:text-[27px]">
-				{{ producto.nombre }}
-			</h1>
-			<p class="m-0 text-muted leading-relaxed font-mono text-xs break-all">
-				ID: {{ producto.id }}
-			</p>
-		</header>
+    <a
+        routerLink="/productos/lista"
+        class="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-muted no-underline transition hover:text-[#1f2937]"
+    >
+        <span aria-hidden="true">←</span>
+        Volver a productos
+    </a>
 
+    <app-query-state
+        [loading]="productoQuery.isPending()"
+        [error]="productoQuery.isError() || !productoQuery.data()"
+    >
+        <ng-template #loading>
+            <section class="animate-pulse rounded-2xl border border-border bg-white p-6 shadow-sm">
+                <div class="mb-4 h-3 w-28 rounded bg-border"></div>
+                <div class="mb-8 h-9 w-2/3 rounded bg-border"></div>
 
-		<section
-			class="bg-white border border-border rounded-xl p-6 shadow-sm max-[600px]:p-4.5 mb-6"
-		>
-			<h2 class="m-0 text-[19px] font-bold">Detalle</h2>
+                <div class="mb-6 h-28 rounded-xl bg-border"></div>
 
-			<div class="grid grid-cols-4 gap-4 py-5 max-[600px]:grid-cols-1">
-				<div class="flex flex-col gap-1.5">
-					<span class="text-muted text-[10px] font-bold tracking-wide">Precio</span>
-					<strong class="text-[13px]">
-						${{ producto.precio }}
-					</strong>
-				</div>
+                <div class="grid grid-cols-2 gap-5 md:grid-cols-3">
+                    @for (item of [1, 2, 3, 4, 5, 6]; track item) {
+                        <div class="h-12 rounded-lg bg-border"></div>
+                    }
+                </div>
+            </section>
+        </ng-template>
 
-				<div class="flex flex-col gap-1.5">
-					<span class="text-muted text-[10px] font-bold tracking-wide">Stock</span>
-					<strong class="text-[13px]">
-						{{ producto.stockDisponible }}
-					</strong>
-				</div>
+        <ng-template #error>
+            <section class="rounded-2xl border border-danger-border bg-white p-8 text-center shadow-sm">
+                <h1 class="m-0 text-xl font-bold text-[#1f2937]">
+                    Producto no disponible
+                </h1>
 
-				<div class="flex flex-col gap-1.5">
-					<span class="text-muted text-[10px] font-bold tracking-wide">Stock reservado</span>
-					<strong class="text-[13px]">
-						{{ producto.stockReservado }}
-					</strong>
-				</div>
+                <p class="mb-0 mt-2 text-sm text-muted">
+                    No pudimos encontrar el producto o ocurrió un error al consultar sus datos.
+                </p>
 
-				<div class="flex flex-col gap-1.5">
-					<span class="text-muted text-[10px] font-bold tracking-wide">SKU</span>
-					<strong class="text-[13px] font-mono break-all">
-						{{ producto.sku || 'No disponible' }}
-					</strong>
-				</div>
+                <a
+                    routerLink="/productos/lista"
+                    class="mt-5 inline-flex rounded-lg bg-[#1f2937] px-4 py-2.5 text-sm font-semibold text-white no-underline transition hover:bg-[#111827]"
+                >
+                    Volver al listado
+                </a>
+            </section>
+        </ng-template>
 
-				<div class="flex flex-col gap-1.5">
-					<span class="text-muted text-[10px] font-bold tracking-wide">Categoría</span>
-					<strong class="text-[13px]">
-						{{ producto.categoria || 'No disponible' }}
-					</strong>
-				</div>
+		<ng-template #content>
+			@if (productoQuery.data(); as producto) 
+			{
+				<header class="mb-8">
+					<span class="text-xs font-bold uppercase tracking-[0.18em] text-muted">
+						Productos360 / Detalle
+					</span>
 
-				<div class="flex flex-col gap-1.5">
-					<span class="text-muted text-[10px] font-bold tracking-wide">Stock mínimo</span>
-					<strong class="text-[13px]">
-						{{ producto.stockMinimo ?? 'No disponible' }}
-					</strong>
-				</div>
+					<div class="overflow-hidden rounded-2xl border border-border bg-surface-secondary">
+						<div class="flex h-72 flex-col items-center justify-center gap-3 text-muted">
+							<svg
+								xmlns="http://www.w3.org/2000/svg"
+								viewBox="0 0 24 24"
+								fill="none"
+								stroke="currentColor"
+								stroke-width="1.5"
+								class="h-16 w-16"
+								aria-hidden="true"
+							>
+								<rect x="3" y="3" width="18" height="18" rx="2" />
+								<circle cx="8.5" cy="8.5" r="1.5" />
+								<path d="m21 15-5-5L5 21" />
+							</svg>
+							<span class="text-sm">Sin imagen disponible</span>
+							</div>
+					</div>
 
-				<div class="flex flex-col gap-1.5">
-					<span class="text-muted text-[10px] font-bold tracking-wide">Estado</span>
-					<strong class="text-[13px]">
-						{{
-							producto.activo === undefined
-								? 'No disponible'
-								: producto.activo
-								? 'Activo'
-								: 'Inactivo'
-						}}
-					</strong>
-				</div>
-			</div>
+					<div class="mt-3 flex flex-wrap items-start justify-between gap-4">
+						<div>
+							<h1 class="m-0 text-3xl font-bold tracking-tight text-[#1f2937] max-[600px]:text-2xl">
+								{{ producto.nombre }}
+							</h1>
 
-			<div class="pt-4 border-t border-border-light">
-				<span class="text-muted text-[10px] font-bold tracking-wide">Descripción</span>
-				<p class="m-0 pt-2 text-[#1f2937] text-[13px] leading-relaxed">
-					{{ producto.descripcion || 'Descripción no disponible' }}
-				</p>
-			</div>
-		</section>
+							@if (producto.categoria) {
+								<p class="mb-0 mt-2 text-sm text-muted">
+									{{ producto.categoria }}
+								</p>
+							}
+						</div>
 
-		<section
-			class="bg-white border border-border rounded-xl p-6 shadow-sm max-[600px]:p-4.5"
-		>
-			<h2 class="m-0 text-[19px] font-bold">Editar producto</h2>
-			<p class="mt-1.5 m-0 text-muted text-[13px]">Solo ADMIN puede modificar.</p>
-			<div class="grid grid-cols-2 gap-4 mt-5 max-[600px]:grid-cols-1">
-				<div class="flex flex-col gap-1.5">
-					<label for="producto-nombre" class="text-[13px] font-bold">Nombre</label>
-					<input
-						id="producto-nombre"
-						type="text"
-						[ngModel]="formState().nombre"
-						(ngModelChange)="formState.update(s => ({ ...s, nombre: $event }))"
-						class="w-full px-3 py-2.5 border border-border-strong rounded-md bg-white text-sm"
-					/>
-				</div>
+						@if (producto.activo !== undefined) 
+						{
+							<span
+								class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold"
+								[class]="producto.activo
+									? 'bg-emerald-50 text-emerald-700'
+									: 'bg-slate-100 text-slate-600'"
+							>
+								<span
+									class="h-2 w-2 rounded-full"
+									[class]="producto.activo
+										? 'bg-emerald-500'
+										: 'bg-slate-400'"
+								></span>
 
-				<div class="flex flex-col gap-1.5">
-					<label for="producto-precio" class="text-[13px] font-bold">Precio</label>
-					<input
-						id="producto-precio"
-						type="number"
-						[ngModel]="formState().precio"
-						(ngModelChange)="formState.update(s => ({ ...s, precio: +$event }))"
-						min="1"
-						step="1"
-						class="w-full px-3 py-2.5 border border-border-strong rounded-md bg-white text-sm"
-					/>
-				</div>
+								{{ producto.activo ? 'Activo' : 'Inactivo' }}
+							</span>
+						}
+					</div>
+				</header>
 
-				<div class="flex flex-col gap-1.5">
-					<label for="producto-stock" class="text-[13px] font-bold">Stock disponible</label>
-					<input
-						id="producto-stock"
-						type="number"
-						[ngModel]="formState().stock"
-						(ngModelChange)="formState.update(s => ({ ...s, stock: +$event }))"
-						min="0"
-						step="1"
-						class="w-full px-3 py-2.5 border border-border-strong rounded-md bg-white text-sm"
-					/>
-				</div>
+				<section class="mb-6 rounded-2xl border border-border bg-white p-6 shadow-sm max-[600px]:p-4">
+					<div class="flex flex-wrap items-end justify-between gap-4">
+						<div>
+							<p class="m-0 text-sm font-medium text-muted">
+								Precio
+							</p>
 
-				<div class="flex flex-col gap-1.5">
-					<label for="producto-sku" class="text-[13px] font-bold">SKU</label>
-					<input
-						id="producto-sku"
-						type="text"
-						[ngModel]="formState().sku"
-						(ngModelChange)="formState.update(s => ({ ...s, sku: $event }))"
-						class="w-full px-3 py-2.5 border border-border-strong rounded-md bg-white text-sm"
-					/>
-				</div>
+							<p class="mb-0 mt-2 text-4xl font-bold tracking-tight text-[#1f2937] max-[600px]:text-3xl">
+								{{ producto.precio | currency:'CLP ' }}
+							</p>
+						</div>
 
-				<div class="flex flex-col gap-1.5">
-					<label for="producto-categoria" class="text-[13px] font-bold">Categoría</label>
-					<input
-						id="producto-categoria"
-						type="text"
-						[ngModel]="formState().categoria"
-						(ngModelChange)="formState.update(s => ({ ...s, categoria: $event }))"
-						class="w-full px-3 py-2.5 border border-border-strong rounded-md bg-white text-sm"
-					/>
-				</div>
+						<div class="rounded-xl bg-slate-50 px-4 py-3">
+							<p class="m-0 text-xs font-medium text-muted">
+								Stock disponible
+							</p>
 
-				<div class="flex flex-col gap-1.5">
-					<label for="producto-stock-minimo" class="text-[13px] font-bold">Stock mínimo</label>
-					<input
-						id="producto-stock-minimo"
-						type="number"
-						[ngModel]="formState().stockMinimo"
-						(ngModelChange)="formState.update(s => ({ ...s, stockMinimo: $event === '' ? null : +$event }))"
-						min="0"
-						step="1"
-						placeholder="Opcional"
-						class="w-full px-3 py-2.5 border border-border-strong rounded-md bg-white text-sm"
-					/>
-				</div>
+							<p class="mb-0 mt-1 text-xl font-bold text-[#1f2937]">
+								{{ producto.stockDisponible }}
+								<span class="text-sm font-medium text-muted">
+									unidades
+								</span>
+							</p>
+						</div>
+					</div>
+				</section>
 
-				<div class="col-span-2 max-[600px]:col-span-1 flex flex-col gap-1.5">
-					<label for="producto-descripcion" class="text-[13px] font-bold">Descripción</label>
-					<textarea
-						id="producto-descripcion"
-						rows="3"
-						[ngModel]="formState().descripcion"
-						(ngModelChange)="formState.update(s => ({ ...s, descripcion: $event }))"
-						class="w-full px-3 py-2.5 border border-border-strong rounded-md bg-white text-sm resize-y"
-					></textarea>
-				</div>
+				<section class="rounded-2xl border border-border bg-white p-6 shadow-sm max-[600px]:p-4">
+					<h2 class="m-0 text-lg font-bold text-[#1f2937]">
+						Información del producto
+					</h2>
 
-				<label class="flex items-center gap-2 text-sm font-medium">
-					<input
-						type="checkbox"
-						[ngModel]="formState().activo"
-						(ngModelChange)="formState.update(s => ({ ...s, activo: $event }))"
-					/>
-					Producto activo
-				</label>
-			</div>
-			<button
-				type="button"
-				(click)="guardar()"
-				[disabled]="actualizarMutation.isPending()"
-				class="mt-5 px-4 py-2.5 bg-[#1f2937] text-white rounded-md text-sm font-bold hover:bg-[#111827] disabled:opacity-60 transition"
-			>
-				@if (actualizarMutation.isPending()) {
-					Guardando…
-				} @else {
-					Guardar cambios
-				}
-			</button>
-		</section>
-	}
-</div>
+					<div class="mt-5 grid grid-cols-2 gap-x-8 gap-y-6 md:grid-cols-3">
+						<div>
+							<p class="m-0 text-xs font-medium text-muted">
+								SKU
+							</p>
+
+							<p class="mb-0 mt-1.5 break-all text-sm font-semibold text-[#1f2937]">
+								{{ producto.sku || 'No disponible' }}
+							</p>
+						</div>
+
+						<div>
+							<p class="m-0 text-xs font-medium text-muted">
+								Categoría
+							</p>
+
+							<p class="mb-0 mt-1.5 text-sm font-semibold text-[#1f2937]">
+								{{ producto.categoria || 'No disponible' }}
+							</p>
+						</div>
+					</div>
+
+					<div class="mt-6 border-t border-border pt-5">
+						<h3 class="m-0 text-sm font-bold text-[#1f2937]">
+							Descripción
+						</h3>
+
+						<p class="mb-0 mt-2 whitespace-pre-line text-sm leading-7 text-muted">
+							{{ producto.descripcion || 'No hay una descripción disponible para este producto.' }}
+						</p>
+					</div>
+				</section>
+			}
+		</ng-template>
+    </app-query-state>
+</main>
