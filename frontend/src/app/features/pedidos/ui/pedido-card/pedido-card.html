@@ -1,18 +1,22 @@
 <section
-    class="group flex flex-col h-full min-w-0 bg-surface border border-border rounded-2xl p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:shadow-md hover:border-[#c7ced8]"
+    class="group flex h-full min-w-0 flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-gray-300 hover:shadow-md"
 >
-    <header class="flex items-start justify-between gap-3 pb-4 border-b border-border">
+    <header class="flex items-start justify-between gap-3 border-b border-gray-100 pb-4">
         <div class="min-w-0 flex-1">
-            <p class="m-0 mb-2 text-[10px] font-bold tracking-[0.18em] text-muted uppercase">
+            <p class="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-500">
                 Pedido
             </p>
 
             <h2
-                class="m-0 text-base font-bold text-primary leading-snug wrap-break-word"
+                class="m-0 wrap-break-word text-base font-bold leading-snug text-gray-900"
                 [title]="pedido().id"
             >
                 {{ nombreDisplay() }}
             </h2>
+
+            <p class="mb-0 mt-1 break-all text-xs text-gray-500">
+                N.º {{ pedido().id }}
+            </p>
         </div>
 
         <div class="shrink-0">
@@ -21,108 +25,85 @@
     </header>
 
     <div class="grid grid-cols-2 gap-4 py-5">
-        <div class="min-w-0 flex flex-col gap-2">
-            <span class="text-[10px] font-bold tracking-widest text-muted uppercase">
-                Fecha
+        <div class="flex min-w-0 flex-col gap-2">
+            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                Fecha de compra
             </span>
 
-            <span class="text-sm font-medium text-primary">
+            <span class="text-sm font-semibold text-gray-900">
                 {{ pedido().createdAt | date: 'dd/MM/yyyy' }}
             </span>
 
-            <span class="text-xs text-muted">
+            <span class="text-xs text-gray-500">
                 {{ pedido().createdAt | date: 'HH:mm' }} hrs.
             </span>
         </div>
 
-        <div class="min-w-0 flex flex-col gap-2">
-            <span class="text-[10px] font-bold tracking-widest text-muted uppercase">
+        <div class="flex min-w-0 flex-col gap-2">
+            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-500">
                 Productos
             </span>
 
-            <strong class="text-xl font-bold text-primary tracking-tight">
+            <strong class="text-2xl font-bold tracking-tight text-gray-900">
                 {{ pedido().productos.length }}
             </strong>
 
-            <span class="text-[11px] text-muted">
+            <span class="text-xs text-gray-500">
                 {{ pedido().productos.length === 1 ? 'producto' : 'productos' }}
             </span>
         </div>
     </div>
 
-    <div class="flex-1 flex flex-col pt-1">
-        <div class="flex items-center justify-between gap-3 mb-3">
-            <h3 class="m-0 text-sm font-bold text-primary">
-                Detalle del pedido
+    <div class="flex flex-1 flex-col pt-1">
+        <div class="mb-3 flex items-center justify-between gap-3">
+            <h3 class="m-0 text-sm font-bold text-gray-900">
+                Tu compra
             </h3>
 
-            <span class="text-[10px] font-semibold text-muted uppercase tracking-wide">
-                {{ pedido().productos.length }} ítems
+            <span class="text-[10px] font-semibold uppercase tracking-wide text-gray-500">
+                {{ pedido().productos.length }}
+                {{ pedido().productos.length === 1 ? 'ítem' : 'ítems' }}
             </span>
         </div>
 
         @if (pedido().productos.length === 0) {
             <div
-                class="flex flex-col items-center justify-center flex-1 min-h-36 p-4 border border-dashed border-border-strong rounded-xl bg-surface-secondary text-center"
+                class="flex min-h-36 flex-1 flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 p-4 text-center"
             >
-                <p class="m-0 text-sm font-medium text-muted">
+                <p class="m-0 text-sm font-medium text-gray-500">
                     No hay productos en este pedido
                 </p>
             </div>
         } @else {
             <ul
-                class="flex flex-col h-36 overflow-y-auto overflow-x-hidden m-0 p-0 list-none border border-border rounded-xl bg-surface-secondary"
+                class="m-0 flex h-36 list-none flex-col overflow-x-hidden overflow-y-auto rounded-xl border border-gray-200 bg-gray-50 p-0"
                 style="scrollbar-width: thin; scrollbar-color: #c7ced8 transparent;"
             >
                 @for (producto of pedido().productos; track producto.productoId) {
                     <li
-                        class="flex justify-between items-center gap-3 min-h-12 px-3 py-3 bg-surface hover:bg-[#f1f3f5] transition-colors not-first:border-t not-first:border-border"
+                        class="flex min-h-12 items-center justify-between gap-3 border-b border-gray-100 bg-white px-3 py-3 last:border-b-0"
                     >
-                        <span class="min-w-0 text-sm font-medium text-primary wrap-break-word">
+                        <span class="min-w-0 wrap-break-word text-sm font-medium text-gray-800">
                             {{ producto.nombreProducto }}
                         </span>
 
                         <span
-                            class="shrink-0 inline-flex items-center justify-center min-w-9 px-2 py-1 rounded-md bg-surface border border-border text-xs font-bold text-muted"
+                            class="inline-flex min-w-9 shrink-0 items-center justify-center rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-bold text-gray-700"
                         >
-                            x{{ producto.cantidad }}
+                            ×{{ producto.cantidad }}
                         </span>
                     </li>
                 }
             </ul>
         }
-
-        <div class="grid grid-cols-2 gap-2 mt-5">
-            <button
-                type="button"
-                class="inline-flex items-center justify-center px-3 py-2.5 rounded-lg text-xs font-semibold border border-[#1a6433] bg-success text-white hover:bg-[#1a6433] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                (click)="avanzar.emit()"
-                [disabled]="!puedeAvanzar()"
-                [title]="puedeAvanzar() ? 'Avanzar al siguiente estado' : 'Estado final: no se puede avanzar'"
-            >
-                Avanzar estado
-            </button>
-
-            <button
-                type="button"
-                class="inline-flex items-center justify-center px-3 py-2.5 rounded-lg text-xs font-semibold border border-danger-border bg-surface text-danger hover:bg-danger-light transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                (click)="cancelar.emit()"
-                [disabled]="!puedeCancelar()"
-                title="Cancelar pedido"
-            >
-                Cancelar pedido
-            </button>
-        </div>
     </div>
 
-    <div class="mt-4 p-3 bg-surface-secondary border border-border rounded-lg">
-        <span class="block mb-1 text-[10px] font-bold tracking-widest text-muted uppercase">
+    <div class="mt-5 rounded-xl border border-gray-200 bg-gray-50 p-3">
+        <span class="mb-1 block text-[10px] font-bold uppercase tracking-widest text-gray-500">
             Comentario
         </span>
 
-        <p
-            class="m-0 text-xs text-muted leading-relaxed whitespace-pre-wrap wrap-break-word"
-        >
+        <p class="m-0 whitespace-pre-wrap wrap-break-word text-xs leading-relaxed text-gray-700">
             {{ pedido().comentario ?? 'Sin comentarios' }}
         </p>
     </div>
