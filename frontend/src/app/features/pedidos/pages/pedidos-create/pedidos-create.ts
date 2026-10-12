@@ -1,4 +1,3 @@
-import { CurrencyPipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { injectQuery } from '@tanstack/angular-query-experimental';
@@ -8,16 +7,15 @@ import { NotificationService } from '@core/notification/notification.service';
 import { QueryState } from '@shared/components/query-state/query-state';
 import { CarritoService } from '@features/carrito/data/carrito.service';
 import { PedidoCheckoutService } from '@features/pedidos/data/pedido-checkout.service';
+import { PedidoTimeline } from '@features/pedidos/ui/pedido-card/pedido-timeline/pedido-timeline';
 import { ProductosService } from '@features/productos/data/productos.service';
 import { ProductoResponse } from '@features/productos/data/productos.types';
-import { PedidoTimeline } from '@features/pedidos/ui/pedido-card/pedido-timeline/pedido-timeline';
 
 @Component({
     selector: 'app-pedidos-form',
     standalone: true,
     imports: [
         FormsModule,
-        CurrencyPipe,
         PedidoTimeline,
         QueryState,
     ],

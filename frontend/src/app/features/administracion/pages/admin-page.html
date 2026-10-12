@@ -1,0 +1,31 @@
+<div class="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 lg:px-8">
+    <section class="mb-4">
+        <h1 class="m-0 text-2xl font-bold tracking-tight">
+            Administración
+        </h1>
+
+        <nav class="mt-3 flex flex-wrap gap-2 border-b border-border pb-2">
+            <a
+                routerLink="/admin/rabbitmq"
+                routerLinkActive="bg-primary text-white"
+                ariaCurrentWhenActive="page"
+                [routerLinkActiveOptions]="{ exact: true }"
+                class="rounded-lg px-3 py-1.5 text-sm font-medium transition hover:bg-surface-secondary"
+            >
+                RabbitMQ
+            </a>
+
+            <a
+                routerLink="/admin/productos"
+                routerLinkActive="bg-primary text-white"
+                ariaCurrentWhenActive="page"
+                [routerLinkActiveOptions]="{ exact: true }"
+                class="rounded-lg px-3 py-1.5 text-sm font-medium transition hover:bg-surface-secondary"
+            >
+                Productos
+            </a>
+        </nav>
+    </section>
+
+    <router-outlet />
+</div>

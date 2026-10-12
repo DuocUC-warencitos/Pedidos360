@@ -1,4 +1,3 @@
-import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
@@ -8,7 +7,7 @@ import { PedidoResponse } from '@features/pedidos/data/pedidos.types';
 @Component({
   selector: 'app-pedido-card',
   standalone: true,
-  imports: [DatePipe, UiBadge, RouterLink],
+  imports: [UiBadge, RouterLink],
   templateUrl: './pedido-card.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

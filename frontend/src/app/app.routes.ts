@@ -27,10 +27,10 @@ export const routes: Routes =
 			.then(m => m.productosRoutes)
 	},
 	{
-	path: 'rabbitmq-admin',
-	canActivate: [authGuard],
-	loadChildren: () =>
-		import('./features/rabbitmq-admin/rabbitmq-admin.routes')
-		.then(m => m.rabbitmqAdminRoutes)
+		path: 'admin',
+		canActivate: [authGuard],
+		loadChildren: () =>
+			import('./features/administracion/admin.routes')
+			.then(m => m.adminRoutes)
 	}
 ];
