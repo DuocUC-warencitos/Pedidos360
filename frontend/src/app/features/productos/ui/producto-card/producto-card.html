@@ -14,14 +14,17 @@
             class="m-0 text-base font-semibold leading-snug wrap-break-word"
             [title]="producto().nombre"
         >
-            @if (producto().activo) {
+            @if (producto().activo) 
+            {
                 <a
                     [routerLink]="['/productos/detalle', producto().id]"
                     class="text-primary no-underline hover:underline focus-visible:underline"
                 >
                     {{ producto().nombre || 'Sin nombre' }}
                 </a>
-            } @else {
+            } 
+            @else 
+            {
                 <span class="text-muted cursor-not-allowed">
                     {{ producto().nombre || 'Sin nombre' }}
                 </span>
@@ -43,7 +46,8 @@
                 {{ producto().precio | currency: 'CLP' : 'symbol-narrow' : '1.0-0' }}
             </p>
 
-            @if (producto().activo) {
+            @if (producto().activo) 
+            {
                 <p class="text-xs text-muted mt-2 mb-0">
                     @if (producto().stockDisponible > 0) 
                     {
@@ -54,7 +58,9 @@
                         Sin stock disponible
                     }
                 </p>
-            } @else {
+            } 
+            @else 
+            {
                 <p class="text-xs text-muted mt-2 mb-0">
                     Producto no disponible
                 </p>
