@@ -18,6 +18,9 @@ import io.github.roony11_1.pedidos_service.infrastructure.client.ProductoClient;
 import io.github.roony11_1.pedidos_service.infrastructure.client.ProductoClientResiliente;
 import io.github.roony11_1.pedidos_service.infrastructure.spec.SpecificationFactory;
 import io.github.roony11_1.pedidos_service.kernel.IUserTokenService;
+import io.github.roony11_1.specification.core.FilterCondition;
+import io.github.roony11_1.specification.core.FilterOperator;
+import io.github.roony11_1.specification.spring.FilterSpecificationBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,10 +49,22 @@ public class PedidoService
         return saved;
     }
 
-    @Transactional(readOnly = true)
     public Pedido findById(UUID id)
     {
-        return pedidoRepository.findById(id)
+        if (userTokenService.hasAnyRole("ADMIN", "OPERADOR"))
+        {
+            return pedidoRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("pedido", id));
+        }
+
+        Specification<Pedido> specification =
+            userTokenService.<Pedido>getUserSpecification()
+                .and(new FilterSpecificationBuilder<Pedido>()
+                        .withCondition(new FilterCondition("id", FilterOperator.EQ, id))
+                        .build()
+                );
+
+        return pedidoRepository.findOne(specification)
             .orElseThrow(() -> new NotFoundException("pedido", id));
     }
 
