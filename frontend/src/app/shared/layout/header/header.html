@@ -31,31 +31,32 @@
                 routerLink="/example"
                 routerLinkActive="!bg-white !text-primary shadow-sm"
                 [routerLinkActiveOptions]="{ exact: true }"
-                class="whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-semibold text-[#6b7280] no-underline transition hover:text-primary max-[500px]:flex-1 max-[500px]:text-center"
+                class="whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-semibold text-muted no-underline transition hover:text-primary max-[500px]:flex-1 max-[500px]:text-center"
             >
                 Ejemplo
             </a>
 
             <a
+                routerLink="/productos/catalogo"
+                routerLinkActive="!bg-white !text-primary shadow-sm"
+                class="whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-semibold text-muted no-underline transition hover:text-primary max-[500px]:flex-1 max-[500px]:text-center"
+            >
+                Catálogo
+            </a>
+
+            <a
                 routerLink="/pedidos"
                 routerLinkActive="!bg-white !text-primary shadow-sm"
-                class="whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-semibold text-[#6b7280] no-underline transition hover:text-primary max-[500px]:flex-1 max-[500px]:text-center"
+                class="whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-semibold text-muted no-underline transition hover:text-primary max-[500px]:flex-1 max-[500px]:text-center"
             >
                 Pedidos
             </a>
 
-            <a
-                routerLink="/productos"
-                routerLinkActive="!bg-white !text-primary shadow-sm"
-                class="whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-semibold text-[#6b7280] no-underline transition hover:text-primary max-[500px]:flex-1 max-[500px]:text-center"
-            >
-                Productos
-            </a>
 
             <a
                 routerLink="/rabbitmq-admin"
                 routerLinkActive="!bg-white !text-primary shadow-sm"
-                class="whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-semibold text-[#6b7280] no-underline transition hover:text-primary max-[500px]:flex-1 max-[500px]:text-center"
+                class="whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-semibold text-muted no-underline transition hover:text-primary max-[500px]:flex-1 max-[500px]:text-center"
             >
                 Administración
             </a>
