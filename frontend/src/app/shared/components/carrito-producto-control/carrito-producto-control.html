@@ -1,0 +1,64 @@
+@if (carritoService.cantidadProducto(producto().id) > 0)
+{
+    <div class="flex flex-col gap-3">
+        <div
+            class="flex items-center gap-2 text-sm font-medium text-emerald-700"
+            role="status"
+        >
+            <span aria-hidden="true">✓</span>
+            Agregado al carrito
+        </div>
+
+        <div class="flex items-center gap-2">
+            <button
+                type="button"
+                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-surface-secondary transition hover:opacity-80"
+                aria-label="Quitar una unidad"
+                (click)="quitarUnaUnidad()"
+            >
+                −
+            </button>
+
+            <div class="flex flex-1 flex-col items-center">
+                <span class="text-lg font-bold">
+                    {{ carritoService.cantidadProducto(producto().id) }}
+                </span>
+                <span class="text-xs text-muted">unidades</span>
+            </div>
+
+            <button
+                type="button"
+                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                aria-label="Agregar una unidad"
+                [disabled]="
+                    !producto().activo ||
+                    carritoService.cantidadProducto(producto().id) >= producto().stockDisponible
+                "
+                (click)="agregarAlCarrito()"
+            >
+                +
+            </button>
+
+            <button
+                type="button"
+                class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-surface-secondary text-muted transition hover:text-red-600"
+                aria-label="Eliminar producto del carrito"
+                (click)="quitarDelCarrito()"
+            >
+                <span aria-hidden="true">🗑</span>
+            </button>
+        </div>
+    </div>
+}
+@else
+{
+    <button
+        type="button"
+        class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+        [disabled]="!producto().activo || producto().stockDisponible <= 0"
+        (click)="agregarAlCarrito()"
+    >
+        <span aria-hidden="true">🛒</span>
+        Agregar al carrito
+    </button>
+}

@@ -2,6 +2,7 @@ import { CurrencyPipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
+import { CarritoProductoControl } from '@shared/components/carrito-producto-control/carrito-producto-control';
 import { QueryState } from '@shared/components/query-state/query-state';
 import { useProductoByIdQuery } from '@features/productos/data/productos.queries';
 
@@ -11,7 +12,8 @@ import { useProductoByIdQuery } from '@features/productos/data/productos.queries
     imports: [
         RouterLink,
         QueryState,
-		CurrencyPipe
+		CurrencyPipe,
+        CarritoProductoControl
     ],
     templateUrl: './productos-detail.html',
 })
