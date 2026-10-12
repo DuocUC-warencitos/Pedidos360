@@ -1,4 +1,4 @@
-import { CurrencyPipe, JsonPipe } from '@angular/common';
+import { CurrencyPipe } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 
@@ -11,8 +11,7 @@ import { useProductoByIdQuery } from '@features/productos/data/productos.queries
     imports: [
         RouterLink,
         QueryState,
-		CurrencyPipe,
-        JsonPipe
+		CurrencyPipe
     ],
     templateUrl: './productos-detail.html',
 })
