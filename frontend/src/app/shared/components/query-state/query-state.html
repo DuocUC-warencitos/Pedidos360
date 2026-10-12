@@ -1,0 +1,53 @@
+@if (loading) 
+{
+    @if (loadingTemplate) 
+    {
+        <ng-container [ngTemplateOutlet]="loadingTemplate" />
+    } 
+    @else 
+    {
+        <div class="py-16 text-center text-sm text-muted">
+            Cargando...
+        </div>
+    }
+} 
+@else if (error) 
+{
+    @if (errorTemplate) 
+    {
+        <ng-container [ngTemplateOutlet]="errorTemplate" />
+    } 
+    @else 
+    {
+        <div class="py-16 text-center">
+            <h2 class="text-lg font-semibold m-0">
+                No se pudieron cargar los datos
+            </h2>
+            <p class="text-sm text-muted mt-2">
+                Comprueba tu conexión e inténtalo nuevamente.
+            </p>
+        </div>
+    }
+} 
+@else if (empty) 
+{
+    @if (emptyTemplate) 
+    {
+        <ng-container [ngTemplateOutlet]="emptyTemplate" />
+    } 
+    @else 
+    {
+        <div class="py-20 text-center">
+            <h2 class="text-xl font-semibold m-0">
+                No hay resultados
+            </h2>
+        </div>
+    }
+}
+@else 
+{
+    @if (contentTemplate) 
+    {
+        <ng-container [ngTemplateOutlet]="contentTemplate" />
+    }
+}

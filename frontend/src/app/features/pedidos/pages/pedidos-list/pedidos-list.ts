@@ -2,6 +2,7 @@ import { Component, computed, inject } from '@angular/core';
 import { injectQuery } from '@tanstack/angular-query-experimental';
 import { lastValueFrom } from 'rxjs';
 
+import { QueryState } from '@shared/components/query-state/query-state';
 import { UiEstadoLeyenda } from '@shared/ui/estado-leyenda/ui-estado-leyenda';
 import {
   useAvanzarMutation,
@@ -15,7 +16,7 @@ import { ProductosService } from '@features/productos/data/productos.service';
 @Component({
   selector: 'app-pedidos-list',
   standalone: true,
-  imports: [PedidoCard, UiEstadoLeyenda],
+  imports: [PedidoCard, UiEstadoLeyenda, QueryState],
   templateUrl: './pedidos-list.html',
 })
 export class PedidosList {

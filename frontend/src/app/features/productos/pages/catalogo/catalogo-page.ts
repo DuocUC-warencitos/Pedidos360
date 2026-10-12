@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 
+import { QueryState } from '@shared/components/query-state/query-state';
 import { useProductosQuery } from '@features/productos/data/productos.queries';
 import { ProductoCard } from '@features/productos/ui/producto-card/producto-card';
 
@@ -7,8 +8,10 @@ import { ProductoCard } from '@features/productos/ui/producto-card/producto-card
 @Component({
     selector: 'app-productos-catalogo',
     standalone: true,
-    imports: [
+    imports: 
+    [
         ProductoCard,
+        QueryState
     ],
     templateUrl: './catalogo-page.html',
 })

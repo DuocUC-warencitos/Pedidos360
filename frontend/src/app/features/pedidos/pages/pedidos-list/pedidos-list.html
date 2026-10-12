@@ -54,51 +54,64 @@
             </div>
         </div>
 
-        @if (pedidosQuery.isLoading()) {
-            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                @for (item of [1, 2, 3, 4, 5, 6]; track item) {
-                    <div class="rounded-xl border border-border p-5 animate-pulse">
-                        <div class="h-4 w-2/3 rounded bg-border mb-4"></div>
-                        <div class="h-3 w-1/3 rounded bg-border mb-6"></div>
-                        <div class="h-8 w-1/2 rounded bg-border mb-5"></div>
-                        <div class="h-10 w-full rounded bg-border"></div>
-                    </div>
-                }
-            </div>
-        } @else if (pedidosQuery.isError()) {
-            <div class="flex flex-col items-center text-center py-12 px-5 rounded-xl border border-dashed border-border">
-                <h3 class="m-0 text-base font-semibold">
-                    No se pudieron cargar los pedidos
-                </h3>
-
-                <p class="mt-2 mb-0 text-sm text-muted">
-                    Comprueba la conexión e inténtalo nuevamente.
-                </p>
-            </div>
-        } @else if (pedidosEnriquecidos().length === 0) {
-            <div class="flex flex-col items-center text-center py-14 px-5 rounded-xl border border-dashed border-border">
-                <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-surface-secondary border border-border mb-4">
-                    <span class="text-2xl">—</span>
+        <app-query-state
+            [loading]="pedidosQuery.isLoading()"
+            [error]="pedidosQuery.isError()"
+            [empty]="pedidosEnriquecidos().length === 0"
+        >
+            <ng-template #loading>
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                    @for (item of [1, 2, 3, 4, 5, 6]; track item) {
+                        <div class="rounded-xl border border-border p-5 animate-pulse">
+                            <div class="h-4 w-2/3 rounded bg-border mb-4"></div>
+                            <div class="h-3 w-1/3 rounded bg-border mb-6"></div>
+                            <div class="h-8 w-1/2 rounded bg-border mb-5"></div>
+                            <div class="h-10 w-full rounded bg-border"></div>
+                        </div>
+                    }
                 </div>
+            </ng-template>
 
-                <h3 class="m-0 text-base font-semibold">
-                    Todavía no hay pedidos
-                </h3>
+            <ng-template #error>
+                <div class="flex flex-col items-center text-center py-12 px-5 rounded-xl border border-dashed border-border">
+                    <h3 class="m-0 text-base font-semibold">
+                        No se pudieron cargar los pedidos
+                    </h3>
 
-                <p class="mt-2 mb-0 text-sm text-muted max-w-sm">
-                    Cuando se registren pedidos, aparecerán aquí para que puedas consultar su estado y gestionarlos.
-                </p>
-            </div>
-        } @else {
-            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 items-stretch">
-                @for (pedido of pedidosEnriquecidos(); track pedido.id) {
-                    <app-pedido-card
-                        [pedido]="pedido"
-                        (avanzar)="avanzarMutation.mutate(pedido.id)"
-                        (cancelar)="cancelarMutation.mutate(pedido.id)"
-                    />
-                }
-            </div>
-        }
+                    <p class="mt-2 mb-0 text-sm text-muted">
+                        Comprueba la conexión e inténtalo nuevamente.
+                    </p>
+                </div>
+            </ng-template>
+
+            <ng-template #empty>
+                <div class="flex flex-col items-center text-center py-14 px-5 rounded-xl border border-dashed border-border">
+                    <div class="flex items-center justify-center w-14 h-14 rounded-2xl bg-surface-secondary border border-border mb-4">
+                        <span class="text-2xl">—</span>
+                    </div>
+
+                    <h3 class="m-0 text-base font-semibold">
+                        Todavía no hay pedidos
+                    </h3>
+
+                    <p class="mt-2 mb-0 text-sm text-muted max-w-sm">
+                        Cuando se registren pedidos, aparecerán aquí para que puedas consultar su estado y gestionarlos.
+                    </p>
+                </div>
+            </ng-template>
+
+            <ng-template #content>
+                <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 items-stretch">
+                    @for (pedido of pedidosEnriquecidos(); track pedido.id) 
+                    {
+                        <app-pedido-card
+                            [pedido]="pedido"
+                            (avanzar)="avanzarMutation.mutate(pedido.id)"
+                            (cancelar)="cancelarMutation.mutate(pedido.id)"
+                        />
+                    }
+                </div>
+            </ng-template>
+        </app-query-state>
     </section>
 </div>
