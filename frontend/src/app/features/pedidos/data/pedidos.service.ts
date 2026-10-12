@@ -36,6 +36,11 @@ export class PedidosService {
 		return this.http.get<PedidoResponse[]>(apiPedidos.get.all);
 	}
 
+	obtenerPedidoPorId(id: string): Observable<PedidoResponse>
+	{
+		return this.http.get<PedidoResponse>(apiPedidos.get.byId(id));
+	}
+
 	eliminarTodosLosPedidos(): Observable<void> {
 		return this.http.delete<void>(apiPedidos.delete.all);
 	}

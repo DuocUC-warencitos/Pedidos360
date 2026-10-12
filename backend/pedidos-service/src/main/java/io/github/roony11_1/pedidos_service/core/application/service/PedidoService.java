@@ -47,6 +47,13 @@ public class PedidoService
     }
 
     @Transactional(readOnly = true)
+    public Pedido findById(UUID id)
+    {
+        return pedidoRepository.findById(id)
+            .orElseThrow(() -> new NotFoundException("pedido", id));
+    }
+
+    @Transactional(readOnly = true)
     public List<Pedido> findAll() 
     {
         if (userTokenService.hasAnyRole("ADMIN", "OPERADOR")) 

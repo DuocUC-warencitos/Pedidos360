@@ -28,6 +28,14 @@ public class PedidoController
     private final PedidoSagaService pedidoSagaService;
     private final Function<Pedido, PedidoResponse> pedidoResponseMapper;
 
+    @GetMapping("/{id}")
+    public ResponseEntity<PedidoResponse> findById(@PathVariable UUID id)
+    {
+        var pedido = pedidoService.findById(id);
+
+        return ResponseEntity.ok(pedidoResponseMapper.apply(pedido));
+    }
+
     @GetMapping("/all")
     public ResponseEntity<List<PedidoResponse>> findAll()
     {

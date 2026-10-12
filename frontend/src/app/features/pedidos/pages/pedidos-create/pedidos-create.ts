@@ -115,21 +115,31 @@ export class PedidosCreate
 
             this.navigatedForJobId = job.jobId;
 
-            this.qc.invalidateQueries({ queryKey: ['pedidos'] });
-            this.qc.invalidateQueries({ queryKey: ['productos'] });
+            this.qc.invalidateQueries({
+                queryKey: ['pedidos'],
+            });
+
+            this.qc.invalidateQueries({
+                queryKey: ['productos'],
+            });
 
             if (job.estadoJob === 'COMPLETED')
             {
                 this.notify.success(
-                    'Pedido confirmado — redirigiendo a lista'
+                    'Pedido confirmado — redirigiendo al detalle',
                 );
+
+                this.router.navigate([
+                    '/pedidos/detalle',
+                    job.pedidoId,
+                ]);
+
+                return;
             }
-            else
-            {
-                this.notify.error(
-                    job.error ?? 'Reserva de stock fallida'
-                );
-            }
+
+            this.notify.error(
+                job.error ?? 'Reserva de stock fallida',
+            );
 
             this.router.navigate(['/pedidos/lista']);
         });
@@ -149,7 +159,7 @@ export class PedidosCreate
             }));
 
             this.notify.success(
-                'Pedido en proceso de confirmación'
+                'Pedido en proceso de confirmación, te redireccionaremos cuando este listo'
             );
         },
         (error) =>

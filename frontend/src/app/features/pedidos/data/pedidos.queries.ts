@@ -28,6 +28,32 @@ export function usePedidosQuery()
     }));
 }
 
+export function usePedidoQuery(id: () => string | null)
+{
+    const service = inject(PedidosService);
+
+    return injectQuery(() => ({
+        queryKey: ['pedido', id()],
+        enabled: !!id(),
+        queryFn: async (): Promise<PedidoResponse> =>
+        {
+            const pedidoId = id();
+
+            if (!pedidoId)
+            {
+                throw new Error('No se especificó el ID del pedido');
+            }
+
+            return lastValueFrom(
+                service.obtenerPedidoPorId(pedidoId),
+            );
+        },
+        refetchOnWindowFocus: false,
+        refetchInterval: false,
+        refetchIntervalInBackground: false,
+    }));
+}
+
 export function useEliminarTodosMutation() 
 {
 	const service = inject(PedidosService);
