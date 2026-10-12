@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.github.roony11_1.pedidos_service.api.dto.response.PedidoDetailResponse;
 import io.github.roony11_1.pedidos_service.api.dto.response.PedidoResponse;
 import io.github.roony11_1.pedidos_service.core.application.service.PedidoSagaService;
 import io.github.roony11_1.pedidos_service.core.application.service.PedidoService;
@@ -27,13 +28,14 @@ public class PedidoController
     private final PedidoService pedidoService;
     private final PedidoSagaService pedidoSagaService;
     private final Function<Pedido, PedidoResponse> pedidoResponseMapper;
+    private final Function<Pedido, PedidoDetailResponse> pedidoDetailResponseMapper;
 
     @GetMapping("/{id}")
-    public ResponseEntity<PedidoResponse> findById(@PathVariable UUID id)
+    public ResponseEntity<PedidoDetailResponse> findById(@PathVariable UUID id)
     {
         var pedido = pedidoService.findById(id);
 
-        return ResponseEntity.ok(pedidoResponseMapper.apply(pedido));
+        return ResponseEntity.ok(pedidoDetailResponseMapper.apply(pedido));
     }
 
     @GetMapping("/all")

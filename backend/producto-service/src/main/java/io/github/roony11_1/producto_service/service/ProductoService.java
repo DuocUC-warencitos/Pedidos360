@@ -26,6 +26,11 @@ public class ProductoService
         return productoRepository.findById(id);
     }
 
+    public List<Producto> obtenerPorIds(List<UUID> ids)
+    {
+        return productoRepository.findAllById(ids);
+    }
+
     public Producto crear(Producto producto)
     {
         return productoRepository.save(producto);

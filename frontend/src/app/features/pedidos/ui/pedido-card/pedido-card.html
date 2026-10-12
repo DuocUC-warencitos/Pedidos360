@@ -27,20 +27,6 @@
     <div class="grid grid-cols-2 gap-4 py-5">
         <div class="flex min-w-0 flex-col gap-2">
             <span class="text-[10px] font-bold uppercase tracking-widest text-gray-500">
-                Fecha de compra
-            </span>
-
-            <span class="text-sm font-semibold text-gray-900">
-                {{ pedido().createdAt | date: 'dd/MM/yyyy' }}
-            </span>
-
-            <span class="text-xs text-gray-500">
-                {{ pedido().createdAt | date: 'HH:mm' }} hrs.
-            </span>
-        </div>
-
-        <div class="flex min-w-0 flex-col gap-2">
-            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-500">
                 Productos
             </span>
 
@@ -98,15 +84,6 @@
         }
     </div>
 
-    <div class="mt-5 rounded-xl border border-gray-200 bg-gray-50 p-3">
-        <span class="mb-1 block text-[10px] font-bold uppercase tracking-widest text-gray-500">
-            Comentario
-        </span>
-
-        <p class="m-0 whitespace-pre-wrap wrap-break-word text-xs leading-relaxed text-gray-700">
-            {{ pedido().comentario ?? 'Sin comentarios' }}
-        </p>
-    </div>
     <a
         [routerLink]="['/pedidos/detalle', pedido().id]"
         class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-blue-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"

@@ -3,7 +3,7 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
 import { apiPedidos } from './pedidos.api';
-import { CrearPedidoRequest, PedidoJobStatusResponse, PedidoProductoRequest, PedidoResponse } from './pedidos.types';
+import { CrearPedidoRequest, PedidoDetailResponse, PedidoJobStatusResponse, PedidoProductoRequest, PedidoResponse } from './pedidos.types';
 
 @Injectable({ providedIn: 'root' })
 export class PedidosService {
@@ -36,9 +36,9 @@ export class PedidosService {
 		return this.http.get<PedidoResponse[]>(apiPedidos.get.all);
 	}
 
-	obtenerPedidoPorId(id: string): Observable<PedidoResponse>
+	obtenerPedidoPorId(id: string): Observable<PedidoDetailResponse>
 	{
-		return this.http.get<PedidoResponse>(apiPedidos.get.byId(id));
+		return this.http.get<PedidoDetailResponse>(apiPedidos.get.byId(id));
 	}
 
 	eliminarTodosLosPedidos(): Observable<void> {

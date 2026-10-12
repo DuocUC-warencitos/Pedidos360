@@ -26,7 +26,9 @@
             @if (!pedidosQuery.isLoading() && !pedidosQuery.isError()) {
                 <span class="mt-3 text-sm font-medium text-gray-600">
                     {{ pedidosEnriquecidos().length }}
-                    {{ pedidosEnriquecidos().length === 1 ? 'pedido registrado' : 'pedidos registrados' }}
+                    {{ pedidosEnriquecidos().length === 1
+                        ? 'pedido registrado'
+                        : 'pedidos registrados' }}
                 </span>
             }
         </div>

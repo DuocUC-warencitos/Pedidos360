@@ -1,6 +1,7 @@
 package io.github.roony11_1.producto_service.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import io.github.roony11_1.producto_service.dto.ProductoDetailResponse;
 import io.github.roony11_1.producto_service.dto.ProductoRequest;
 import io.github.roony11_1.producto_service.dto.ProductoResponse;
+import io.github.roony11_1.producto_service.dto.ProductoSnapshotResponse;
 import io.github.roony11_1.producto_service.model.Producto;
 import io.github.roony11_1.producto_service.service.ProductoService;
 import jakarta.validation.Valid;
@@ -71,6 +73,26 @@ public class ProductoController
             .updatedAt(producto.getUpdatedAt())
             .build();
 
+    private final Function<Producto, ProductoSnapshotResponse> prodcutoSnapshotMapper = producto ->
+        ProductoSnapshotResponse.builder()
+        .id(producto.getId())
+        .nombre(producto.getNombre())
+        .precio(producto.getPrecio())
+        .build();
+
+
+    @PostMapping("/detalles")
+    public ResponseEntity<List<ProductoSnapshotResponse>> obtenerDetalles(@RequestBody List<UUID> ids)
+    {
+        List<Producto> productos = productoService.obtenerPorIds(ids);
+
+        var response = productos.stream()
+            .map(prodcutoSnapshotMapper::apply)
+            .toList();
+
+        return ResponseEntity.ok(response);
+    }
+
     @GetMapping
     public ResponseEntity<List<ProductoResponse>> listar()
     {
@@ -80,6 +102,7 @@ public class ProductoController
                 .map(productoToResponse::apply)
                 .collect(Collectors.toList()));
     }
+;
 
     @GetMapping("/{id}")
     public ResponseEntity<ProductoDetailResponse> obtenerPorId(@PathVariable UUID id) {

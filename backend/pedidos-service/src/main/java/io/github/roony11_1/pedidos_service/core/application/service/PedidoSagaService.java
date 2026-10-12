@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -35,48 +37,114 @@ public class PedidoSagaService
     private final IUserTokenService userTokenService;
     private final TransactionTemplate txTemplate;
     private final ProductoClientResiliente productoClientResiliente;
-    private final PedidoEventoProducer eventoProducer;
 
-    public Pedido crearPedido(List<PedidoProducto> productos, String idempotencyKey, String correlationId)
+    public Pedido crearPedido(
+        List<PedidoProducto> productos,
+        String idempotencyKey,
+        String correlationId)
     {
-        Optional<Pedido> pedidoOpt = pedidoRepository.findByIdempotencyKey(idempotencyKey);
+        Optional<Pedido> pedidoOpt =
+            pedidoRepository.findByIdempotencyKey(idempotencyKey);
 
-        if (pedidoOpt.isPresent()) 
+        if (pedidoOpt.isPresent())
         {
             Pedido pedido = pedidoOpt.get();
 
-            log.info("Idempotency hit crearPedido key={} -> pedidoId={}", idempotencyKey, pedido.getId());
+            log.info(
+                "Idempotency hit crearPedido key={} -> pedidoId={}",
+                idempotencyKey,
+                pedido.getId()
+            );
 
             return pedido;
         }
 
-        eventoProducer.publicar();
-
-        try 
+        try
         {
             return txTemplate.execute(status ->
             {
-                var existenteTx = pedidoRepository.findByIdempotencyKey(idempotencyKey);
+                var existenteTx =
+                    pedidoRepository.findByIdempotencyKey(idempotencyKey);
 
-                if (existenteTx.isPresent()) 
+                if (existenteTx.isPresent())
+                {
                     return existenteTx.get();
+                }
+
+                var productoIds = productos.stream()
+                    .map(PedidoProducto::getProductoId)
+                    .distinct()
+                    .toList();
+
+                var detalles = productoClientResiliente.obtenerDetalles(productoIds);
+
+                var detallesPorId = detalles.stream()
+                    .collect(Collectors.toMap(
+                        ProductoClient.ProductoSnapshotResponse::id,
+                        Function.identity()
+                    ));
+
+                var productosSnapshot = productos.stream()
+                    .map(producto ->
+                    {
+                        var detalle = detallesPorId.get(
+                            producto.getProductoId()
+                        );
+
+                        if (detalle == null)
+                        {
+                            throw new NotFoundException(
+                                "Producto",
+                                producto.getProductoId()
+                            );
+                        }
+
+                        if (producto.getCantidad() <= 0)
+                        {
+                            throw new IllegalArgumentException(
+                                "La cantidad debe ser mayor que cero"
+                            );
+                        }
+
+                        return PedidoProducto.builder()
+                            .productoId(producto.getProductoId())
+                            .nombreSnapshot(detalle.nombre())
+                            .precioSnapshot(detalle.precio())
+                            .cantidad(producto.getCantidad())
+                            .build();
+                    })
+                    .toList();
 
                 var pedido = new Pedido();
-                productos.forEach(pedido::addProducto);
+
+                productosSnapshot.forEach(pedido::addProducto);
+
                 pedido.setUserId(userTokenService.getUserId());
                 pedido.setEstadoPedido(EstadoPedido.CREADO);
-                pedido.setComentario(userTokenService.getAuditComentario("Ingresado por"));
+                pedido.setComentario(
+                    userTokenService.getAuditComentario("Ingresado por")
+                );
                 pedido.setIdempotencyKey(idempotencyKey);
                 pedido.setCorrelationId(correlationId);
 
                 return pedidoRepository.save(pedido);
             });
-        } 
-        catch (DataIntegrityViolationException ex) 
+        }
+        catch (DataIntegrityViolationException ex)
         {
-            log.warn("DataIntegrityViolation por idempotencyKey={} -> recuperando existente", idempotencyKey, ex);
+            log.warn(
+                "DataIntegrityViolation por idempotencyKey={} -> recuperando existente",
+                idempotencyKey,
+                ex
+            );
+
             return pedidoRepository.findByIdempotencyKey(idempotencyKey)
-                .orElseThrow(() -> new NotFoundException("Pedido por IdempotencyKey", idempotencyKey));
+                .orElseThrow(() ->
+                    new NotFoundException(
+                        "Pedido por IdempotencyKey",
+                        idempotencyKey
+                    )
+                );
         }
     }
 

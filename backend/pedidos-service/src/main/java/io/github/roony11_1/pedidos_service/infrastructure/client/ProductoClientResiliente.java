@@ -5,6 +5,10 @@ import io.github.resilience4j.retry.annotation.Retry;
 import io.github.roony11_1.pedidos_service.infrastructure.client.ProductoClient.ReservaStockRequest;
 import io.github.roony11_1.pedidos_service.infrastructure.client.ProductoClient.ReservaStockResponse;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.stereotype.Component;
 
 
@@ -26,6 +30,18 @@ public class ProductoClientResiliente
     public void liberar(ProductoClient.LiberarStockRequest req)
     {
         productoClient.liberar(req);
+    }
+
+    @CircuitBreaker(name = "productoService", fallbackMethod = "obtenerDetallesFallback")
+    @Retry(name = "productoService")
+    public List<ProductoClient.ProductoSnapshotResponse> obtenerDetalles(List<UUID> productoIds)
+    {
+        return productoClient.obtenerDetalles(productoIds);
+    }
+
+    private List<ProductoClient.ProductoSnapshotResponse> obtenerDetallesFallback(List<UUID> productoIds, Throwable t)
+    {
+        throw new ProductoServiceUnavailableException("producto-service no disponible al consultar productos: " + t.getMessage(), t);
     }
 
     // --- fallbacks ---

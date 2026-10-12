@@ -45,6 +45,13 @@ export interface PedidoResponse {
   userId: string;
   productos: PedidoProductoResponse[];
   estado: EstadoPedido;
+}
+
+export interface PedidoDetailResponse {
+  id: string;
+  userId: string;
+  productos: PedidoProductoResponse[];
+  estado: EstadoPedido;
   comentario: string | null;
   createdAt: string;
   updatedAt: string;
@@ -54,4 +61,5 @@ export interface PedidoProductoResponse {
   productoId: string;
   nombreProducto: string;
   cantidad: number;
+  precio: number;
 }

@@ -3,7 +3,7 @@ import { injectMutation, injectQuery, QueryClient } from '@tanstack/angular-quer
 import { lastValueFrom } from 'rxjs';
 
 import { PedidosService } from './pedidos.service';
-import { CrearPedidoRequest, PedidoJobStatusResponse, PedidoProductoRequest, PedidoResponse } from './pedidos.types';
+import { CrearPedidoRequest, PedidoDetailResponse, PedidoJobStatusResponse, PedidoProductoRequest, PedidoResponse } from './pedidos.types';
 
 export function usePedidosQuery() 
 {
@@ -16,11 +16,7 @@ export function usePedidosQuery()
 		{
             const pedidos = await lastValueFrom(service.obtenerPedidos());
 
-            return pedidos.sort(
-                (a, b) =>
-                    new Date(b.createdAt).getTime() -
-                    new Date(a.createdAt).getTime(),
-            );
+            return pedidos;
         },
         refetchOnWindowFocus: false,
         refetchInterval: false,
@@ -35,7 +31,7 @@ export function usePedidoQuery(id: () => string | null)
     return injectQuery(() => ({
         queryKey: ['pedido', id()],
         enabled: !!id(),
-        queryFn: async (): Promise<PedidoResponse> =>
+        queryFn: async (): Promise<PedidoDetailResponse> =>
         {
             const pedidoId = id();
 

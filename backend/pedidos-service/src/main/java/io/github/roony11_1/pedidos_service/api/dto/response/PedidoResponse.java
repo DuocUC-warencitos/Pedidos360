@@ -1,6 +1,5 @@
 package io.github.roony11_1.pedidos_service.api.dto.response;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,9 +20,4 @@ public class PedidoResponse
     private List<PedidoProductoResponse> productos;
 
     private EstadoPedido estado;
-
-    private String comentario;
-
-    private Instant createdAt;
-    private Instant updatedAt;
 }

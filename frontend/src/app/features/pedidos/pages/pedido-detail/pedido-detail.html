@@ -1,203 +1,179 @@
-<div class="mx-auto w-full max-w-5xl p-5 sm:p-6">
+<div class="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6">
+
     <a
         routerLink="/pedidos/lista"
-        class="mb-6 inline-flex items-center gap-2 text-sm font-semibold text-blue-700 transition hover:text-blue-900"
+        class="mb-6 inline-flex items-center gap-2 text-sm font-medium text-blue-700 hover:text-blue-900"
     >
         <span aria-hidden="true">←</span>
-        Volver a mis pedidos
+        Volver a los pedidos
     </a>
 
-    <header class="mb-8">
-        <span class="mb-2 block text-xs font-bold uppercase tracking-[2px] text-gray-500">
-            Pedidos360
-        </span>
+    <app-query-state
+        [loading]="pedidoQuery.isPending()"
+        [error]="pedidoQuery.isError()"
+        [empty]="!pedidoQuery.data()"
+    >
+        <ng-template #loading>
+            <div class="rounded-xl border border-gray-200 bg-white p-8 text-center">
+                <p class="text-gray-600">Cargando pedido...</p>
+            </div>
+        </ng-template>
 
-        <h1 class="m-0 text-3xl font-bold tracking-tight text-gray-900">
-            Detalle del pedido
-        </h1>
+        <ng-template #error>
+            <div class="rounded-xl border border-red-200 bg-white p-8 text-center">
+                <h2 class="text-lg font-semibold text-red-700">
+                    No se pudo cargar el pedido
+                </h2>
+                <p class="mt-2 text-sm text-gray-600">
+                    Intenta nuevamente más tarde.
+                </p>
+            </div>
+        </ng-template>
 
-        <p class="mb-0 mt-2 text-sm text-gray-600">
-            Consulta los productos y el estado de tu compra.
-        </p>
-    </header>
+        <ng-template #empty>
+            <div class="rounded-xl border border-gray-200 bg-white p-8 text-center">
+                <h2 class="text-lg font-semibold text-gray-900">
+                    Pedido no encontrado
+                </h2>
+                <p class="mt-2 text-sm text-gray-600">
+                    No hay información disponible para este pedido.
+                </p>
+            </div>
+        </ng-template>
 
-    @if (!pedidoId) {
-        <section class="rounded-2xl border border-gray-200 bg-white p-8 text-center">
-            <h2 class="m-0 text-lg font-semibold text-gray-900">
-                Pedido no especificado
-            </h2>
+        <ng-template #content>
+            @if (pedidoQuery.data(); as pedido) {
+                <div class="space-y-6">
 
-            <p class="mb-5 mt-2 text-sm text-gray-600">
-                No encontramos un identificador para consultar tu pedido.
-            </p>
+                    <!-- Encabezado -->
+                    <section class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 
-            <a
-                routerLink="/pedidos/lista"
-                class="inline-flex rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
-            >
-                Ir a mis pedidos
-            </a>
-        </section>
-    } @else {
-        <app-query-state
-            [loading]="pedidoQuery.isLoading()"
-            [error]="pedidoQuery.isError()"
-            [empty]="!pedidoQuery.isLoading() && !pedidoQuery.isError() && !pedido()"
-        >
-            <ng-template #loading>
-                <section class="animate-pulse rounded-2xl border border-gray-200 bg-white p-6">
-                    <div class="mb-4 h-5 w-1/3 rounded bg-gray-200"></div>
-                    <div class="mb-8 h-4 w-1/2 rounded bg-gray-200"></div>
-                    <div class="mb-4 h-24 rounded-xl bg-gray-100"></div>
-                    <div class="h-40 rounded-xl bg-gray-100"></div>
-                </section>
-            </ng-template>
+                            <div>
+                                <p class="text-sm font-medium text-gray-500">
+                                    Detalle del pedido
+                                </p>
 
-            <ng-template #error>
-                <section class="rounded-2xl border border-gray-200 bg-white px-5 py-12 text-center">
-                    <h2 class="m-0 text-lg font-semibold text-gray-900">
-                        No pudimos cargar tu pedido
-                    </h2>
+                                <h1 class="mt-1 break-all text-2xl font-bold text-gray-900">
+                                    Pedido #{{ pedido.id }}
+                                </h1>
 
-                    <p class="mb-5 mt-2 text-sm text-gray-600">
-                        Puede que no exista o que haya ocurrido un problema al consultar el servidor.
-                    </p>
-
-                    <button
-                        type="button"
-                        (click)="pedidoQuery.refetch()"
-                        class="rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
-                    >
-                        Intentar nuevamente
-                    </button>
-                </section>
-            </ng-template>
-
-            <ng-template #empty>
-                <section class="rounded-2xl border border-gray-200 bg-white px-5 py-12 text-center">
-                    <h2 class="m-0 text-lg font-semibold text-gray-900">
-                        Pedido no encontrado
-                    </h2>
-
-                    <p class="mb-5 mt-2 text-sm text-gray-600">
-                        No encontramos información para este pedido.
-                    </p>
-
-                    <a
-                        routerLink="/pedidos/lista"
-                        class="inline-flex rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-700"
-                    >
-                        Volver a mis pedidos
-                    </a>
-                </section>
-            </ng-template>
-
-            <ng-template #content>
-                @if (pedido(); as pedido) {
-                    <div class="flex flex-col gap-6">
-                        <section class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
-                            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                                <div class="min-w-0">
-                                    <p class="mb-2 text-xs font-bold uppercase tracking-widest text-gray-500">
-                                        Número de pedido
-                                    </p>
-
-                                    <h2 class="m-0 break-all text-lg font-bold text-gray-900">
-                                        {{ pedido.id }}
-                                    </h2>
-
-                                    <p class="mb-0 mt-2 text-sm text-gray-500">
-                                        Realizado el
-                                        {{ pedido.createdAt | date: 'dd/MM/yyyy' }}
-                                        a las
-                                        {{ pedido.createdAt | date: 'HH:mm' }} hrs.
-                                    </p>
-                                </div>
-
-                                <div class="self-start">
-                                    <ui-badge [estado]="pedido.estado" />
-                                </div>
-                            </div>
-
-                            <div class="mt-6 grid grid-cols-1 gap-4 border-t border-gray-100 pt-5 sm:grid-cols-2">
-                                <div class="rounded-xl bg-gray-50 p-4">
-                                    <span class="block text-xs font-semibold uppercase tracking-wide text-gray-500">
-                                        Productos distintos
-                                    </span>
-
-                                    <strong class="mt-2 block text-2xl font-bold text-gray-900">
-                                        {{ pedido.productos.length }}
-                                    </strong>
-
-                                    <span class="mt-1 block text-sm text-gray-600">
-                                        {{ pedido.productos.length === 1 ? 'tipo de producto' : 'tipos de productos' }}
-                                    </span>
-                                </div>
-
-                                <div class="rounded-xl bg-gray-50 p-4">
-                                    <span class="block text-xs font-semibold uppercase tracking-wide text-gray-500">
-                                        Última actualización
-                                    </span>
-
-                                    <strong class="mt-2 block text-lg font-bold text-gray-900">
-                                        {{ pedido.updatedAt | date: 'dd/MM/yyyy' }}
-                                    </strong>
-
-                                    <span class="mt-1 block text-sm text-gray-600">
-                                        {{ pedido.updatedAt | date: 'HH:mm' }} hrs.
-                                    </span>
-                                </div>
-                            </div>
-                        </section>
-
-                        <section class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
-                            <div class="mb-5">
-                                <h2 class="m-0 text-lg font-bold text-gray-900">
-                                    Productos de tu compra
-                                </h2>
-
-                                <p class="mb-0 mt-1 text-sm text-gray-600">
-                                    Revisa los productos incluidos en este pedido.
+                                <p class="mt-2 text-sm text-gray-500">
+                                    Creado el
+                                    {{ pedido.createdAt | date:'dd/MM/yyyy HH:mm' }}
                                 </p>
                             </div>
 
-                            @if (pedido.productos.length === 0) {
-                                <div class="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-8 text-center">
-                                    <p class="m-0 text-sm text-gray-600">
-                                        Este pedido no contiene productos.
-                                    </p>
-                                </div>
-                            } @else {
-                                <ul class="m-0 flex list-none flex-col divide-y divide-gray-100 p-0">
-                                    @for (producto of pedido.productos; track producto.productoId) {
-                                        <li class="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0">
-                                            <div class="min-w-0">
-                                                <h3 class="m-0 wrap-break-word text-sm font-semibold text-gray-900">
-                                                    {{ producto.nombreProducto.trim() || 'Producto sin nombre' }}
-                                                </h3>
-                                            </div>
+                            <ui-badge [estado]="pedido.estado" />
+                        </div>
 
-                                            <span class="inline-flex shrink-0 items-center rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-bold text-gray-800">
-                                                × {{ producto.cantidad }}
-                                            </span>
-                                        </li>
-                                    }
-                                </ul>
-                            }
-                        </section>
+                        <div class="mt-6 grid grid-cols-1 gap-4 border-t border-gray-200 pt-5 sm:grid-cols-2">
 
-                        <section class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
-                            <h2 class="m-0 text-lg font-bold text-gray-900">
-                                Comentario del pedido
+                            <div>
+                                <p class="text-sm text-gray-500">
+                                    Última actualización
+                                </p>
+                                <p class="mt-1 font-medium text-gray-900">
+                                    {{ pedido.updatedAt | date:'dd/MM/yyyy HH:mm' }}
+                                </p>
+                            </div>
+
+                            <div>
+                                <p class="text-sm text-gray-500">
+                                    Tipos de productos
+                                </p>
+                                <p class="mt-1 font-medium text-gray-900">
+                                    {{ pedido.productos.length }}
+                                </p>
+                            </div>
+
+                        </div>
+                    </section>
+
+                    <!-- Productos -->
+                    <section class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+
+                        <div class="mb-5">
+                            <h2 class="text-lg font-semibold text-gray-900">
+                                Productos del pedido
                             </h2>
 
-                            <p class="m-0 mt-3 whitespace-pre-wrap wrap-break-word text-sm leading-relaxed text-gray-700">
-                                {{ pedido.comentario || 'No agregaste ningún comentario a este pedido.' }}
+                            <p class="mt-1 text-sm text-gray-500">
+                                Revisa las cantidades y los precios de cada producto.
+                            </p>
+                        </div>
+
+                        @if (pedido.productos.length > 0) {
+                            <div class="divide-y divide-gray-200">
+
+                                @for (producto of pedido.productos; track producto.productoId) {
+                                    <div class="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between">
+
+                                        <div class="min-w-0">
+                                            <h3 class="wrap-break-word font-medium text-gray-900">
+                                                {{ producto.nombreProducto || 'Producto sin nombre' }}
+                                            </h3>
+
+                                            <p class="mt-1 text-sm text-gray-600">
+                                                Cantidad: {{ producto.cantidad }}
+                                            </p>
+                                        </div>
+
+                                        <div class="shrink-0 sm:text-right">
+                                            <p class="text-sm text-gray-500">
+                                                {{ producto.precio | currency:'CLP':'symbol-narrow':'1.0-0' }}
+                                                por unidad
+                                            </p>
+
+                                            <p class="font-semibold text-gray-900">
+                                                {{ producto.precio * producto.cantidad | currency:'CLP':'symbol-narrow':'1.0-0' }}
+                                            </p>
+                                        </div>
+
+                                    </div>
+                                }
+
+                            </div>
+
+                            <!-- Total -->
+                            <div class="mt-4 flex items-center justify-between gap-4 border-t border-gray-200 pt-5">
+                                <div>
+                                    <p class="text-base font-semibold text-gray-700">
+                                        Total del pedido
+                                    </p>
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        Incluye todos los productos
+                                    </p>
+                                </div>
+
+                                <p class="text-2xl font-bold text-gray-900">
+                                    {{ total() | currency:'CLP':'symbol-narrow':'1.0-0' }}
+                                </p>
+                            </div>
+                        } @else {
+                            <p class="py-6 text-center text-sm text-gray-500">
+                                Este pedido no contiene productos.
+                            </p>
+                        }
+
+                    </section>
+
+                    <!-- Comentario -->
+                    @if (pedido.comentario) {
+                        <section class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+                            <h2 class="text-lg font-semibold text-gray-900">
+                                Comentario
+                            </h2>
+
+                            <p class="mt-3 whitespace-pre-wrap text-sm leading-6 text-gray-700">
+                                {{ pedido.comentario }}
                             </p>
                         </section>
-                    </div>
-                }
-            </ng-template>
-        </app-query-state>
-    }
+                    }
+
+                </div>
+            }
+        </ng-template>
+    </app-query-state>
+
 </div>
