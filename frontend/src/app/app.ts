@@ -5,10 +5,11 @@ import { NgxSonnerToaster } from 'ngx-sonner';
 
 import { LoggingService } from '@core/logging/logging.service';
 import { HeaderComponent } from '@shared/layout/header/header';
+import { CarritoFlotante } from '@features/carrito/components/carrito-flotante/carrito-flotante';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, HeaderComponent, NgxSonnerToaster],
+  imports: [RouterOutlet, HeaderComponent, CarritoFlotante, NgxSonnerToaster],
     templateUrl: './app.html',
     styleUrl: './app.css',
 })

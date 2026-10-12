@@ -2,7 +2,7 @@ import { CurrencyPipe } from '@angular/common';
 import { Component, computed, inject, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { CarritoProductoControl } from '@shared/components/carrito-producto-control/carrito-producto-control';
+import { CarritoProductoControl } from '@features/carrito/components/carrito-producto-control/carrito-producto-control';
 import { CarritoService } from '@features/carrito/data/carrito.service';
 import { ProductoResponse } from '@features/productos/data/productos.types';
 
