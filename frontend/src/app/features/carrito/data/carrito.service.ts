@@ -32,6 +32,13 @@ export class CarritoService
         )
     );
 
+    cantidadProducto(productoId: string): number
+    {
+        return this.itemsState().find(
+            item => item.producto.id === productoId
+        )?.cantidad ?? 0;
+    }
+
     agregarProducto(producto: ProductoResponse, cantidad: number): boolean
     {
         if (cantidad <= 0 || cantidad > producto.stockDisponible)

@@ -46,25 +46,91 @@
                 {{ producto().precio | currency: 'CLP' : 'symbol-narrow' : '1.0-0' }}
             </p>
 
-            @if (producto().activo) 
+            @if (producto().activo)
             {
                 <p class="text-xs text-muted mt-2 mb-0">
-                    @if (producto().stockDisponible > 0) 
+                    @if (producto().stockDisponible > 0)
                     {
                         Disponible
-                    } 
-                    @else 
+                    }
+                    @else
                     {
                         Sin stock disponible
                     }
                 </p>
-            } 
-            @else 
+            }
+            @else
             {
                 <p class="text-xs text-muted mt-2 mb-0">
                     Producto no disponible
                 </p>
             }
+
+
+            @if (carritoService.cantidadProducto(producto().id) > 0)
+            {
+                <div class="mt-4 flex flex-col gap-3">
+                    <div
+                        class="flex items-center gap-2 text-sm font-medium text-success"
+                        role="status"
+                    >
+                        Agregado al carrito
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                        <button
+                            type="button"
+                            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-surface-secondary transition hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
+                            aria-label="Quitar una unidad"
+                            [disabled]="!producto().activo"
+                            (click)="quitarUnaUnidad()"
+                        >
+                            <span aria-hidden="true">−</span>
+                        </button>
+
+                        <div class="flex flex-1 flex-col items-center">
+                            <span class="text-lg font-bold">
+                                {{ carritoService.cantidadProducto(producto().id) }}
+                            </span>
+                            <span class="text-xs text-muted">unidades</span>
+                        </div>
+
+                        <button
+                            type="button"
+                            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary text-white transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                            aria-label="Agregar una unidad"
+                            [disabled]="
+                                !producto().activo ||
+                                carritoService.cantidadProducto(producto().id) >= producto().stockDisponible
+                            "
+                            (click)="agregarAlCarrito()"
+                        >
+                            <span aria-hidden="true">+</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-surface-secondary text-muted transition hover:text-red-600"
+                            aria-label="Eliminar producto del carrito"
+                            (click)="quitarDelCarrito()"
+                        >
+                        </button>
+                    </div>
+                </div>
+            }
+            @else
+            {
+                <button
+                    type="button"
+                    class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-semibold text-white transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                    [disabled]="!producto().activo || producto().stockDisponible <= 0"
+                    (click)="agregarAlCarrito()"
+                >
+                    <span aria-hidden="true">🛒</span>
+                    Agregar al carrito
+                </button>
+            }
+
         </div>
     </div>
 </article>
