@@ -15,6 +15,11 @@ export const adminRoutes: Routes = [
 				loadChildren: () =>
 					import('./rabbit-mq/rabbitmq-admin.routes').then((m) => m.rabbitmqAdminRoutes),
 			},
+			{
+				path: 'productos',
+				loadChildren: () =>
+					import('./productos/producto-admin.routes').then((m) => m.productoAdminRoutes),
+			},
 		],
 	},
 ];
