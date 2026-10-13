@@ -22,6 +22,7 @@ import io.github.roony11_1.producto_service.dto.ProductoDetailResponse;
 import io.github.roony11_1.producto_service.dto.ProductoRequest;
 import io.github.roony11_1.producto_service.dto.ProductoResponse;
 import io.github.roony11_1.producto_service.dto.ProductoSnapshotResponse;
+import io.github.roony11_1.producto_service.mappers.ProductoMappers;
 import io.github.roony11_1.producto_service.model.Producto;
 import io.github.roony11_1.producto_service.service.ProductoService;
 import jakarta.validation.Valid;
@@ -33,29 +34,7 @@ import lombok.RequiredArgsConstructor;
 public class ProductoController
 {
     private final ProductoService productoService;
-
-    private final Function<ProductoRequest, Producto> requestToProducto = request ->
-        Producto.builder()
-            .nombre(request.getNombre())
-            .precio(request.getPrecio())
-            .sku(request.getSku())
-            .categoria(request.getCategoria())
-            .descripcion(request.getDescripcion())
-            .stockDisponible(request.getStock())
-            .stockReservado(0)
-            .stockMinimo(request.getStockMinimo())
-            .activo(true)
-            .build();
-
-    private final Function<Producto, ProductoResponse> productoToResponse = producto ->
-        ProductoResponse.builder()
-            .id(producto.getId())
-            .nombre(producto.getNombre())
-            .precio(producto.getPrecio())
-            .stockDisponible(producto.getStockDisponible())
-            .sku(producto.getSku())
-            .activo(producto.isActivo())
-            .build();
+    private final ProductoMappers mappers;
 
     private final Function<Producto, ProductoDetailResponse> productoToDetailResponse = producto ->
         ProductoDetailResponse.builder()
@@ -99,8 +78,8 @@ public class ProductoController
         return ResponseEntity.ok(
             productoService.listar()
                 .stream()
-                .map(productoToResponse::apply)
-                .collect(Collectors.toList()));
+                .map(mappers.productoToResponse::apply)
+                .toList());
     }
 ;
 
@@ -110,38 +89,5 @@ public class ProductoController
             .map(productoToDetailResponse::apply)
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
-    }
-
-    @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
-    public ResponseEntity<ProductoResponse> crear(@Valid @RequestBody ProductoRequest request)
-    {
-        Producto producto = requestToProducto.apply(request);
-        Producto guardado = productoService.crear(producto);
-        ProductoResponse response = productoToResponse.apply(guardado);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
-    }
-
-    @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
-    public ResponseEntity<ProductoResponse> actualizar(@PathVariable UUID id, @jakarta.validation.Valid @RequestBody ProductoRequest request)
-    {
-        Producto producto = requestToProducto.apply(request);
-
-        return productoService.actualizar(id, producto)
-            .map(productoToResponse::apply)
-            .map(ResponseEntity::ok)
-            .orElse(ResponseEntity.notFound().build());
-    }
-
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> eliminar(@PathVariable UUID id)
-    {
-        boolean eliminado = productoService.eliminar(id);
-        if (!eliminado) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.noContent().build();
     }
 }
