@@ -124,6 +124,14 @@
             <groupId>io.github.roony11-1</groupId>
             <artifactId>roony-specification-spring</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.github.roony11-1</groupId>
+            <artifactId>roony-specification-query-params</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.roony11-1</groupId>
+            <artifactId>roony-specification-error-spring</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>

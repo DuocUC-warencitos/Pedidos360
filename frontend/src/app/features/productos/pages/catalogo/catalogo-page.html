@@ -11,12 +11,57 @@
         <p class="text-sm text-muted mt-3 mb-0">
             Explora nuestros productos y encuentra lo que necesitas.
         </p>
+
+        <form (ngSubmit)="$event.preventDefault()" class="mt-6 flex flex-col gap-3 rounded-2xl border border-border bg-white p-4 sm:flex-row sm:items-end">
+            <label class="block flex-1">
+                <span class="mb-1.5 block text-xs font-semibold text-muted">Buscar</span>
+                <input type="search" name="q"
+                    [ngModel]="textoBusqueda()" (ngModelChange)="textoBusqueda.set($event)"
+                    placeholder="Nombre del producto…"
+                    class="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-[#1f2937] outline-none transition placeholder:text-muted focus:border-[#64748b]" />
+            </label>
+
+            <label class="block sm:w-44">
+                <span class="mb-1.5 block text-xs font-semibold text-muted">Categoría</span>
+                <select name="cat"
+                    [ngModel]="categoria()" (ngModelChange)="categoria.set($event)"
+                    [disabled]="categoriasQuery.isPending()"
+                    class="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-[#1f2937] outline-none transition focus:border-[#64748b] disabled:opacity-60">
+                    <option value="">Todas</option>
+                    @for (cat of categorias(); track cat) {
+                        <option [value]="cat">{{ cat }}</option>
+                    }
+                </select>
+            </label>
+
+            <label class="block sm:w-32">
+                <span class="mb-1.5 block text-xs font-semibold text-muted">Precio mín.</span>
+                <input type="number" name="desde" min="1" step="1"
+                    [ngModel]="minPrecio()" (ngModelChange)="minPrecio.set(toNumber($event))"
+                    placeholder="0"
+                    class="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-[#1f2937] outline-none transition placeholder:text-muted focus:border-[#64748b]" />
+            </label>
+
+            <label class="block sm:w-32">
+                <span class="mb-1.5 block text-xs font-semibold text-muted">Precio máx.</span>
+                <input type="number" name="hasta" min="1" step="1"
+                    [ngModel]="maxPrecio()" (ngModelChange)="maxPrecio.set(toNumber($event))"
+                    placeholder="∞"
+                    class="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-[#1f2937] outline-none transition placeholder:text-muted focus:border-[#64748b]" />
+            </label>
+
+            <button type="button" (click)="limpiarFiltros()"
+                [disabled]="!textoBusqueda() && !categoria() && minPrecio() === null && maxPrecio() === null"
+                class="rounded-lg border border-border px-4 py-2.5 text-sm font-semibold text-[#1f2937] transition hover:bg-surface-secondary disabled:cursor-not-allowed disabled:opacity-50">
+                Limpiar
+            </button>
+        </form>
     </header>
 
     <app-query-state
         [loading]="productosQuery.isLoading()"
         [error]="productosQuery.isError()"
-        [empty]="(productosQuery.data() ?? []).length === 0"
+        [empty]="productos().length === 0"
     >
         <ng-template #loading>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -56,11 +101,23 @@
 
         <ng-template #content>
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-6 gap-y-10">
-                @for (producto of productosQuery.data() ?? []; track producto.id) 
+                @for (producto of productos(); track producto.id)
                 {
                     <app-producto-card [producto]="producto" />
                 }
             </div>
+
+            @if (totalElementos() > 0) {
+                <ui-pager
+                    [paginaActual]="pagina()"
+                    [totalPaginas]="totalPaginas()"
+                    [totalElementos]="totalElementos()"
+                    [tamanoPagina]="tamano()"
+                    (anterior)="irAPagina(pagina() - 1)"
+                    (siguiente)="irAPagina(pagina() + 1)"
+                    (tamanoChange)="cambiarTamano($event)"
+                />
+            }
         </ng-template>
     </app-query-state>
 </section>

@@ -1,21 +1,53 @@
-import { injectMutation, injectQuery, QueryClient } from "@tanstack/angular-query-experimental";
-import { ProductoAdminService } from "./productoAdmin.service";
 import { inject } from "@angular/core";
-import { ProductoRequest, ProductoResponse } from "@features/productos/data/productos.types";
+import { injectMutation, injectQuery, keepPreviousData, QueryClient } from "@tanstack/angular-query-experimental";
 import { lastValueFrom } from "rxjs";
 
-export function useProductosQuery() 
+import { PageResponse } from "@core/api/page-response";
+import { ProductoFiltros, ProductoRequest, ProductoResponse, ProductoStatsResponse } from "@features/productos/data/productos.types";
+
+import { ProductoAdminService } from "./productoAdmin.service";
+
+export function useProductosQuery(filtros: () => ProductoFiltros = () => ({}))
 {
 	const service = inject(ProductoAdminService);
 
 	return injectQuery(() => (
 	{
-		queryKey: ['productos-admin'],
+		queryKey: ['productos-admin', filtros()],
 
-		queryFn: async () => 
+		queryFn: async (): Promise<PageResponse<ProductoResponse>> =>
 		{
-			return await lastValueFrom(service.obtenerProductos());
+			return await lastValueFrom(service.obtenerProductos(filtros()));
 		},
+
+		placeholderData: keepPreviousData,
+	}));
+}
+
+export function useProductoStatsQuery()
+{
+	const service = inject(ProductoAdminService);
+
+	return injectQuery(() => (
+	{
+		queryKey: ['productos-admin-stats'],
+
+		queryFn: async (): Promise<ProductoStatsResponse> =>
+		{
+			return await lastValueFrom(service.obtenerStats());
+		},
+	}));
+}
+
+export function useProductoAdminByIdQuery(id: () => string | null)
+{
+	const service = inject(ProductoAdminService);
+
+	return injectQuery(() => (
+	{
+		queryKey: ['producto-admin', id()],
+		enabled: !!id(),
+		queryFn: async () => await lastValueFrom(service.obtenerProductoPorId(id()!)),
 	}));
 }
 
@@ -27,11 +59,15 @@ export function useCrearProductoMutation(onSuccessCb: (producto: ProductoRespons
 	return injectMutation(() => ({
 		mutationFn: (producto: ProductoRequest) => lastValueFrom(service.crearProducto(producto)),
 
-		onSuccess: (producto) => 
+		onSuccess: (producto) =>
         {
 			qc.invalidateQueries(
             {
 				queryKey: ['productos-admin'],
+			});
+			qc.invalidateQueries(
+            {
+				queryKey: ['productos'],
 			});
 
 			onSuccessCb(producto);
@@ -73,10 +109,12 @@ export function useActualizarProductoMutation(onSuccessCb: (producto: ProductoRe
     {
 		mutationFn: ({ id, producto }: { id: string; producto: ProductoRequest }) =>
 			lastValueFrom(service.actualizarProducto(id, producto)),
-		onSuccess: (producto) => 
+		onSuccess: (producto) =>
         {
 			qc.invalidateQueries({ queryKey: ['productos-admin'] });
 			qc.invalidateQueries({ queryKey: ['producto-admin', producto.id] });
+			qc.invalidateQueries({ queryKey: ['productos'] });
+			qc.invalidateQueries({ queryKey: ['producto', producto.id] });
 			onSuccessCb(producto);
 		},
 		onError: onErrorCb,

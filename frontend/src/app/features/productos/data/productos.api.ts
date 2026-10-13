@@ -2,11 +2,12 @@ import { environment } from "@env/environment";
 
 const base = `${environment.apiGatewayUrl}/v1/productos`;
 
-export const apiProductos = 
+export const apiProductos =
 {
     get:
     {
         all: base,
+        categorias: `${base}/categorias`,
         byId: (id: string) => `${base}/${id}`
     },
     post:

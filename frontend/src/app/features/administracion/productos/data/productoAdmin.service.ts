@@ -1,7 +1,11 @@
 import { HttpClient } from "@angular/common/http";
 import { inject, Injectable } from "@angular/core";
-import { ProductoRequest, ProductoResponse } from "@features/productos/data/productos.types";
 import { Observable } from "rxjs";
+
+import { construirParams } from "@core/api/http-params";
+import { PageResponse } from "@core/api/page-response";
+import { ProductoDetailResponse, ProductoFiltros, ProductoRequest, ProductoResponse, ProductoStatsResponse } from "@features/productos/data/productos.types";
+
 import { apiAdminProductos } from "./productosAdmin.api";
 
 @Injectable({providedIn: 'root'})
@@ -9,9 +13,21 @@ export class ProductoAdminService
 {
     private readonly http = inject(HttpClient);
 
-    obtenerProductos(): Observable<ProductoResponse[]> 
+    obtenerProductos(filtros: ProductoFiltros = {}): Observable<PageResponse<ProductoResponse>>
     {
-        return this.http.get<ProductoResponse[]>(apiAdminProductos.get.findAll);
+        return this.http.get<PageResponse<ProductoResponse>>(apiAdminProductos.get.findAll, {
+            params: construirParams(filtros as Record<string, string | number | string[] | undefined>),
+        });
+    }
+
+    obtenerStats(): Observable<ProductoStatsResponse>
+    {
+        return this.http.get<ProductoStatsResponse>(apiAdminProductos.get.stats);
+    }
+
+    obtenerProductoPorId(id: string): Observable<ProductoDetailResponse>
+    {
+        return this.http.get<ProductoDetailResponse>(apiAdminProductos.get.byId(id));
     }
 
     crearProducto(producto: ProductoRequest): Observable<ProductoResponse> 

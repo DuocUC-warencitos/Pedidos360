@@ -22,6 +22,8 @@ export class HeaderComponent {
     return r.length ? r.join(', ') : '';
   });
 
+  readonly esAdmin = computed(() => this.authService.user()?.roles.includes('ADMIN') ?? false);
+
   login(): void {
     this.authService.login();
   }

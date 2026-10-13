@@ -64,7 +64,20 @@
                                 </p>
                             </div>
 
-                            <ui-badge [estado]="pedido.estado" />
+                            <div class="flex shrink-0 flex-col items-end gap-3">
+                                <ui-badge [estado]="pedido.estado" />
+
+                                @if (puedeCancelar()) {
+                                    <button
+                                        type="button"
+                                        (click)="cancelar()"
+                                        [disabled]="cancelarMutation.isPending()"
+                                        class="inline-flex items-center justify-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60"
+                                    >
+                                        {{ cancelarMutation.isPending() ? 'Cancelando…' : 'Cancelar pedido' }}
+                                    </button>
+                                }
+                            </div>
                         </div>
 
                         <div class="mt-6 grid grid-cols-1 gap-4 border-t border-gray-200 pt-5 sm:grid-cols-2">

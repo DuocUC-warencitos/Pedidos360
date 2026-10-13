@@ -1,25 +1,45 @@
 import { inject } from '@angular/core';
-import { injectQuery } from '@tanstack/angular-query-experimental';
+import { injectQuery, keepPreviousData } from '@tanstack/angular-query-experimental';
 import { lastValueFrom } from 'rxjs';
 
-import { ProductosService } from './productos.service';
+import { PageResponse } from '@core/api/page-response';
 
-export function useProductosQuery() 
+import { ProductosService } from './productos.service';
+import { ProductoFiltros, ProductoResponse } from './productos.types';
+
+export function useProductosQuery(filtros: () => ProductoFiltros = () => ({}))
 {
 	const service = inject(ProductosService);
 
 	return injectQuery(() => (
 	{
-		queryKey: ['productos'],
+		queryKey: ['productos', filtros()],
 
-		queryFn: async () => 
+		queryFn: async (): Promise<PageResponse<ProductoResponse>> =>
 		{
-			return await lastValueFrom(service.obtenerProductos());
+			return await lastValueFrom(service.obtenerProductos(filtros()));
+		},
+
+		placeholderData: keepPreviousData,
+	}));
+}
+
+export function useCategoriasQuery()
+{
+	const service = inject(ProductosService);
+
+	return injectQuery(() => (
+	{
+		queryKey: ['productos-categorias'],
+
+		queryFn: async (): Promise<string[]> =>
+		{
+			return await lastValueFrom(service.obtenerCategorias());
 		},
 	}));
 }
 
-export function useProductoByIdQuery(id: () => string | null) 
+export function useProductoByIdQuery(id: () => string | null)
 {
 	const service = inject(ProductosService);
 

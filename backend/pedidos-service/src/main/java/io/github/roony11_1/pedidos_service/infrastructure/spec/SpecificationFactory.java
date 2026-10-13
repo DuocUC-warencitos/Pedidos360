@@ -8,10 +8,22 @@ import io.github.roony11_1.specification.spring.FilterSpecificationBuilder;
 
 public final class SpecificationFactory 
 {
-    public static <T> Specification<T> byId(Object id) 
+    public static <T> Specification<T> byId(Object id)
     {
         return new FilterSpecificationBuilder<T>()
             .withCondition(new FilterCondition("id", FilterOperator.EQ, id))
+            .build();
+    }
+
+    /**
+     * Match por usuario (Roony Specification Builder): filtra por el campo
+     * {@code userId} con igualdad exacta. Usado por la página de
+     * administración de pedidos para renderizar los pedidos de un usuario.
+     */
+    public static <T> Specification<T> byUserId(Object userId)
+    {
+        return new FilterSpecificationBuilder<T>()
+            .withCondition(new FilterCondition("userId", FilterOperator.EQ, userId))
             .build();
     }
 }

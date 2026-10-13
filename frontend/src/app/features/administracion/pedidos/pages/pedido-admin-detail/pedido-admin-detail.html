@@ -1,0 +1,99 @@
+<section class="mx-auto my-10 w-full max-w-6xl px-6 max-[600px]:px-4">
+  <a routerLink="/admin/pedidos" class="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-muted no-underline transition hover:text-[#1f2937]">
+    <span aria-hidden="true">←</span> Volver a pedidos
+  </a>
+
+  <app-query-state [loading]="pedidoQuery.isPending()" [error]="pedidoQuery.isError() || !pedidoQuery.data()">
+    <ng-template #loading>
+      <section class="animate-pulse rounded-2xl border border-border bg-white p-6 shadow-sm">
+        <div class="mb-4 h-3 w-28 rounded bg-border"></div>
+        <div class="mb-8 h-9 w-2/3 rounded bg-border"></div>
+        <div class="grid grid-cols-2 gap-5 md:grid-cols-3">
+          @for (item of [1, 2, 3, 4, 5, 6]; track item) {
+            <div class="h-12 rounded-lg bg-border"></div>
+          }
+        </div>
+      </section>
+    </ng-template>
+
+    <ng-template #error>
+      <section class="rounded-2xl border border-danger-border bg-white p-8 text-center shadow-sm">
+        <h1 class="m-0 text-xl font-bold text-[#1f2937]">Pedido no disponible</h1>
+        <p class="mb-0 mt-2 text-sm text-muted">No pudimos encontrar el pedido o no tienes permiso para verlo.</p>
+        <a routerLink="/admin/pedidos" class="mt-5 inline-flex rounded-lg bg-[#1f2937] px-4 py-2.5 text-sm font-semibold text-white no-underline transition hover:bg-[#111827]">
+          Volver al listado
+        </a>
+      </section>
+    </ng-template>
+
+    <ng-template #content>
+      @if (pedidoQuery.data(); as pedido) {
+        <header class="mb-8">
+          <span class="text-xs font-bold uppercase tracking-[0.18em] text-muted">Pedidos360 / Administración / Detalle</span>
+          <div class="mt-3 flex flex-wrap items-start justify-between gap-4">
+            <div class="min-w-0">
+              <h1 class="m-0 break-all text-3xl font-bold tracking-tight text-[#1f2937] max-[600px]:text-2xl">Pedido #{{ pedido.id.slice(0, 8) }}</h1>
+              <p class="mb-0 mt-2 break-all font-mono text-xs text-muted">{{ pedido.id }}</p>
+              <p class="mb-0 mt-1 text-sm text-muted">Usuario: <span class="break-all font-mono text-xs">{{ pedido.userId }}</span></p>
+            </div>
+            <ui-badge [estado]="pedido.estado" />
+          </div>
+        </header>
+
+        <section class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+            <p class="m-0 text-sm font-medium text-muted">Total</p>
+            <p class="mb-0 mt-2 text-2xl font-bold tracking-tight text-[#1f2937]">{{ total() | currency:'CLP ':'symbol-narrow':'1.0-0' }}</p>
+          </article>
+          <article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+            <p class="m-0 text-sm font-medium text-muted">Ítems</p>
+            <p class="mb-0 mt-2 text-2xl font-bold tracking-tight text-[#1f2937]">{{ pedido.productos.length }}</p>
+          </article>
+          <article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+            <p class="m-0 text-sm font-medium text-muted">Creado</p>
+            <p class="mb-0 mt-2 text-lg font-bold tracking-tight text-[#1f2937]">{{ pedido.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+          </article>
+        </section>
+
+        <section class="rounded-2xl border border-border bg-white p-6 shadow-sm max-[600px]:p-4">
+          <h2 class="m-0 text-lg font-bold text-[#1f2937]">Productos del pedido</h2>
+          @if (pedido.productos.length > 0) {
+            <div class="mt-5 divide-y divide-border border-t border-border">
+              @for (producto of pedido.productos; track producto.productoId) {
+                <div class="flex flex-col gap-2 py-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div class="min-w-0">
+                    <p class="m-0 text-sm font-semibold text-[#1f2937]">{{ producto.nombreProducto || 'Producto sin nombre' }}</p>
+                    <p class="mb-0 mt-1 text-xs text-muted">Cantidad: {{ producto.cantidad }} · {{ producto.precio | currency:'CLP ':'symbol-narrow':'1.0-0' }} c/u</p>
+                  </div>
+                  <p class="m-0 shrink-0 text-sm font-bold text-[#1f2937]">{{ producto.precio * producto.cantidad | currency:'CLP ':'symbol-narrow':'1.0-0' }}</p>
+                </div>
+              }
+            </div>
+          } @else {
+            <p class="mb-0 mt-4 text-sm text-muted">Este pedido no contiene productos.</p>
+          }
+
+          @if (pedido.comentario) {
+            <div class="mt-6 border-t border-border pt-5">
+              <h3 class="m-0 text-sm font-bold text-[#1f2937]">Comentario</h3>
+              <p class="mb-0 mt-2 whitespace-pre-wrap text-sm leading-6 text-muted">{{ pedido.comentario }}</p>
+            </div>
+          }
+        </section>
+
+        @if (puedeGestionar() && !esTerminal()) {
+          <div class="mt-6 flex flex-wrap gap-3">
+            <button type="button" (click)="avanzar()" [disabled]="avanzarMutation.isPending()"
+              class="inline-flex rounded-lg bg-[#1f2937] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#111827] disabled:opacity-60">
+              {{ avanzarMutation.isPending() ? 'Avanzando…' : 'Avanzar estado' }}
+            </button>
+            <button type="button" (click)="cancelar()" [disabled]="cancelarMutation.isPending()"
+              class="inline-flex rounded-lg border border-danger-border bg-white px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60">
+              {{ cancelarMutation.isPending() ? 'Cancelando…' : 'Cancelar pedido' }}
+            </button>
+          </div>
+        }
+      }
+    </ng-template>
+  </app-query-state>
+</section>

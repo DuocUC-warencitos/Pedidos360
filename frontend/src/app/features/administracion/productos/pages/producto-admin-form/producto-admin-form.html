@@ -1,0 +1,137 @@
+<section class="mx-auto my-10 w-full max-w-3xl px-6 max-[600px]:px-4">
+  <a routerLink="/admin/productos" class="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-muted no-underline transition hover:text-[#1f2937]">
+    <span aria-hidden="true">←</span> Volver a administración
+  </a>
+
+  <header class="mb-8">
+    <span class="text-xs font-bold uppercase tracking-[0.18em] text-muted">Productos360 / Administración</span>
+    <h1 class="mb-0 mt-3 text-3xl font-bold tracking-tight text-[#1f2937] max-[600px]:text-2xl">
+      {{ esEdicion ? 'Editar producto' : 'Nuevo producto' }}
+    </h1>
+    <p class="mb-0 mt-2 text-sm leading-6 text-muted">
+      {{ esEdicion ? 'Modifica los datos del producto y guarda los cambios.' : 'Completa los datos para registrar un producto en el catálogo.' }}
+    </p>
+  </header>
+
+  <app-query-state [loading]="cargandoOriginal()" [error]="errorCarga()">
+    <ng-template #loading>
+      <section class="animate-pulse rounded-2xl border border-border bg-white p-6 shadow-sm">
+        <div class="mb-4 h-10 rounded-lg bg-border"></div>
+        <div class="mb-4 h-10 rounded-lg bg-border"></div>
+        <div class="h-24 rounded-lg bg-border"></div>
+      </section>
+    </ng-template>
+
+    <ng-template #error>
+      <section class="rounded-2xl border border-danger-border bg-white p-8 text-center shadow-sm">
+        <h2 class="m-0 text-xl font-bold text-[#1f2937]">Producto no disponible</h2>
+        <p class="mb-0 mt-2 text-sm leading-6 text-muted">No pudimos cargar el producto para editarlo.</p>
+        <a routerLink="/admin/productos" class="mt-5 inline-flex rounded-lg bg-[#1f2937] px-4 py-2.5 text-sm font-semibold text-white no-underline transition hover:bg-[#111827]">
+          Volver al listado
+        </a>
+      </section>
+    </ng-template>
+
+    <ng-template #content>
+      <form (ngSubmit)="guardar()" class="rounded-2xl border border-border bg-white p-6 shadow-sm max-[600px]:p-4">
+        @if (errores().length > 0) {
+          <div class="mb-5 rounded-lg border border-danger-border bg-red-50 px-4 py-3">
+            <ul class="m-0 list-disc pl-5 text-sm leading-6 text-red-700">
+              @for (error of errores(); track error) {
+                <li>{{ error }}</li>
+              }
+            </ul>
+          </div>
+        }
+
+        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <label class="block sm:col-span-2">
+            <span class="mb-1.5 block text-sm font-semibold text-[#1f2937]">Nombre *</span>
+            <input type="text" name="nombre" maxlength="255" required
+              [ngModel]="nombre()" (ngModelChange)="nombre.set($event)"
+              placeholder="Ej: Leche entera 1L"
+              class="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-[#1f2937] outline-none transition placeholder:text-muted focus:border-[#64748b]" />
+          </label>
+
+          <label class="block">
+            <span class="mb-1.5 block text-sm font-semibold text-[#1f2937]">Precio (CLP) *</span>
+            <input type="number" name="precio" min="1" step="1" required
+              [ngModel]="precio()" (ngModelChange)="precio.set(toNumber($event))"
+              placeholder="Ej: 1290"
+              class="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-[#1f2937] outline-none transition placeholder:text-muted focus:border-[#64748b]" />
+          </label>
+
+          <label class="block">
+            <span class="mb-1.5 block text-sm font-semibold text-[#1f2937]">Stock *</span>
+            <input type="number" name="stock" min="0" step="1" required
+              [ngModel]="stock()" (ngModelChange)="stock.set(toNumber($event))"
+              placeholder="Ej: 50"
+              class="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-[#1f2937] outline-none transition placeholder:text-muted focus:border-[#64748b]" />
+          </label>
+
+          <label class="block">
+            <span class="mb-1.5 block text-sm font-semibold text-[#1f2937]">SKU</span>
+            <input type="text" name="sku" maxlength="50"
+              [ngModel]="sku()" (ngModelChange)="sku.set($event)"
+              placeholder="Ej: LEC-1L-001"
+              class="w-full rounded-lg border border-border bg-white px-3 py-2.5 font-mono text-sm text-[#1f2937] outline-none transition placeholder:text-muted focus:border-[#64748b]" />
+          </label>
+
+          <label class="block">
+            <span class="mb-1.5 block text-sm font-semibold text-[#1f2937]">Categoría</span>
+            <input type="text" name="categoria" maxlength="100" list="categorias-existentes"
+              [ngModel]="categoria()" (ngModelChange)="categoria.set($event)"
+              placeholder="Ej: Lácteos"
+              class="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-[#1f2937] outline-none transition placeholder:text-muted focus:border-[#64748b]" />
+            <datalist id="categorias-existentes">
+              @for (cat of categorias(); track cat) {
+                <option [value]="cat"></option>
+              }
+            </datalist>
+          </label>
+
+          <label class="block">
+            <span class="mb-1.5 block text-sm font-semibold text-[#1f2937]">Stock mínimo</span>
+            <input type="number" name="stockMinimo" min="0" step="1"
+              [ngModel]="stockMinimo()" (ngModelChange)="stockMinimo.set(toNumber($event))"
+              placeholder="Ej: 5"
+              class="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-[#1f2937] outline-none transition placeholder:text-muted focus:border-[#64748b]" />
+          </label>
+
+          <label class="flex items-center gap-3 rounded-lg border border-border bg-surface-secondary/60 px-4 py-3">
+            <input type="checkbox" name="activo"
+              [ngModel]="activo()" (ngModelChange)="activo.set($event)"
+              class="h-4 w-4 accent-[#1f2937]" />
+            <span class="text-sm font-semibold text-[#1f2937]">Producto activo <span class="font-normal text-muted">(visible en el catálogo)</span></span>
+          </label>
+
+          <label class="block sm:col-span-2">
+            <span class="mb-1.5 block text-sm font-semibold text-[#1f2937]">Descripción corta <span class="font-normal text-muted">(se muestra en las cards, máx 280)</span></span>
+            <input type="text" name="shortDescription" maxlength="280"
+              [ngModel]="shortDescription()" (ngModelChange)="shortDescription.set($event)"
+              placeholder="Ej: Leche entera fresca de la zona sur"
+              class="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-[#1f2937] outline-none transition placeholder:text-muted focus:border-[#64748b]" />
+          </label>
+
+          <label class="block sm:col-span-2">
+            <span class="mb-1.5 block text-sm font-semibold text-[#1f2937]">Descripción</span>
+            <textarea name="descripcion" rows="4" maxlength="1000"
+              [ngModel]="descripcion()" (ngModelChange)="descripcion.set($event)"
+              placeholder="Describe el producto…"
+              class="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm leading-6 text-[#1f2937] outline-none transition placeholder:text-muted focus:border-[#64748b]"></textarea>
+          </label>
+        </div>
+
+        <div class="mt-6 flex flex-wrap gap-3 border-t border-border pt-5">
+          <button type="submit" [disabled]="!formularioValido() || guardando()"
+            class="inline-flex rounded-lg bg-[#1f2937] px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-[#111827] disabled:cursor-not-allowed disabled:opacity-60">
+            {{ guardando() ? 'Guardando…' : (esEdicion ? 'Guardar cambios' : 'Crear producto') }}
+          </button>
+          <a routerLink="/admin/productos" class="inline-flex rounded-lg border border-border px-5 py-2.5 text-sm font-semibold text-[#1f2937] no-underline transition hover:bg-surface-secondary">
+            Cancelar
+          </a>
+        </div>
+      </form>
+    </ng-template>
+  </app-query-state>
+</section>

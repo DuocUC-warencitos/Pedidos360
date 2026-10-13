@@ -39,7 +39,26 @@ export type EstadoPedido =
   | 'ENTREGADO'
   | 'CANCELADO';
 
+// Filtros (contrato roony-specification-query-params + page/size/sort)
+
+export interface PedidoFiltros {
+  estado?: string;
+  page?: number;
+  size?: number;
+  sort?: string | string[];
+}
+
+export interface PedidoAdminFiltros extends PedidoFiltros {
+  usuario?: string;
+}
+
 // Responses
+export interface PedidoStatsResponse {
+  total: number;
+  cancelables: number;
+  cancelados: number;
+}
+
 export interface PedidoResponse {
   id: string;
   userId: string;

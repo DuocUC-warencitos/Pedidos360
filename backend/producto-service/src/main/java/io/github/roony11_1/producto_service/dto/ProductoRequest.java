@@ -33,7 +33,12 @@ public class ProductoRequest
     @Size(max = 1000)
     private String descripcion;
 
+    @Size(max = 280)
+    private String shortDescription;
+
     @Min(0)
     @Builder.Default
     private int stockMinimo = 0;
+
+    private Boolean activo;
 }

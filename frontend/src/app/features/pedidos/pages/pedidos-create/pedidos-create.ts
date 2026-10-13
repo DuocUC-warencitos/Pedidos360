@@ -35,13 +35,13 @@ export class PedidosCreate
     readonly total = this.carrito.total;
 
     readonly productosQuery = injectQuery(() => ({
-        queryKey: ['productos'],
+        queryKey: ['productos', { size: 100 }],
         queryFn: () =>
-            lastValueFrom(this.productosService.obtenerProductos()),
+            lastValueFrom(this.productosService.obtenerProductos({ size: 100 })),
     }));
 
     readonly productos = computed<ProductoResponse[]>(
-        () => this.productosQuery.data() ?? [],
+        () => this.productosQuery.data()?.content ?? [],
     );
 
     cantidadDe(productoId: string): number

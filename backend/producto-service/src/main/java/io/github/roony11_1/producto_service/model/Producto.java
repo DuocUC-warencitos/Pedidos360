@@ -52,6 +52,9 @@ public class Producto
     @Column(length = 1000)
     private String descripcion;
 
+    @Column(name = "short_description", length = 280)
+    private String shortDescription;
+
     @Column(name = "stock_disponible", nullable = false)
     private int stockDisponible;
 

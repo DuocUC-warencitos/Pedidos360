@@ -1,0 +1,117 @@
+<section class="mx-auto my-10 w-full max-w-6xl px-6 max-[600px]:px-4">
+  <a routerLink="/admin/productos" class="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-muted no-underline transition hover:text-[#1f2937]">
+    <span aria-hidden="true">←</span> Volver a administración
+  </a>
+
+  <app-query-state [loading]="productoQuery.isPending()" [error]="productoQuery.isError() || !productoQuery.data()">
+    <ng-template #loading>
+      <section class="animate-pulse rounded-2xl border border-border bg-white p-6 shadow-sm">
+        <div class="mb-4 h-3 w-28 rounded bg-border"></div>
+        <div class="mb-8 h-9 w-2/3 rounded bg-border"></div>
+        <div class="grid grid-cols-2 gap-5 md:grid-cols-3">
+          @for (item of [1, 2, 3, 4, 5, 6]; track item) {
+            <div class="h-12 rounded-lg bg-border"></div>
+          }
+        </div>
+      </section>
+    </ng-template>
+
+    <ng-template #error>
+      <section class="rounded-2xl border border-danger-border bg-white p-8 text-center shadow-sm">
+        <h1 class="m-0 text-xl font-bold text-[#1f2937]">Producto no disponible</h1>
+        <p class="mb-0 mt-2 text-sm text-muted">No pudimos encontrar el producto o no tienes permiso para verlo.</p>
+        <a routerLink="/admin/productos" class="mt-5 inline-flex rounded-lg bg-[#1f2937] px-4 py-2.5 text-sm font-semibold text-white no-underline transition hover:bg-[#111827]">
+          Volver al listado
+        </a>
+      </section>
+    </ng-template>
+
+    <ng-template #content>
+      @if (productoQuery.data(); as producto) {
+        <header class="mb-8">
+          <span class="text-xs font-bold uppercase tracking-[0.18em] text-muted">Productos360 / Administración / Detalle</span>
+          <div class="mt-3 flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <h1 class="m-0 text-3xl font-bold tracking-tight text-[#1f2937] max-[600px]:text-2xl">{{ producto.nombre }}</h1>
+              @if (producto.categoria) {
+                <p class="mb-0 mt-2 text-sm text-muted">{{ producto.categoria }}</p>
+              }
+            </div>
+            <span class="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold" [class]="producto.activo ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600'">
+              <span class="h-2 w-2 rounded-full" [class]="producto.activo ? 'bg-emerald-500' : 'bg-slate-400'"></span>
+              {{ producto.activo ? 'Activo' : 'Inactivo' }}
+            </span>
+          </div>
+        </header>
+
+        <section class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+            <p class="m-0 text-sm font-medium text-muted">Precio</p>
+            <p class="mb-0 mt-2 text-2xl font-bold tracking-tight text-[#1f2937]">{{ producto.precio | currency:'CLP ':'symbol-narrow':'1.0-0' }}</p>
+          </article>
+          <article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+            <p class="m-0 text-sm font-medium text-muted">Stock disponible</p>
+            <p class="mb-0 mt-2 text-2xl font-bold tracking-tight text-[#1f2937]">{{ producto.stockDisponible }} <span class="text-sm font-medium text-muted">unidades</span></p>
+          </article>
+          <article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+            <p class="m-0 text-sm font-medium text-muted">Stock reservado</p>
+            <p class="mb-0 mt-2 text-2xl font-bold tracking-tight text-[#1f2937]">{{ producto.stockReservado }} <span class="text-sm font-medium text-muted">unidades</span></p>
+          </article>
+        </section>
+
+        <section class="rounded-2xl border border-border bg-white p-6 shadow-sm max-[600px]:p-4">
+          <h2 class="m-0 text-lg font-bold text-[#1f2937]">Información del producto</h2>
+          <div class="mt-5 grid grid-cols-2 gap-x-8 gap-y-6 md:grid-cols-3">
+            <div>
+              <p class="m-0 text-xs font-medium text-muted">SKU</p>
+              <p class="mb-0 mt-1.5 break-all text-sm font-semibold text-[#1f2937]">{{ producto.sku || 'No disponible' }}</p>
+            </div>
+            <div>
+              <p class="m-0 text-xs font-medium text-muted">Categoría</p>
+              <p class="mb-0 mt-1.5 text-sm font-semibold text-[#1f2937]">{{ producto.categoria || 'No disponible' }}</p>
+            </div>
+            <div>
+              <p class="m-0 text-xs font-medium text-muted">Stock mínimo</p>
+              <p class="mb-0 mt-1.5 text-sm font-semibold text-[#1f2937]">{{ producto.stockMinimo ?? 'No definido' }}</p>
+            </div>
+            <div>
+              <p class="m-0 text-xs font-medium text-muted">ID</p>
+              <p class="mb-0 mt-1.5 break-all font-mono text-xs text-muted">{{ producto.id }}</p>
+            </div>
+            @if (producto.createdAt) {
+              <div>
+                <p class="m-0 text-xs font-medium text-muted">Creado</p>
+                <p class="mb-0 mt-1.5 text-sm font-semibold text-[#1f2937]">{{ producto.createdAt }}</p>
+              </div>
+            }
+            @if (producto.updatedAt) {
+              <div>
+                <p class="m-0 text-xs font-medium text-muted">Actualizado</p>
+                <p class="mb-0 mt-1.5 text-sm font-semibold text-[#1f2937]">{{ producto.updatedAt }}</p>
+              </div>
+            }
+          </div>
+          <div class="mt-6 border-t border-border pt-5">
+            <h3 class="m-0 text-sm font-bold text-[#1f2937]">Descripción corta</h3>
+            <p class="mb-0 mt-2 text-sm leading-7 text-muted">{{ producto.shortDescription || 'Sin descripción corta.' }}</p>
+          </div>
+          <div class="mt-6 border-t border-border pt-5">
+            <h3 class="m-0 text-sm font-bold text-[#1f2937]">Descripción</h3>
+            <p class="mb-0 mt-2 whitespace-pre-line text-sm leading-7 text-muted">{{ producto.descripcion || 'No hay una descripción disponible para este producto.' }}</p>
+          </div>
+        </section>
+
+        <div class="mt-6 flex flex-wrap gap-3">
+          <a [routerLink]="['/admin/productos', producto.id, 'editar']" class="inline-flex rounded-lg bg-[#1f2937] px-4 py-2.5 text-sm font-semibold text-white no-underline transition hover:bg-[#111827]">
+            Editar producto
+          </a>
+          @if (puedeEliminar()) {
+            <button type="button" (click)="eliminar()" [disabled]="eliminarMutation.isPending()" class="inline-flex rounded-lg border border-danger-border bg-white px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:opacity-60">
+              {{ eliminarMutation.isPending() ? 'Eliminando…' : 'Eliminar' }}
+            </button>
+          }
+        </div>
+      }
+    </ng-template>
+  </app-query-state>
+</section>

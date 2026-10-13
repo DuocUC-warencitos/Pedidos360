@@ -6,12 +6,35 @@ export interface ProductoRequest
     precio: number;
     stock: number;
     descripcion?: string;
+    shortDescription?: string;
     sku?: string;
     categoria?: string;
     stockMinimo?: number | null;
+    activo?: boolean | null;
+}
+
+// Filtros (contrato roony-specification-query-params + page/size/sort)
+
+export interface ProductoFiltros {
+  q?: string;
+  cat?: string;
+  categoria?: string;
+  sku?: string;
+  desde?: string;
+  hasta?: string;
+  activo?: string;
+  page?: number;
+  size?: number;
+  sort?: string | string[];
 }
 
 // Responses
+
+export interface ProductoStatsResponse {
+  total: number;
+  activos: number;
+  stockTotal: number;
+}
 
 export interface ProductoResponse
 {
@@ -20,6 +43,7 @@ export interface ProductoResponse
     precio: number;
     stockDisponible: number;
     sku?: string;
+    shortDescription?: string;
     activo?: boolean;
 }
 
@@ -31,6 +55,7 @@ export interface ProductoDetailResponse
     stockDisponible: number;
     stockReservado: number;
     descripcion?: string;
+    shortDescription?: string;
     sku?: string;
     categoria?: string;
     stockMinimo?: number | null;

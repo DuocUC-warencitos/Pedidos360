@@ -5,7 +5,7 @@ import { BehaviorSubject, filter, map, Observable, Subject, takeUntil } from 'rx
 
 import { environment } from '@env/environment';
 
-import { AuthenticationProvider, AuthUser } from '../authenticationProvider';
+import { AuthenticationProvider, AuthUser, extractRolesFromJwt } from '../authenticationProvider';
 
 @Injectable({providedIn: 'root'})
 export class MsalAuthenticationProvider implements AuthenticationProvider
@@ -110,6 +110,32 @@ export class MsalAuthenticationProvider implements AuthenticationProvider
 
         this._user.set(user);
         this.userSubject.next(user);
+
+        // Los roles de app (ADMIN/OPERADOR) que valida el backend vienen en
+        // el access token y no siempre en el ID token: fusionarlos en el usuario.
+        if (account && user) {
+            this.msalService
+                .acquireTokenSilent({ account, scopes: [environment.msal.apiScope] })
+                .subscribe({
+                    next: (result) => this.fusionarRolesDelAccessToken(result.accessToken),
+                    error: () => undefined,
+                });
+        }
+    }
+
+    private fusionarRolesDelAccessToken(accessToken: string): void {
+        const rolesToken = extractRolesFromJwt(accessToken);
+        if (rolesToken.length === 0) return;
+
+        const actual = this._user();
+        if (!actual) return;
+
+        const fusionados = [...new Set([...actual.roles, ...rolesToken])];
+        if (fusionados.length === actual.roles.length) return;
+
+        const actualizado: AuthUser = { ...actual, roles: fusionados };
+        this._user.set(actualizado);
+        this.userSubject.next(actualizado);
     }
 
     private toAuthUser(account: AccountInfo): AuthUser 

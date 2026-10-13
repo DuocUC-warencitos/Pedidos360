@@ -1,42 +1,46 @@
 import { inject } from '@angular/core';
-import { injectMutation, injectQuery, QueryClient } from '@tanstack/angular-query-experimental';
+import { injectMutation, injectQuery, keepPreviousData, QueryClient } from '@tanstack/angular-query-experimental';
 import { lastValueFrom } from 'rxjs';
 
-import { PedidosService } from './pedidos.service';
-import { CrearPedidoRequest, PedidoDetailResponse, PedidoJobStatusResponse, PedidoProductoRequest, PedidoResponse } from './pedidos.types';
+import { PageResponse } from '@core/api/page-response';
 
-export function usePedidosQuery() 
+import { PedidosService } from './pedidos.service';
+import { CrearPedidoRequest, PedidoDetailResponse, PedidoFiltros, PedidoJobStatusResponse, PedidoProductoRequest, PedidoResponse } from './pedidos.types';
+
+export function usePedidosQuery(filtros: () => PedidoFiltros = () => ({}))
 {
     const service = inject(PedidosService);
 
     return injectQuery(() => (
 	{
-        queryKey: ['pedidos-adm'],
-        queryFn: async (): Promise<PedidoResponse[]> => 
+        queryKey: ['pedidos-adm', filtros()],
+        queryFn: async (): Promise<PageResponse<PedidoResponse>> =>
 		{
-            const pedidos = await lastValueFrom(service.obtenerPedidos());
+            const pagina = await lastValueFrom(service.obtenerPedidos(filtros()));
 
-            return pedidos;
+            return pagina;
         },
+        placeholderData: keepPreviousData,
         refetchOnWindowFocus: false,
         refetchInterval: false,
         refetchIntervalInBackground: false,
     }));
 }
 
-export function usePedidosPorUserQuery() 
+export function usePedidosPorUserQuery(filtros: () => PedidoFiltros = () => ({}))
 {
     const service = inject(PedidosService);
 
     return injectQuery(() => (
 	{
-        queryKey: ['pedidos'],
-        queryFn: async (): Promise<PedidoResponse[]> => 
+        queryKey: ['pedidos', filtros()],
+        queryFn: async (): Promise<PageResponse<PedidoResponse>> =>
 		{
-            const pedidos = await lastValueFrom(service.obtenerPedidosPorIdUsuario());
+            const pagina = await lastValueFrom(service.obtenerPedidosPorIdUsuario(filtros()));
 
-            return pedidos;
+            return pagina;
         },
+        placeholderData: keepPreviousData,
         refetchOnWindowFocus: false,
         refetchInterval: false,
         refetchIntervalInBackground: false,
@@ -89,11 +93,17 @@ export function useAvanzarMutation()
 	return injectMutation(() => (
 	{
 		mutationFn: (id: string) => lastValueFrom(service.avanzarEstadoPedido(id)),
-		onSuccess: () => qc.invalidateQueries({ queryKey: ['pedidos'] }),
+		onSuccess: (_void, id) => {
+			qc.invalidateQueries({ queryKey: ['pedidos'] });
+			qc.invalidateQueries({ queryKey: ['pedidos-adm'] });
+			qc.invalidateQueries({ queryKey: ['pedidos-admin'] });
+			qc.invalidateQueries({ queryKey: ['pedido', id] });
+			qc.invalidateQueries({ queryKey: ['pedido-admin', id] });
+		},
 	}));
 }
 
-export function useCancelarMutation() 
+export function useCancelarMutation()
 {
 	const service = inject(PedidosService);
 
@@ -101,7 +111,13 @@ export function useCancelarMutation()
 	return injectMutation(() => (
 		{
 		mutationFn: (id: string) => lastValueFrom(service.cancelarPedido(id)),
-		onSuccess: () => qc.invalidateQueries({ queryKey: ['pedidos'] }),
+		onSuccess: (_void, id) => {
+			qc.invalidateQueries({ queryKey: ['pedidos'] });
+			qc.invalidateQueries({ queryKey: ['pedidos-adm'] });
+			qc.invalidateQueries({ queryKey: ['pedidos-admin'] });
+			qc.invalidateQueries({ queryKey: ['pedido', id] });
+			qc.invalidateQueries({ queryKey: ['pedido-admin', id] });
+		},
 	}));
 }
 

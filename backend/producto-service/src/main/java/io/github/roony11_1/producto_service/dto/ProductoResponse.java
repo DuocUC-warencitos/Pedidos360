@@ -18,5 +18,6 @@ public class ProductoResponse
     private int precio;
     private int stockDisponible;
     private String sku;
+    private String shortDescription;
     private boolean activo;
 }

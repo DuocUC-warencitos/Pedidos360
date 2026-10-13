@@ -91,4 +91,14 @@
         Ver detalle del pedido
         <span aria-hidden="true">→</span>
     </a>
+
+    @if (puedeCancelar()) {
+        <button
+            type="button"
+            (click)="cancelar.emit()"
+            class="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-50"
+        >
+            Cancelar pedido
+        </button>
+    }
 </section>

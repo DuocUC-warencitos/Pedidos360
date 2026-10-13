@@ -32,9 +32,9 @@
             }
         </h2>
 
-        <!-- Descripción -->
+        <!-- Descripción corta -->
         <p class="text-sm text-muted leading-relaxed mt-2 mb-4 line-clamp-3">
-            Sin descripción disponible.
+            {{ producto().shortDescription || 'Sin descripción disponible.' }}
         </p>
 
         <!-- Precio y disponibilidad -->

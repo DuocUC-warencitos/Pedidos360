@@ -1,9 +1,11 @@
 package io.github.roony11_1.pedidos_service.api.controller;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.function.Function;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -11,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.github.roony11_1.pedidos_service.api.dto.response.PedidoDetailResponse;
@@ -39,23 +42,27 @@ public class PedidoController
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<PedidoResponse>> findAll()
+    public ResponseEntity<Page<PedidoResponse>> findAll(
+        @RequestParam Map<String, String> filtros,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size,
+        @RequestParam(required = false) List<String> sort)
     {
-        var pedidos = pedidoService.findAll().stream()
-            .map(pedidoResponseMapper::apply)
-            .toList();
+        var pagina = pedidoService.findAll(filtros, page, size, sort);
 
-        return ResponseEntity.ok(pedidos);
+        return ResponseEntity.ok(pagina.map(pedidoResponseMapper::apply));
     }
 
     @GetMapping("/userId")
-    public ResponseEntity<List<PedidoResponse>> findAllByUserId()
+    public ResponseEntity<Page<PedidoResponse>> findAllByUserId(
+        @RequestParam Map<String, String> filtros,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size,
+        @RequestParam(required = false) List<String> sort)
     {
-        var pedidos = pedidoService.findAllByUserId().stream()
-            .map(pedidoResponseMapper::apply)
-            .toList();
+        var pagina = pedidoService.findAllByUserId(filtros, page, size, sort);
 
-        return ResponseEntity.ok(pedidos);
+        return ResponseEntity.ok(pagina.map(pedidoResponseMapper::apply));
     }
 
     @DeleteMapping("/all")
@@ -77,10 +84,12 @@ public class PedidoController
     }
 
     @PatchMapping("/{id}/cancelar")
-    @PreAuthorize("hasAnyRole('ADMIN','OPERADOR')")
+    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<Void> cancelar(@PathVariable UUID id)
     {
-        pedidoSagaService.cancelarConCompensacion(id, "cancel");
+        var pedido = pedidoService.obtenerParaCancelar(id);
+
+        pedidoSagaService.cancelarConCompensacion(pedido.getId(), "cancel");
 
         return ResponseEntity.noContent().build();
     }

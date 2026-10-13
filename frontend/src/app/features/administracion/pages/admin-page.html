@@ -20,6 +20,15 @@
             >
                 Productos
             </a>
+
+            <a
+                routerLink="/admin/pedidos"
+                routerLinkActive="activo"
+                [routerLinkActiveOptions]="{ exact: false }"
+                class="px-5 py-2.5 rounded-lg text-muted no-underline font-bold transition hover:text-[#1f2937] hover:bg-[#f3f4f6] hover:-translate-y-px [&.activo]:bg-[#1976d2] [&.activo]:text-white"
+            >
+                Pedidos
+            </a>
         </nav>
     </section>
 

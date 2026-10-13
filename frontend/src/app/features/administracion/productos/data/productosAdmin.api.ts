@@ -6,7 +6,9 @@ export const apiAdminProductos =
 {
     get:
     {
-        findAll: base
+        findAll: base,
+        stats: `${base}/stats`,
+        byId: (id: string) => `${base}/${id}`
     },
     post: 
     {

@@ -22,7 +22,8 @@ public class ProductoDetailResponse
     private String sku;
     private String categoria;
     private String descripcion;
-    private int stockMinimo;
+    private String shortDescription;
+    private Integer stockMinimo;
     private boolean activo;
     private Instant createdAt;
     private Instant updatedAt;

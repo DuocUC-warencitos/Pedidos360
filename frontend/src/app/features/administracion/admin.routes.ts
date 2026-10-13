@@ -20,6 +20,11 @@ export const adminRoutes: Routes = [
 				loadChildren: () =>
 					import('./productos/producto-admin.routes').then((m) => m.productoAdminRoutes),
 			},
+			{
+				path: 'pedidos',
+				loadChildren: () =>
+					import('./pedidos/pedido-admin.routes').then((m) => m.pedidoAdminRoutes),
+			},
 		],
 	},
 ];

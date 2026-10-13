@@ -2,8 +2,11 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
+import { construirParams } from '@core/api/http-params';
+import { PageResponse } from '@core/api/page-response';
+
 import { apiPedidos } from './pedidos.api';
-import { CrearPedidoRequest, PedidoDetailResponse, PedidoJobStatusResponse, PedidoProductoRequest, PedidoResponse } from './pedidos.types';
+import { CrearPedidoRequest, PedidoDetailResponse, PedidoFiltros, PedidoJobStatusResponse, PedidoProductoRequest, PedidoResponse } from './pedidos.types';
 
 @Injectable({ providedIn: 'root' })
 export class PedidosService {
@@ -32,12 +35,16 @@ export class PedidosService {
 		return this.http.get<PedidoJobStatusResponse>(apiPedidos.get.jobStatus(jobId));
 	}
 
-	obtenerPedidos(): Observable<PedidoResponse[]> {
-		return this.http.get<PedidoResponse[]>(apiPedidos.get.all);
+	obtenerPedidos(filtros: PedidoFiltros = {}): Observable<PageResponse<PedidoResponse>> {
+		return this.http.get<PageResponse<PedidoResponse>>(apiPedidos.get.all, {
+			params: construirParams(filtros as Record<string, string | number | string[] | undefined>),
+		});
 	}
 
-	obtenerPedidosPorIdUsuario(): Observable<PedidoResponse[]> {
-		return this.http.get<PedidoResponse[]>(apiPedidos.get.userId);
+	obtenerPedidosPorIdUsuario(filtros: PedidoFiltros = {}): Observable<PageResponse<PedidoResponse>> {
+		return this.http.get<PageResponse<PedidoResponse>>(apiPedidos.get.userId, {
+			params: construirParams(filtros as Record<string, string | number | string[] | undefined>),
+		});
 	}
 
 	obtenerPedidoPorId(id: string): Observable<PedidoDetailResponse>

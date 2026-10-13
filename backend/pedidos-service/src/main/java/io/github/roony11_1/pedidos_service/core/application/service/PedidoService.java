@@ -1,21 +1,27 @@
 package io.github.roony11_1.pedidos_service.core.application.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.github.roony11_1.error.core.exceptions.InvalidInputException;
 import io.github.roony11_1.error.core.exceptions.NotFoundException;
+import io.github.roony11_1.pedidos_service.api.dto.response.PedidoStatsResponse;
 import io.github.roony11_1.pedidos_service.core.domain.model.EstadoPedido;
 import io.github.roony11_1.pedidos_service.core.domain.model.Pedido;
 import io.github.roony11_1.pedidos_service.core.domain.model.PedidoProducto;
 import io.github.roony11_1.pedidos_service.core.domain.repository.PedidoRepository;
 import io.github.roony11_1.pedidos_service.infrastructure.client.ProductoClient;
 import io.github.roony11_1.pedidos_service.infrastructure.client.ProductoClientResiliente;
+import io.github.roony11_1.pedidos_service.infrastructure.spec.PedidoFiltrosParser;
 import io.github.roony11_1.pedidos_service.infrastructure.spec.SpecificationFactory;
 import io.github.roony11_1.pedidos_service.kernel.IUserTokenService;
 import io.github.roony11_1.specification.core.FilterCondition;
@@ -63,18 +69,79 @@ public class PedidoService
     }
 
     @Transactional(readOnly = true)
-    public List<Pedido> findAll() 
+    public Page<Pedido> findAll(Map<String, String> filtros, int page, int size, List<String> sort)
     {
-        if (userTokenService.hasAnyRole("ADMIN", "OPERADOR")) 
-            return pedidoRepository.findAll();
+        Specification<Pedido> base = null;
 
-        return pedidoRepository.findAll(userTokenService.getUserSpecification());
+        if (!userTokenService.hasAnyRole("ADMIN", "OPERADOR"))
+            base = userTokenService.getUserSpecification();
+
+        Specification<Pedido> specification = PedidoFiltrosParser.parse(filtros, base);
+        Pageable pageable = PedidoFiltrosParser.pageable(page, size, sort, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        return pedidoRepository.findAll(specification, pageable);
     }
 
     @Transactional(readOnly = true)
-    public List<Pedido> findAllByUserId() 
+    public Page<Pedido> findAllByUserId(Map<String, String> filtros, int page, int size, List<String> sort)
     {
-        return pedidoRepository.findAll(userTokenService.getUserSpecification());
+        Specification<Pedido> specification = PedidoFiltrosParser.parse(filtros, userTokenService.getUserSpecification());
+        Pageable pageable = PedidoFiltrosParser.pageable(page, size, sort, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        return pedidoRepository.findAll(specification, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Pedido> findAllAdmin(Map<String, String> filtros, int page, int size, List<String> sort)
+    {
+        Specification<Pedido> specification = PedidoFiltrosParser.parse(filtros, null);
+        Pageable pageable = PedidoFiltrosParser.pageable(page, size, sort, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        return pedidoRepository.findAll(specification, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<Pedido> findAllByUserIdParam(String userId, Map<String, String> filtros, int page, int size, List<String> sort)
+    {
+        Specification<Pedido> specification = PedidoFiltrosParser.parse(filtros, SpecificationFactory.<Pedido>byUserId(userId));
+        Pageable pageable = PedidoFiltrosParser.pageable(page, size, sort, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        return pedidoRepository.findAll(specification, pageable);
+    }
+
+    @Transactional(readOnly = true)
+    public PedidoStatsResponse statsAdmin()
+    {
+        return PedidoStatsResponse.builder()
+            .total(pedidoRepository.count())
+            .cancelables(pedidoRepository.contarCancelables())
+            .cancelados(pedidoRepository.contarCancelados())
+            .build();
+    }
+
+    /**
+     * Administración: un pedido por id sin filtro de usuario.
+     * El control de acceso va en el controller (@PreAuthorize ADMIN/OPERADOR).
+     */
+    @Transactional(readOnly = true)
+    public Pedido findByIdAdmin(UUID id)
+    {
+        return pedidoRepository.findById(id)
+            .orElseThrow(() -> new NotFoundException("Pedido", id));
+    }
+
+    /**
+     * Resuelve el pedido a cancelar: ADMIN/OPERADOR pueden cancelar
+     * cualquiera; el resto solo los propios (Roony Specification Builder:
+     * match x userId AND match x id). Si no es suyo -> 404.
+     */
+    @Transactional(readOnly = true)
+    public Pedido obtenerParaCancelar(UUID id)
+    {
+        if (userTokenService.hasAnyRole("ADMIN", "OPERADOR"))
+            return obtenerPedido(id);
+
+        return obtenerPedidoDelUsuario(id);
     }
 
     @Transactional
