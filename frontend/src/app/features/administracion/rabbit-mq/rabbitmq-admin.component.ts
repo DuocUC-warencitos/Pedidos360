@@ -1,14 +1,19 @@
+
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 import {
-  RabbitmqAdminService,
-  CreateQueueRequest,
-  CreateExchangeRequest,
+  ApiMessage,
+  BindingInfo,
   CreateBindingRequest,
-  ApiMessage
+  CreateExchangeRequest,
+  CreateQueueRequest,
+  ExchangeInfo,
+  QueueInfo,
+  RabbitmqAdminService
 } from './rabbitmq-admin.service';
 
 @Component({
@@ -18,12 +23,17 @@ import {
   templateUrl: './rabbitmq-admin.component.html',
   styleUrl: './rabbitmq-admin.component.css'
 })
-export class RabbitmqAdminComponent {
-  private readonly rabbitmqService = inject(RabbitmqAdminService);
+export class RabbitmqAdminComponent implements OnInit {
+  private readonly api = inject(RabbitmqAdminService);
+
+  colas: QueueInfo[] = [];
+  exchanges: ExchangeInfo[] = [];
+  bindings: BindingInfo[] = [];
 
   mensaje = '';
   error = '';
   procesando = false;
+  cargandoCatalogo = false;
 
   cola = {
     name: '',
@@ -48,68 +58,147 @@ export class RabbitmqAdminComponent {
     routingKey: ''
   };
 
-  private ejecutar(
-    operacion: () => import('rxjs').Observable<ApiMessage>,
-    exito: string
-  ): void {
-    if (this.procesando) {
-      return;
-    }
+  ngOnInit(): void {
+    this.cargarCatalogo();
+  }
 
-    this.mensaje = '';
+  cargarCatalogo(): void {
+    this.cargandoCatalogo = true;
     this.error = '';
-    this.procesando = true;
 
-    operacion().subscribe({
-      next: (respuesta) => {
-        this.mensaje = respuesta?.message || exito;
-        this.procesando = false;
+    let pendientes = 3;
+    let fallo = false;
+
+    const terminar = (): void => {
+      pendientes--;
+
+      if (pendientes === 0) {
+        this.cargandoCatalogo = false;
+      }
+    };
+
+    this.api.listarColas().subscribe({
+      next: data => {
+        this.colas = data;
+        terminar();
       },
-      error: (err: HttpErrorResponse) => {
-        this.error =
-          err.error?.message ||
-          err.error?.detail ||
-          `No se pudo completar la operación (HTTP ${err.status}).`;
-
-        this.procesando = false;
+      error: err => {
+        fallo = true;
+        this.error = this.obtenerError(
+          err,
+          'No se pudieron cargar las colas.'
+        );
+        terminar();
       }
     });
+
+    this.api.listarExchanges().subscribe({
+      next: data => {
+        this.exchanges = data;
+        terminar();
+      },
+      error: err => {
+        fallo = true;
+        this.error = this.obtenerError(
+          err,
+          'No se pudieron cargar los exchanges.'
+        );
+        terminar();
+      }
+    });
+
+    this.api.listarBindings().subscribe({
+      next: data => {
+        this.bindings = data.filter(
+          item => item.destinationType?.toLowerCase() === 'queue'
+        );
+        terminar();
+      },
+      error: err => {
+        fallo = true;
+        this.error = this.obtenerError(
+          err,
+          'No se pudieron cargar los bindings.'
+        );
+        terminar();
+      }
+    });
+
+    void fallo;
+  }
+
+  private normalizarNombreCola(nombre: string): string {
+    const limpio = nombre.trim();
+
+    if (
+      /^pedidos360\.[a-zA-Z0-9_-]{1,80}\.queue$/.test(limpio)
+    ) {
+      return limpio;
+    }
+
+    if (!/^[a-zA-Z0-9_-]{1,80}$/.test(limpio)) {
+      throw new Error(
+        'Ingresa solo letras, números, guion y guion bajo.'
+      );
+    }
+
+    return `pedidos360.${limpio}.queue`;
   }
 
   crearCola(): void {
+    let nombre: string;
+
+    try {
+      nombre = this.normalizarNombreCola(this.cola.name);
+    } catch (err) {
+      this.error = err instanceof Error
+        ? err.message
+        : 'Nombre de cola inválido.';
+      return;
+    }
+
     const request: CreateQueueRequest = {
-      name: this.cola.name.trim(),
+      name: nombre,
       durable: this.cola.durable,
       exclusive: this.cola.exclusive,
       autoDelete: this.cola.autoDelete
     };
 
-    if (!request.name) {
-      this.error = 'Debes ingresar el nombre de la cola.';
-      return;
-    }
-
     this.ejecutar(
-      () => this.rabbitmqService.crearCola(request),
-      'Cola creada correctamente.'
+      () => this.api.crearCola(request),
+      `Cola ${nombre} creada correctamente.`,
+      () => {
+        this.cola.name = '';
+        this.cargarCatalogo();
+
+        // Facilita crear el binding de la cola recién creada.
+        this.binding.queueName = nombre;
+      }
     );
   }
 
   eliminarCola(): void {
-    const name = this.colaEliminar.trim();
+    const nombre = this.colaEliminar;
 
-    if (!name) {
-      this.error = 'Debes ingresar el nombre de la cola.';
+    if (!nombre) {
+      this.error = 'Selecciona una cola del catálogo.';
       return;
     }
 
-    if (!confirm(`¿Seguro que quieres eliminar la cola "${name}"?`)) {
+    if (!confirm(
+      `¿Seguro que quieres eliminar "${nombre}"? ` +
+      'Podrías perder mensajes pendientes.'
+    )) {
       return;
     }
 
     this.ejecutar(
-      () => this.rabbitmqService.eliminarCola(name),
-      'Cola eliminada correctamente.'
+      () => this.api.eliminarCola(nombre),
+      `Cola ${nombre} eliminada correctamente.`,
+      () => {
+        this.colaEliminar = '';
+        this.cargarCatalogo();
+      }
     );
   }
 
@@ -121,71 +210,133 @@ export class RabbitmqAdminComponent {
     };
 
     if (!request.name) {
-      this.error = 'Debes ingresar el nombre del exchange.';
+      this.error = 'Ingresa el nombre del exchange.';
       return;
     }
 
     this.ejecutar(
-      () => this.rabbitmqService.crearExchange(request),
-      'Exchange creado correctamente.'
+      () => this.api.crearExchange(request),
+      `Exchange ${request.name} creado correctamente.`,
+      () => {
+        this.exchange.name = '';
+        this.cargarCatalogo();
+      }
     );
   }
 
   eliminarExchange(): void {
-    const name = this.exchangeEliminar.trim();
+    const nombre = this.exchangeEliminar;
 
-    if (!name) {
-      this.error = 'Debes ingresar el nombre del exchange.';
+    if (!nombre) {
+      this.error = 'Selecciona un exchange del catálogo.';
       return;
     }
 
-    if (!confirm(`¿Seguro que quieres eliminar el exchange "${name}"?`)) {
+    if (!confirm(
+      `¿Seguro que quieres eliminar "${nombre}"?`
+    )) {
       return;
     }
 
     this.ejecutar(
-      () => this.rabbitmqService.eliminarExchange(name),
-      'Exchange eliminado correctamente.'
+      () => this.api.eliminarExchange(nombre),
+      `Exchange ${nombre} eliminado correctamente.`,
+      () => {
+        this.exchangeEliminar = '';
+        this.cargarCatalogo();
+      }
     );
   }
 
   crearBinding(): void {
     const request: CreateBindingRequest = {
-      queueName: this.binding.queueName.trim(),
-      exchangeName: this.binding.exchangeName.trim(),
+      queueName: this.binding.queueName,
+      exchangeName: this.binding.exchangeName,
       routingKey: this.binding.routingKey.trim()
     };
 
     if (!request.queueName || !request.exchangeName) {
-      this.error = 'Debes indicar la cola y el exchange.';
+      this.error = 'Selecciona una cola y un exchange.';
       return;
     }
 
     this.ejecutar(
-      () => this.rabbitmqService.crearBinding(request),
-      'Binding creado correctamente.'
+      () => this.api.crearBinding(request),
+      'Binding creado correctamente.',
+      () => {
+        this.binding.routingKey = '';
+        this.cargarCatalogo();
+      }
     );
   }
 
-  eliminarBinding(): void {
+  eliminarBinding(item: BindingInfo): void {
+    const descripcion =
+      `${item.source} → ${item.destination} (${item.routingKey})`;
+
+    if (!confirm(`¿Seguro que quieres eliminar ${descripcion}?`)) {
+      return;
+    }
+
     const request: CreateBindingRequest = {
-      queueName: this.binding.queueName.trim(),
-      exchangeName: this.binding.exchangeName.trim(),
-      routingKey: this.binding.routingKey.trim()
+      queueName: item.destination,
+      exchangeName: item.source,
+      routingKey: item.routingKey ?? ''
     };
 
-    if (!request.queueName || !request.exchangeName) {
-      this.error = 'Debes indicar la cola y el exchange.';
-      return;
-    }
-
-    if (!confirm('¿Seguro que quieres eliminar este binding?')) {
-      return;
-    }
-
     this.ejecutar(
-      () => this.rabbitmqService.eliminarBinding(request),
-      'Binding eliminado correctamente.'
+      () => this.api.eliminarBinding(request),
+      'Binding eliminado correctamente.',
+      () => this.cargarCatalogo()
     );
+  }
+
+  private ejecutar(
+    operacion: () => Observable<ApiMessage>,
+    mensajeExito: string,
+    despues?: () => void
+  ): void {
+    if (this.procesando) {
+      return;
+    }
+
+    this.mensaje = '';
+    this.error = '';
+    this.procesando = true;
+
+    operacion().subscribe({
+      next: respuesta => {
+        this.mensaje = respuesta?.message || mensajeExito;
+        this.procesando = false;
+        despues?.();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.error = this.obtenerError(
+          err,
+          'No se pudo completar la operación.'
+        );
+        this.procesando = false;
+      }
+    });
+  }
+
+  private obtenerError(err: unknown, fallback: string): string {
+    if (err instanceof HttpErrorResponse) {
+      if (typeof err.error === 'string' && err.error.trim()) {
+        return err.error;
+      }
+
+      if (err.error?.message) {
+        return err.error.message;
+      }
+
+      if (err.status === 0) {
+        return 'No hay conexión con el administrador RabbitMQ.';
+      }
+
+      return `${fallback} HTTP ${err.status}.`;
+    }
+
+    return fallback;
   }
 }
