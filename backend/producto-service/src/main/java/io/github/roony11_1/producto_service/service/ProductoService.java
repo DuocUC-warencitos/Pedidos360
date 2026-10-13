@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service;
 
 import io.github.roony11_1.producto_service.model.Producto;
 import io.github.roony11_1.producto_service.repository.ProductoRepository;
+import io.github.roony11_1.specification.core.FilterCondition;
+import io.github.roony11_1.specification.core.FilterOperator;
+import io.github.roony11_1.specification.spring.FilterSpecificationBuilder;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -18,7 +21,11 @@ public class ProductoService
 
     public List<Producto> listar()
     {
-        return productoRepository.findAll();
+        var specification = new FilterSpecificationBuilder<Producto>()
+            .withCondition(new FilterCondition("activo", FilterOperator.EQ, true))
+            .build();
+
+        return productoRepository.findAll(specification);
     }
 
     public Optional<Producto> obtenerPorId(UUID id)
@@ -29,49 +36,5 @@ public class ProductoService
     public List<Producto> obtenerPorIds(List<UUID> ids)
     {
         return productoRepository.findAllById(ids);
-    }
-
-    public Producto crear(Producto producto)
-    {
-        return productoRepository.save(producto);
-    }
-
-    public Optional<Producto> actualizar(UUID id, Producto producto)
-    {
-        return productoRepository.findById(id)
-                .map(existente ->
-                {
-                    existente.setNombre(producto.getNombre());
-                    existente.setPrecio(producto.getPrecio());
-                    existente.setStockDisponible(producto.getStockDisponible());
-                    return productoRepository.save(existente);
-                });
-    }
-
-    public boolean eliminar(UUID id)
-    {
-        return productoRepository.findById(id)
-                .map(p ->
-                {
-                    productoRepository.delete(p);
-                    return true;
-                })
-                .orElse(false);
-    }
-
-    // Compatibilidad con nombres anteriores si se usan en tests
-    public List<Producto> findAll()
-    {
-        return listar();
-    }
-
-    public Optional<Producto> findById(UUID id)
-    {
-        return obtenerPorId(id);
-    }
-
-    public Producto save(Producto producto)
-    {
-        return crear(producto);
     }
 }

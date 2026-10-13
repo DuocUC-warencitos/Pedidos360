@@ -51,12 +51,6 @@ public class PedidoService
 
     public Pedido findById(UUID id)
     {
-        if (userTokenService.hasAnyRole("ADMIN", "OPERADOR"))
-        {
-            return pedidoRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("pedido", id));
-        }
-
         Specification<Pedido> specification =
             userTokenService.<Pedido>getUserSpecification()
                 .and(new FilterSpecificationBuilder<Pedido>()
