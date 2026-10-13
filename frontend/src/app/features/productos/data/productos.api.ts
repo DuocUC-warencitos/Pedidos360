@@ -11,14 +11,14 @@ export const apiProductos =
     },
     post:
     {
-        save: base
+        
     },
     put:
     {
-        updatById: (id: string) => `${base}/${id}`
+        
     },
     delete:
     {
-        deleteById: (id: string) => `${base}/${id}`
+        
     }
 }

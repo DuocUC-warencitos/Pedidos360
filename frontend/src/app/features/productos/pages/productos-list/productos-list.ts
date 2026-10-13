@@ -1,10 +1,7 @@
-import { Component, inject } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { LoggingService } from '@core/logging/logging.service';
-import { NotificationService } from '@core/notification/notification.service';
 import {
-	useEliminarProductoMutation,
 	useProductosQuery,
 } from '@features/productos/data/productos.queries';
 import { ProductoCard } from '@features/productos/ui/producto-card/producto-card';
@@ -15,23 +12,7 @@ import { ProductoCard } from '@features/productos/ui/producto-card/producto-card
 	imports: [ProductoCard, RouterLink],
 	templateUrl: './productos-list.html',
 })
-export class ProductosList {
-	private notify = inject(NotificationService);
-	private logger = inject(LoggingService);
-
+export class ProductosList 
+{
 	readonly productosQuery = useProductosQuery();
-
-	readonly eliminarMutation = useEliminarProductoMutation(
-		() => {
-			this.notify.success('Producto eliminado correctamente');
-		},
-		(error) => {
-			// ErrorResponse ya mostrado por interceptor global
-			this.logger.error('Error al eliminar producto', error);
-		},
-	);
-
-	eliminarProducto(id: string): void {
-		this.eliminarMutation.mutate(id);
-	}
 }

@@ -1,5 +1,6 @@
 package io.github.roony11_1.producto_service.service;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -14,6 +15,11 @@ import lombok.RequiredArgsConstructor;
 public class ProductoAdminService 
 {
     private final ProductoRepository productoRepository;
+
+    public List<Producto> findAll()
+    {
+        return productoRepository.findAll();
+    }
 
     public Producto crear(Producto producto)
     {

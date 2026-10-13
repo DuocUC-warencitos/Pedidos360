@@ -24,16 +24,6 @@ export const productosRoutes: Routes = [
   },
 
   {
-    path: 'agregar',
-    canActivate: [roleGuard],
-    data: { roles: [] },
-    loadComponent: () =>
-      import('./pages/productos-create/productos-create').then(
-        (m) => m.ProductosCreate,
-      ),
-  },
-
-  {
     path: 'detalle/:id',
     canActivate: [],
     loadComponent: () =>

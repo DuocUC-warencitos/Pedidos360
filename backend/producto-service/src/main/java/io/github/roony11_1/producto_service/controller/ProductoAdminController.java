@@ -1,11 +1,13 @@
 package io.github.roony11_1.producto_service.controller;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -29,6 +31,17 @@ public class ProductoAdminController
     private final ProductoAdminService productoAdminService;
     private final ProductoMappers mappers;
 
+    @GetMapping 
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
+    public ResponseEntity<List<ProductoResponse>> findAll()
+    {
+        var respose = productoAdminService.findAll().stream()
+            .map(mappers.productoToResponse::apply)
+            .toList();
+
+        return ResponseEntity.ok(respose);
+    }
+
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<ProductoResponse> crear(@Valid @RequestBody ProductoRequest request)
@@ -39,7 +52,7 @@ public class ProductoAdminController
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-        @PutMapping("/{id}")
+    @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
     public ResponseEntity<ProductoResponse> actualizar(@PathVariable UUID id, @jakarta.validation.Valid @RequestBody ProductoRequest request)
     {

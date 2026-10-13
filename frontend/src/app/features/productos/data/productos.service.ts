@@ -10,43 +10,21 @@ import {
 } from './productos.types';
 
 @Injectable({ providedIn: 'root' })
-export class ProductosService {
-  private http = inject(HttpClient);
+export class ProductosService 
+{
+    private http = inject(HttpClient);
 
-  obtenerProductos(): Observable<ProductoResponse[]> {
-    return this.http.get<ProductoResponse[]>(
-      apiProductos.get.all,
-    );
-  }
+    obtenerProductos(): Observable<ProductoResponse[]> 
+    {
+        return this.http.get<ProductoResponse[]>(
+        apiProductos.get.all,
+        );
+    }
 
-  obtenerProductoPorId(id: string): Observable<ProductoDetailResponse> {
-    return this.http.get<ProductoDetailResponse>(
-      apiProductos.get.byId(id),
-    );
-  }
-
-  crearProducto(
-    producto: ProductoRequest,
-  ): Observable<ProductoResponse> {
-    return this.http.post<ProductoResponse>(
-      apiProductos.post.save,
-      producto,
-    );
-  }
-
-  actualizarProducto(
-    id: string,
-    producto: ProductoRequest,
-  ): Observable<ProductoResponse> {
-    return this.http.put<ProductoResponse>(
-      apiProductos.put.updatById(id),
-      producto,
-    );
-  }
-
-  eliminarProducto(id: string): Observable<void> {
-    return this.http.delete<void>(
-      apiProductos.delete.deleteById(id),
-    );
-  }
+    obtenerProductoPorId(id: string): Observable<ProductoDetailResponse> 
+    {
+        return this.http.get<ProductoDetailResponse>(
+        apiProductos.get.byId(id),
+        );
+    }
 }
