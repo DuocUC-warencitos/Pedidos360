@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service;
 
 import io.github.roony11_1.producto_service.model.Producto;
 import io.github.roony11_1.producto_service.repository.ProductoRepository;
+import io.github.roony11_1.specification.core.FilterCondition;
+import io.github.roony11_1.specification.core.FilterOperator;
+import io.github.roony11_1.specification.spring.FilterSpecificationBuilder;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -18,7 +21,11 @@ public class ProductoService
 
     public List<Producto> listar()
     {
-        return productoRepository.findAll();
+        var specification = new FilterSpecificationBuilder<Producto>()
+            .withCondition(new FilterCondition("activo", FilterOperator.EQ, true))
+            .build();
+
+        return productoRepository.findAll(specification);
     }
 
     public Optional<Producto> obtenerPorId(UUID id)
@@ -57,21 +64,5 @@ public class ProductoService
                     return true;
                 })
                 .orElse(false);
-    }
-
-    // Compatibilidad con nombres anteriores si se usan en tests
-    public List<Producto> findAll()
-    {
-        return listar();
-    }
-
-    public Optional<Producto> findById(UUID id)
-    {
-        return obtenerPorId(id);
-    }
-
-    public Producto save(Producto producto)
-    {
-        return crear(producto);
     }
 }
