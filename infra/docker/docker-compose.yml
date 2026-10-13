@@ -77,6 +77,8 @@ services:
             RABBITMQ_PORT: ${RABBITMQ_PORT}
             RABBITMQ_USERNAME: ${RABBITMQ_USERNAME}
             RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+            RABBITMQ_ADMIN_PORT: ${RABBITMQ_ADMIN_PORT}
+            RABBITMQ_MANAGEMENT_URL: ${RABBITMQ_MANAGEMENT_URL}
         depends_on:
             - rabbitmq
 

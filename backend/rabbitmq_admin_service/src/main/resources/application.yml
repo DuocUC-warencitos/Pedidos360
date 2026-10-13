@@ -36,6 +36,7 @@ spring:
     port: ${RABBITMQ_PORT}
     username: ${RABBITMQ_USERNAME}
     password: ${RABBITMQ_PASSWORD}
+    management-url: ${RABBITMQ_MANAGEMENT_URL:http://rabbitmq:15672}
 
 logging:
   level:

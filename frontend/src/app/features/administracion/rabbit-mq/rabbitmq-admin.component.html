@@ -1,129 +1,124 @@
+
 <main class="admin-page">
   <header class="page-header">
     <div>
+      <p class="eyebrow">PEDIDOS360 · MENSAJERÍA</p>
       <h1>Administración de RabbitMQ</h1>
       <p class="subtitle">
-        Administra colas, exchanges y bindings de la mensajería.
+        Administra recursos y consulta el estado de las colas.
       </p>
     </div>
+
+    <button
+      type="button"
+      class="secondary-button refresh-button"
+      (click)="cargarCatalogo()"
+      [disabled]="cargandoCatalogo || procesando">
+      {{ cargandoCatalogo ? 'Actualizando...' : 'Actualizar catálogo' }}
+    </button>
   </header>
 
   <section class="notice">
-    <strong>Importante:</strong>
-    las operaciones se ejecutan sobre el RabbitMQ configurado en el backend.
-    Verifica los nombres antes de eliminar recursos.
+    El catálogo se consulta desde RabbitMQ. Verifica los recursos antes
+    de eliminarlos, especialmente si tienen mensajes pendientes.
   </section>
 
-  <section class="feedback success" *ngIf="mensaje" role="status">
+  <section *ngIf="mensaje" class="feedback success" role="status">
     {{ mensaje }}
   </section>
 
-  <section class="feedback error" *ngIf="error" role="alert">
+  <section *ngIf="error" class="feedback error" role="alert">
     {{ error }}
   </section>
 
-  <div class="admin-grid">
+  <section class="catalog-grid">
+    <article class="stat-card">
+      <span>Colas</span>
+      <strong>{{ colas.length }}</strong>
+    </article>
+
+    <article class="stat-card">
+      <span>Exchanges</span>
+      <strong>{{ exchanges.length }}</strong>
+    </article>
+
+    <article class="stat-card">
+      <span>Bindings hacia colas</span>
+      <strong>{{ bindings.length }}</strong>
+    </article>
+  </section>
+
+  <section class="admin-grid">
     <!-- CREAR COLA -->
-    <section class="admin-card">
+    <article class="admin-card">
       <div class="card-heading">
         <span class="icon">▤</span>
         <div>
           <h2>Crear cola</h2>
-          <p>Configura una nueva cola de mensajes.</p>
+          <p>Solo necesitas escribir el nombre corto.</p>
         </div>
       </div>
 
       <form #queueForm="ngForm" (ngSubmit)="crearCola()">
-        <label for="queueName">Nombre de la cola</label>
+        <label for="queueName">Nombre corto</label>
         <input
           id="queueName"
           name="queueName"
           [(ngModel)]="cola.name"
           required
-          maxlength="100"
-          pattern="[a-zA-Z0-9._-]+"
-          placeholder="pedidos360.notificaciones.queue"
-        />
+          maxlength="80"
+          pattern="[a-zA-Z0-9_-]+"
+          placeholder="notificaciones" />
+
+        <p class="help-text">
+          Nombre final:
+          <strong>
+            pedidos360.{{ cola.name || 'nombre' }}.queue
+          </strong>
+        </p>
 
         <label class="check-row">
           <input
             type="checkbox"
             name="queueDurable"
-            [(ngModel)]="cola.durable"
-          />
-          Cola durable
+            [(ngModel)]="cola.durable" />
+          Durable
         </label>
 
         <label class="check-row">
           <input
             type="checkbox"
             name="queueExclusive"
-            [(ngModel)]="cola.exclusive"
-          />
-          Cola exclusiva
+            [(ngModel)]="cola.exclusive" />
+          Exclusive
         </label>
 
         <label class="check-row">
           <input
             type="checkbox"
             name="queueAutoDelete"
-            [(ngModel)]="cola.autoDelete"
-          />
-          Eliminar automáticamente cuando deje de usarse
+            [(ngModel)]="cola.autoDelete" />
+          Auto delete
         </label>
 
-        <button
-          type="submit"
-          [disabled]="queueForm.invalid || procesando"
-        >
-          {{ procesando ? 'Procesando...' : 'Crear cola' }}
+        <button type="submit" [disabled]="queueForm.invalid || procesando">
+          Crear cola
         </button>
       </form>
-    </section>
-
-    <!-- ELIMINAR COLA -->
-    <section class="admin-card">
-      <div class="card-heading">
-        <span class="icon">⌫</span>
-        <div>
-          <h2>Eliminar cola</h2>
-          <p>Elimina una cola por su nombre exacto.</p>
-        </div>
-      </div>
-
-      <form #deleteQueueForm="ngForm" (ngSubmit)="eliminarCola()">
-        <label for="deleteQueueName">Nombre de la cola</label>
-        <input
-          id="deleteQueueName"
-          name="deleteQueueName"
-          [(ngModel)]="colaEliminar"
-          required
-          maxlength="100"
-          placeholder="Nombre exacto de la cola"
-        />
-
-        <button
-          type="submit"
-          class="danger-button"
-          [disabled]="deleteQueueForm.invalid || procesando"
-        >
-          Eliminar cola
-        </button>
-      </form>
-    </section>
+    </article>
 
     <!-- CREAR EXCHANGE -->
-    <section class="admin-card">
+    <article class="admin-card">
       <div class="card-heading">
         <span class="icon">⑂</span>
         <div>
           <h2>Crear exchange</h2>
-          <p>Define cómo se enrutarán los mensajes.</p>
+          <p>Define cómo se distribuyen los mensajes.</p>
         </div>
       </div>
 
       <form #exchangeForm="ngForm" (ngSubmit)="crearExchange()">
-        <label for="exchangeName">Nombre del exchange</label>
+        <label for="exchangeName">Nombre</label>
         <input
           id="exchangeName"
           name="exchangeName"
@@ -131,16 +126,14 @@
           required
           maxlength="100"
           pattern="[a-zA-Z0-9._-]+"
-          placeholder="pedidos360.topic.exchange"
-        />
+          placeholder="pedidos360.topic.exchange" />
 
         <label for="exchangeType">Tipo</label>
         <select
           id="exchangeType"
           name="exchangeType"
           [(ngModel)]="exchange.type"
-          required
-        >
+          required>
           <option value="direct">Direct</option>
           <option value="topic">Topic</option>
           <option value="fanout">Fanout</option>
@@ -150,109 +143,252 @@
           <input
             type="checkbox"
             name="exchangeDurable"
-            [(ngModel)]="exchange.durable"
-          />
-          Exchange durable
+            [(ngModel)]="exchange.durable" />
+          Durable
         </label>
 
         <button
           type="submit"
-          [disabled]="exchangeForm.invalid || procesando"
-        >
+          [disabled]="exchangeForm.invalid || procesando">
           Crear exchange
         </button>
       </form>
-    </section>
-
-    <!-- ELIMINAR EXCHANGE -->
-    <section class="admin-card">
-      <div class="card-heading">
-        <span class="icon">⌫</span>
-        <div>
-          <h2>Eliminar exchange</h2>
-          <p>Elimina un exchange por su nombre.</p>
-        </div>
-      </div>
-
-      <form #deleteExchangeForm="ngForm" (ngSubmit)="eliminarExchange()">
-        <label for="deleteExchangeName">Nombre del exchange</label>
-        <input
-          id="deleteExchangeName"
-          name="deleteExchangeName"
-          [(ngModel)]="exchangeEliminar"
-          required
-          maxlength="100"
-          placeholder="Nombre exacto del exchange"
-        />
-
-        <button
-          type="submit"
-          class="danger-button"
-          [disabled]="deleteExchangeForm.invalid || procesando"
-        >
-          Eliminar exchange
-        </button>
-      </form>
-    </section>
+    </article>
 
     <!-- CREAR BINDING -->
-    <section class="admin-card">
+    <article class="admin-card">
       <div class="card-heading">
         <span class="icon">⇄</span>
         <div>
           <h2>Crear binding</h2>
-          <p>Conecta una cola con un exchange.</p>
+          <p>Selecciona recursos del catálogo existente.</p>
         </div>
       </div>
 
       <form #bindingForm="ngForm" (ngSubmit)="crearBinding()">
-        <label for="bindingQueue">Nombre de la cola</label>
-        <input
+        <label for="bindingQueue">Cola</label>
+        <select
           id="bindingQueue"
           name="bindingQueue"
           [(ngModel)]="binding.queueName"
-          required
-          maxlength="100"
-          placeholder="pedidos360.notificaciones.queue"
-        />
+          required>
+          <option value="">Seleccionar cola...</option>
+          <option *ngFor="let item of colas" [value]="item.name">
+            {{ item.name }}
+          </option>
+        </select>
 
-        <label for="bindingExchange">Nombre del exchange</label>
-        <input
+        <label for="bindingExchange">Exchange</label>
+        <select
           id="bindingExchange"
           name="bindingExchange"
           [(ngModel)]="binding.exchangeName"
-          required
-          maxlength="100"
-          placeholder="pedidos360.topic.exchange"
-        />
+          required>
+          <option value="">Seleccionar exchange...</option>
+          <option
+            *ngFor="let item of exchanges"
+            [value]="item.name">
+            {{ item.name }} ({{ item.type }})
+          </option>
+        </select>
 
-        <label for="bindingRoutingKey">Routing key</label>
+        <label for="routingKey">Routing key</label>
         <input
-          id="bindingRoutingKey"
-          name="bindingRoutingKey"
+          id="routingKey"
+          name="routingKey"
           [(ngModel)]="binding.routingKey"
-          maxlength="100"
-          placeholder="pedido.*"
-        />
+          maxlength="255"
+          placeholder="pedido.aceptado" />
 
-        <button type="submit" [disabled]="bindingForm.invalid || procesando">
+        <button
+          type="submit"
+          [disabled]="bindingForm.invalid || procesando">
           Crear binding
         </button>
       </form>
+    </article>
 
-      <hr />
+    <!-- ELIMINAR COLA -->
+    <article class="admin-card">
+      <div class="card-heading">
+        <span class="icon">⌫</span>
+        <div>
+          <h2>Eliminar cola</h2>
+          <p>Selecciona una cola existente.</p>
+        </div>
+      </div>
 
-      <button
-        type="button"
-        class="danger-button"
-        [disabled]="procesando"
-        (click)="eliminarBinding()"
-      >
-        Eliminar binding indicado
-      </button>
-      <p class="help-text">
-        Utiliza los mismos nombres y routing key con los que se creó el binding.
-      </p>
-    </section>
-  </div>
+      <form #deleteQueueForm="ngForm" (ngSubmit)="eliminarCola()">
+        <label for="deleteQueueName">Cola</label>
+        <select
+          id="deleteQueueName"
+          name="deleteQueueName"
+          [(ngModel)]="colaEliminar"
+          required>
+          <option value="">Seleccionar cola...</option>
+          <option *ngFor="let item of colas" [value]="item.name">
+            {{ item.name }} — {{ item.messages }} mensajes
+          </option>
+        </select>
+
+        <button
+          type="submit"
+          class="danger-button"
+          [disabled]="deleteQueueForm.invalid || procesando">
+          Eliminar cola
+        </button>
+      </form>
+    </article>
+
+    <!-- ELIMINAR EXCHANGE -->
+    <article class="admin-card">
+      <div class="card-heading">
+        <span class="icon">⌫</span>
+        <div>
+          <h2>Eliminar exchange</h2>
+          <p>Selecciona el exchange del catálogo.</p>
+        </div>
+      </div>
+
+      <form
+        #deleteExchangeForm="ngForm"
+        (ngSubmit)="eliminarExchange()">
+        <label for="deleteExchangeName">Exchange</label>
+        <select
+          id="deleteExchangeName"
+          name="deleteExchangeName"
+          [(ngModel)]="exchangeEliminar"
+          required>
+          <option value="">Seleccionar exchange...</option>
+          <option *ngFor="let item of exchanges" [value]="item.name">
+            {{ item.name }} ({{ item.type }})
+          </option>
+        </select>
+
+        <button
+          type="submit"
+          class="danger-button"
+          [disabled]="deleteExchangeForm.invalid || procesando">
+          Eliminar exchange
+        </button>
+      </form>
+    </article>
+  </section>
+
+  <!-- CATÁLOGO DE COLAS -->
+  <section class="catalog-section">
+    <div class="section-heading">
+      <div>
+        <h2>Catálogo de colas</h2>
+        <p>Recursos consultados desde RabbitMQ.</p>
+      </div>
+      <span class="count">{{ colas.length }} colas</span>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Durable</th>
+            <th>Mensajes</th>
+            <th>Consumidores</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of colas">
+            <td class="resource-name">{{ item.name }}</td>
+            <td>{{ item.durable ? 'Sí' : 'No' }}</td>
+            <td>{{ item.messages }}</td>
+            <td>{{ item.consumers }}</td>
+          </tr>
+          <tr *ngIf="!cargandoCatalogo && colas.length === 0">
+            <td colspan="4" class="empty">
+              No hay colas para mostrar.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- CATÁLOGO DE EXCHANGES -->
+  <section class="catalog-section">
+    <div class="section-heading">
+      <div>
+        <h2>Catálogo de exchanges</h2>
+        <p>Exchanges disponibles para crear bindings.</p>
+      </div>
+      <span class="count">{{ exchanges.length }} exchanges</span>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Tipo</th>
+            <th>Durable</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of exchanges">
+            <td class="resource-name">{{ item.name }}</td>
+            <td>{{ item.type }}</td>
+            <td>{{ item.durable ? 'Sí' : 'No' }}</td>
+          </tr>
+          <tr *ngIf="!cargandoCatalogo && exchanges.length === 0">
+            <td colspan="3" class="empty">
+              No hay exchanges para mostrar.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- CATÁLOGO DE BINDINGS -->
+  <section class="catalog-section">
+    <div class="section-heading">
+      <div>
+        <h2>Bindings existentes</h2>
+        <p>Relaciones entre exchanges y colas.</p>
+      </div>
+      <span class="count">{{ bindings.length }} bindings</span>
+    </div>
+
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th>Exchange</th>
+            <th>Routing key</th>
+            <th>Cola destino</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of bindings">
+            <td class="resource-name">{{ item.source || '(default)' }}</td>
+            <td>{{ item.routingKey }}</td>
+            <td class="resource-name">{{ item.destination }}</td>
+            <td>
+              <button
+                type="button"
+                class="danger-button small-button"
+                [disabled]="procesando"
+                (click)="eliminarBinding(item)">
+                Eliminar
+              </button>
+            </td>
+          </tr>
+          <tr *ngIf="!cargandoCatalogo && bindings.length === 0">
+            <td colspan="4" class="empty">
+              No hay bindings hacia colas para mostrar.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
 </main>

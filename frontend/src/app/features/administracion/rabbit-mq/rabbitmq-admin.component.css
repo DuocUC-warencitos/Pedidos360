@@ -1,13 +1,27 @@
+
+:host {
+  display: block;
+  min-height: 100%;
+  background: #f5f7fb;
+  color: #172033;
+}
+
 .admin-page {
-    width: 100%;
-    max-width: none;
-    margin: 0;
-    padding: 32px 24px 48px;
-    box-sizing: border-box;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 30px 24px 48px;
+}
+
+.page-header,
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
 }
 
 .page-header {
-  margin-bottom: 24px;
+  margin-bottom: 22px;
 }
 
 .eyebrow {
@@ -24,14 +38,15 @@ h1 {
   line-height: 1.2;
 }
 
-.subtitle {
-  margin: 10px 0 0;
+.subtitle,
+.section-heading p {
+  margin: 8px 0 0;
   color: #657087;
   line-height: 1.6;
 }
 
 .notice {
-  margin-bottom: 20px;
+  margin-bottom: 18px;
   padding: 14px 16px;
   border: 1px solid #dbe3f4;
   border-radius: 10px;
@@ -60,13 +75,40 @@ h1 {
   border: 1px solid #f0c5c5;
 }
 
+.catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.stat-card {
+  padding: 20px;
+  border: 1px solid #e2e7f0;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.stat-card span {
+  display: block;
+  color: #657087;
+  font-size: 13px;
+}
+
+.stat-card strong {
+  display: block;
+  margin-top: 8px;
+  font-size: 28px;
+}
+
 .admin-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 20px;
+  gap: 18px;
 }
 
-.admin-card {
+.admin-card,
+.catalog-section {
   min-width: 0;
   padding: 22px;
   border: 1px solid #e2e7f0;
@@ -79,7 +121,7 @@ h1 {
   display: flex;
   align-items: flex-start;
   gap: 13px;
-  margin-bottom: 22px;
+  margin-bottom: 20px;
 }
 
 .card-heading .icon {
@@ -94,13 +136,14 @@ h1 {
   font-size: 23px;
 }
 
-.card-heading h2 {
-  margin: 0 0 5px;
+.card-heading h2,
+.section-heading h2 {
+  margin: 0;
   font-size: 18px;
 }
 
 .card-heading p {
-  margin: 0;
+  margin: 5px 0 0;
   color: #727c90;
   font-size: 13px;
   line-height: 1.5;
@@ -153,10 +196,9 @@ select:focus {
 }
 
 button {
-  width: 100%;
-  min-height: 43px;
-  margin-top: 12px;
-  padding: 11px 16px;
+  min-height: 42px;
+  margin-top: 10px;
+  padding: 10px 15px;
   border: 0;
   border-radius: 8px;
   background: #4359bf;
@@ -165,11 +207,10 @@ button {
   font-size: 14px;
   font-weight: 700;
   cursor: pointer;
-  transition: opacity 0.15s ease;
 }
 
 button:hover:not(:disabled) {
-  opacity: 0.9;
+  filter: brightness(0.95);
 }
 
 button:disabled {
@@ -177,34 +218,121 @@ button:disabled {
   cursor: not-allowed;
 }
 
-button.danger-button {
-  background: #b63d47;
+button.secondary-button {
+  background: #e8ecfa;
+  color: #3448a3;
 }
 
-hr {
-  width: 100%;
-  margin: 20px 0 5px;
-  border: 0;
-  border-top: 1px solid #e5e9f1;
+button.danger-button {
+  background: #b63d47;
+  color: #fff;
+}
+
+button.refresh-button {
+  margin-top: 0;
+  white-space: nowrap;
+}
+
+button.small-button {
+  min-height: 34px;
+  margin: 0;
+  padding: 7px 10px;
+  font-size: 12px;
 }
 
 .help-text {
-  margin: 10px 0 0;
+  margin: 0;
   color: #727c90;
   font-size: 12px;
   line-height: 1.6;
+  overflow-wrap: anywhere;
 }
 
-@media (max-width: 760px) {
+.catalog-section {
+  margin-top: 22px;
+}
+
+.section-heading {
+  margin-bottom: 16px;
+}
+
+.section-heading p {
+  font-size: 13px;
+}
+
+.count {
+  padding: 6px 10px;
+  border-radius: 20px;
+  background: #eef1ff;
+  color: #4055ba;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+th,
+td {
+  padding: 13px 12px;
+  border-bottom: 1px solid #e8ebf2;
+  white-space: nowrap;
+}
+
+th {
+  background: #f8f9fc;
+  color: #657087;
+  font-weight: 700;
+}
+
+tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.resource-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.empty {
+  padding: 24px;
+  color: #727c90;
+  text-align: center;
+}
+
+@media (max-width: 800px) {
   .admin-page {
-    padding: 22px 14px 32px;
+    padding: 20px 14px 32px;
   }
 
   .admin-grid {
     grid-template-columns: 1fr;
   }
 
-  .admin-card {
-    padding: 18px;
+  .catalog-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  button.refresh-button {
+    width: 100%;
+  }
+
+  .admin-card,
+  .catalog-section {
+    padding: 17px;
   }
 }

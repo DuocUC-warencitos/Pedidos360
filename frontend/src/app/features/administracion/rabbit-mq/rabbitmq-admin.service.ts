@@ -1,12 +1,34 @@
-import { HttpClient } from '@angular/common/http';
+
 import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-
 import { environment } from '@env/environment';
-
 export interface ApiMessage {
   message: string;
   resource: string | null;
+}
+
+export interface QueueInfo {
+  name: string;
+  durable: boolean;
+  exclusive: boolean;
+  autoDelete: boolean;
+  messages: number;
+  consumers: number;
+}
+
+export interface ExchangeInfo {
+  name: string;
+  type: string;
+  durable: boolean;
+  autoDelete: boolean;
+}
+
+export interface BindingInfo {
+  source: string;
+  destination: string;
+  destinationType: string;
+  routingKey: string;
 }
 
 export interface CreateQueueRequest {
@@ -36,6 +58,19 @@ export class RabbitmqAdminService {
 
   private readonly baseUrl = `${environment.apiGatewayUrl}/admin/rabbit`;
 
+
+  listarColas(): Observable<QueueInfo[]> {
+    return this.http.get<QueueInfo[]>(`${this.baseUrl}/queues`);
+  }
+
+  listarExchanges(): Observable<ExchangeInfo[]> {
+    return this.http.get<ExchangeInfo[]>(`${this.baseUrl}/exchanges`);
+  }
+
+  listarBindings(): Observable<BindingInfo[]> {
+    return this.http.get<BindingInfo[]>(`${this.baseUrl}/bindings`);
+  }
+
   crearCola(request: CreateQueueRequest): Observable<ApiMessage> {
     return this.http.post<ApiMessage>(
       `${this.baseUrl}/queues`,
@@ -49,9 +84,7 @@ export class RabbitmqAdminService {
     );
   }
 
-  crearExchange(
-    request: CreateExchangeRequest
-  ): Observable<ApiMessage> {
+  crearExchange(request: CreateExchangeRequest): Observable<ApiMessage> {
     return this.http.post<ApiMessage>(
       `${this.baseUrl}/exchanges`,
       request
@@ -64,18 +97,14 @@ export class RabbitmqAdminService {
     );
   }
 
-  crearBinding(
-    request: CreateBindingRequest
-  ): Observable<ApiMessage> {
+  crearBinding(request: CreateBindingRequest): Observable<ApiMessage> {
     return this.http.post<ApiMessage>(
       `${this.baseUrl}/bindings`,
       request
     );
   }
 
-  eliminarBinding(
-    request: CreateBindingRequest
-  ): Observable<ApiMessage> {
+  eliminarBinding(request: CreateBindingRequest): Observable<ApiMessage> {
     return this.http.delete<ApiMessage>(
       `${this.baseUrl}/bindings`,
       { body: request }

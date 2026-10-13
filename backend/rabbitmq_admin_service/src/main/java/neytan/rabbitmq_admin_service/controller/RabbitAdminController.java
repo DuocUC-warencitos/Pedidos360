@@ -1,22 +1,47 @@
+
 package neytan.rabbitmq_admin_service.controller;
+
+import jakarta.validation.Valid;
+
 import neytan.rabbitmq_admin_service.dto.ApiMessage;
+import neytan.rabbitmq_admin_service.dto.BindingInfo;
 import neytan.rabbitmq_admin_service.dto.CreateBindingRequest;
 import neytan.rabbitmq_admin_service.dto.CreateExchangeRequest;
 import neytan.rabbitmq_admin_service.dto.CreateQueueRequest;
+import neytan.rabbitmq_admin_service.dto.ExchangeInfo;
+import neytan.rabbitmq_admin_service.dto.QueueInfo;
 import neytan.rabbitmq_admin_service.service.RabbitAdminService;
-
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@RestController 
-@RequestMapping ("/api/admin/rabbit")
-@RequiredArgsConstructor 
+import java.util.List;
+
+@RestController
+@RequestMapping("/api/admin/rabbit")
 public class RabbitAdminController {
-     private final RabbitAdminService service;
+
+    private final RabbitAdminService service;
+
+    public RabbitAdminController(RabbitAdminService service) {
+        this.service = service;
+    }
+
+    @GetMapping("/queues")
+    public List<QueueInfo> listarColas() {
+        return service.listarColas();
+    }
+
+    @GetMapping("/exchanges")
+    public List<ExchangeInfo> listarExchanges() {
+        return service.listarExchanges();
+    }
+
+    @GetMapping("/bindings")
+    public List<BindingInfo> listarBindings() {
+        return service.listarBindings();
+    }
 
     @PostMapping("/queues")
     public ResponseEntity<ApiMessage> crearCola(
@@ -24,21 +49,22 @@ public class RabbitAdminController {
 
         service.crearCola(request);
 
+        String nombre = request.name().startsWith("pedidos360.")
+                ? request.name()
+                : "pedidos360." + request.name().trim() + ".queue";
+
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new ApiMessage(
-                        "Cola creada correctamente",
-                        request.name()));
+                .body(new ApiMessage("Cola creada correctamente", nombre));
     }
 
     @DeleteMapping("/queues/{name}")
     public ResponseEntity<ApiMessage> eliminarCola(
             @PathVariable String name) {
 
-        validarNombre(name);
         service.eliminarCola(name);
 
-        return ResponseEntity.ok(new ApiMessage(
-                "Cola eliminada correctamente", name));
+        return ResponseEntity.ok(
+                new ApiMessage("Cola eliminada correctamente", name));
     }
 
     @PostMapping("/exchanges")
@@ -57,11 +83,10 @@ public class RabbitAdminController {
     public ResponseEntity<ApiMessage> eliminarExchange(
             @PathVariable String name) {
 
-        validarNombre(name);
         service.eliminarExchange(name);
 
-        return ResponseEntity.ok(new ApiMessage(
-                "Exchange eliminado correctamente", name));
+        return ResponseEntity.ok(
+                new ApiMessage("Exchange eliminado correctamente", name));
     }
 
     @PostMapping("/bindings")
@@ -83,18 +108,10 @@ public class RabbitAdminController {
 
         service.eliminarBinding(request);
 
-        return ResponseEntity.ok(new ApiMessage(
-                "Binding eliminado correctamente",
-                request.queueName() + " -> "
-                        + request.exchangeName()));
+        return ResponseEntity.ok(
+                new ApiMessage(
+                        "Binding eliminado correctamente",
+                        request.queueName() + " -> "
+                                + request.exchangeName()));
     }
-
-    private void validarNombre(String name) {
-        if (name == null
-                || !name.matches("^[a-zA-Z0-9._-]{1,100}$")) {
-            throw new IllegalArgumentException(
-                    "Nombre de recurso inválido");
-        }
-    }
-
 }

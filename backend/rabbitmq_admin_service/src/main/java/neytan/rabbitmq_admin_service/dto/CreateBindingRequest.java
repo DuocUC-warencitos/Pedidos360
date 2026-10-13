@@ -2,18 +2,19 @@ package neytan.rabbitmq_admin_service.dto;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 public record CreateBindingRequest(
-    @NotBlank
-    @Pattern(regexp = "^[a-zA-Z0-9._-]{1,100}$")
-    String queueName,
+        @NotBlank(message = "La cola es obligatoria")
+        @Size(max = 100)
+        @Pattern(regexp = "^[a-zA-Z0-9._-]+$")
+        String queueName,
 
-    @NotBlank
-    @Pattern(regexp = "^[a-zA-Z0-9._-]{1,100}$")
-    String exchangeName,
+        @NotBlank(message = "El exchange es obligatorio")
+        @Size(max = 100)
+        @Pattern(regexp = "^[a-zA-Z0-9._-]+$")
+        String exchangeName,
 
-    @Pattern(regexp = "^[a-zA-Z0-9._*#-]{0,100}$")
-    String routingKey
-) 
-
-{}
+        @Size(max = 255)
+        String routingKey
+) {}
