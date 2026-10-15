@@ -3,6 +3,7 @@ package io.github.roony11_1.producto_service.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import io.github.roony11_1.producto_service.dto.ConfirmarStockRequest;
 import io.github.roony11_1.producto_service.dto.LiberarStockRequest;
 import io.github.roony11_1.producto_service.dto.ReservaStockRequest;
 import io.github.roony11_1.producto_service.dto.ReservaStockResponse;
@@ -84,6 +85,38 @@ public class StockService
         reserva.setEstado(EstadoReserva.LIBERADO);
         reservaStockRepository.save(reserva);
         log.info("Stock liberado pedidoId={} items={}", request.pedidoId(), request.items().size());
+    }
+
+    @Transactional
+    public void confirmar(ConfirmarStockRequest request) {
+        var reservaOpt = reservaStockRepository.findByPedidoId(request.pedidoId());
+
+        if (reservaOpt.isEmpty()) {
+            log.warn("Confirmar idempotente: no existe reserva para pedidoId={} -> no-op", request.pedidoId());
+            return;
+        }
+
+        var reserva = reservaOpt.get();
+
+        if (reserva.getEstado() == EstadoReserva.CONFIRMADO) {
+            log.info("Confirmar idempotente: pedidoId={} ya CONFIRMADO -> no-op", request.pedidoId());
+            return;
+        }
+
+        if (reserva.getEstado() != EstadoReserva.RESERVADO) {
+            log.warn("Confirmar: pedidoId={} estado={} no es RESERVADO -> no-op", request.pedidoId(), reserva.getEstado());
+            return;
+        }
+
+        for (var item : request.items()) {
+            var p = productoRepository.findById(item.productoId())
+                .orElseThrow(() -> new NotFoundException("Producto", item.productoId()));
+            p.confirmarStock(item.cantidad());
+        }
+
+        reserva.setEstado(EstadoReserva.CONFIRMADO);
+        reservaStockRepository.save(reserva);
+        log.info("Stock confirmado pedidoId={} items={}", request.pedidoId(), request.items().size());
     }
 
     private ReservaStockResponse toResponse(ReservaStock r, boolean idempotente) 

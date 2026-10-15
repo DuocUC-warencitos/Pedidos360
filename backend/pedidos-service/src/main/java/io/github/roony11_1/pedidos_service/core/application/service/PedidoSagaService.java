@@ -153,7 +153,7 @@ public class PedidoSagaService
         var pedido = pedidoRepository.findById(pedidoId)
                             .orElseThrow(() -> new NotFoundException("Pedido", pedidoId));
 
-        var estadosConReserva = Set.of(EstadoPedido.STOCK_RESERVADO, EstadoPedido.ACEPTADO, EstadoPedido.CONFIRMADO, EstadoPedido.EN_PREPARACION, EstadoPedido.DESPACHADO);
+        var estadosConReserva = Set.of(EstadoPedido.STOCK_RESERVADO, EstadoPedido.ACEPTADO, EstadoPedido.CONFIRMADO);
 
         if (estadosConReserva.contains(pedido.getEstadoPedido()))
         {

@@ -34,8 +34,8 @@ public enum EstadoPedido
         STOCK_FALLIDO,   Set.of(CANCELADO),
         ACEPTADO,        Set.of(EN_PREPARACION, CANCELADO),
         CONFIRMADO,      Set.of(EN_PREPARACION, CANCELADO),
-        EN_PREPARACION,  Set.of(DESPACHADO, CANCELADO),
-        DESPACHADO,      Set.of(ENTREGADO, CANCELADO),
+        EN_PREPARACION,  Set.of(DESPACHADO),
+        DESPACHADO,      Set.of(ENTREGADO),
         ENTREGADO,       Set.of(),
         CANCELADO,       Set.of()
     );

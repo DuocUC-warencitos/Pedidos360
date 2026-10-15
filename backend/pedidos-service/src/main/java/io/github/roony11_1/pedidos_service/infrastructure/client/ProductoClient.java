@@ -17,6 +17,9 @@ public interface ProductoClient
     @PostMapping("/api/v1/productos/stock/liberar")
     void liberar(@RequestBody LiberarStockRequest request);
 
+    @PostMapping("/api/v1/productos/stock/confirmar")
+    void confirmar(@RequestBody ConfirmarStockRequest request);
+
     @PostMapping("/api/v1/productos/detalles")
     List<ProductoSnapshotResponse> obtenerDetalles(@RequestBody List<UUID> productoIds);
 
@@ -34,6 +37,10 @@ public interface ProductoClient
                                     java.time.Instant creadaEn, boolean idempotente) {}
 
     record LiberarStockRequest(UUID pedidoId, List<Item> items) {
+        public record Item(UUID productoId, int cantidad) {}
+    }
+
+    record ConfirmarStockRequest(UUID pedidoId, List<Item> items) {
         public record Item(UUID productoId, int cantidad) {}
     }
 }

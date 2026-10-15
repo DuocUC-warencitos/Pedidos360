@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.github.roony11_1.producto_service.dto.ConfirmarStockRequest;
 import io.github.roony11_1.producto_service.dto.LiberarStockRequest;
 import io.github.roony11_1.producto_service.dto.ReservaStockRequest;
 import io.github.roony11_1.producto_service.dto.ReservaStockResponse;
@@ -33,6 +34,13 @@ public class StockController
     public ResponseEntity<Void> liberar(@Valid @RequestBody LiberarStockRequest request)
     {
         stockService.liberar(request);
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/confirmar")
+    public ResponseEntity<Void> confirmar(@Valid @RequestBody ConfirmarStockRequest request)
+    {
+        stockService.confirmar(request);
         return ResponseEntity.ok().build();
     }
 }

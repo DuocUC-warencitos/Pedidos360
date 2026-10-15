@@ -32,6 +32,13 @@ public class ProductoClientResiliente
         productoClient.liberar(req);
     }
 
+    @CircuitBreaker(name = "productoService", fallbackMethod = "confirmarFallback")
+    @Retry(name = "productoService")
+    public void confirmar(ProductoClient.ConfirmarStockRequest req)
+    {
+        productoClient.confirmar(req);
+    }
+
     @CircuitBreaker(name = "productoService", fallbackMethod = "obtenerDetallesFallback")
     @Retry(name = "productoService")
     public List<ProductoClient.ProductoSnapshotResponse> obtenerDetalles(List<UUID> productoIds)
@@ -54,5 +61,10 @@ public class ProductoClientResiliente
     private void liberarFallback(ProductoClient.LiberarStockRequest req, Throwable t) 
     {
         throw new ProductoServiceUnavailableException("producto-service no disponible al liberar stock: " + t.getMessage(), t);
+    }
+
+    private void confirmarFallback(ProductoClient.ConfirmarStockRequest req, Throwable t)
+    {
+        throw new ProductoServiceUnavailableException("producto-service no disponible al confirmar stock: " + t.getMessage(), t);
     }
 }
