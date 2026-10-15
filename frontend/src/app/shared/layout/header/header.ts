@@ -1,34 +1,40 @@
-import { Component, computed, Signal } from '@angular/core';
+import { Component, computed, inject, Signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 
 import { AuthService } from '@core/auth/auth.service';
 import { AuthUser } from '@core/auth/authenticationProvider';
 
 @Component({
-  selector: 'app-header',
-  standalone: true,
-  imports: [RouterLink, RouterLinkActive],
-  templateUrl: './header.html',
+	selector: 'app-header',
+	standalone: true,
+	imports: [RouterLink, RouterLinkActive],
+	templateUrl: './header.html',
 })
 export class HeaderComponent {
-  constructor(private readonly authService: AuthService) {}
+	private readonly authService = inject(AuthService);
 
-  get user(): Signal<AuthUser | null> {
-    return this.authService.user;
-  }
+	get user(): Signal<AuthUser | null> 
+    {
+		return this.authService.user;
+	}
 
-  readonly rolesLabel = computed(() => {
-    const r = this.authService.roles;
-    return r.length ? r.join(', ') : '';
-  });
+	readonly rolesLabel = computed(() => 
+    {
+		const roles = this.authService.roles;
+		return roles.length ? roles.join(', ') : '';
+	});
 
-  readonly esAdmin = computed(() => this.authService.user()?.roles.includes('ADMIN') ?? false);
+	readonly esAdmin = computed(() => this.authService.isAdmin());
 
-  login(): void {
-    this.authService.login();
-  }
+	readonly esOperador = computed(() => this.authService.isOperador());
 
-  logout(): void {
-    this.authService.logout();
-  }
+	login(): void 
+    {
+		this.authService.login();
+	}
+
+	logout(): void 
+    {
+		this.authService.logout();
+	}
 }

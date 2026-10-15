@@ -38,6 +38,16 @@ export class AuthService
         return roles.some((r) => this.hasRole(r));
     }
 
+    isAdmin(): boolean
+    {
+        return this.hasRole('ADMIN')
+    }
+
+    isOperador(): boolean
+    {
+        return this.hasRole('OPERADOR')
+    }
+
     login(): void
     {
         this.authenticationProvider.login();

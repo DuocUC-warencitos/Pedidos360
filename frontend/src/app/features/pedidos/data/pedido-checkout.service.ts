@@ -5,6 +5,7 @@ import { lastValueFrom } from 'rxjs';
 
 import { LoggingService } from '@core/logging/logging.service';
 import { NotificationService } from '@core/notification/notification.service';
+import { AuthService } from '@core/auth/auth.service';
 import { CarritoService } from '@features/carrito/data/carrito.service';
 
 import { useJobStatusQuery } from './pedidos.queries';
@@ -20,6 +21,7 @@ export class PedidoCheckoutService
 {
     private readonly pedidosService = inject(PedidosService);
     private readonly carritoService = inject(CarritoService);
+    private readonly auth = inject(AuthService);
     private readonly router = inject(Router);
     private readonly queryClient = inject(QueryClient);
     private readonly logger = inject(LoggingService);
@@ -58,6 +60,16 @@ export class PedidoCheckoutService
 
     async crearPedido(): Promise<void>
     {
+        if (!this.auth.isAuthenticated)
+        {
+            this.notify.info(
+                'Inicia sesión para crear tu pedido',
+                'Te llevaremos al login y tu carrito se conserva para continuar.',
+            );
+            this.auth.login();
+            return;
+        }
+
         const items = this.carritoService.items();
 
         if (items.length === 0)

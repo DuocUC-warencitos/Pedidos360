@@ -38,10 +38,21 @@ export function MSALGuardConfigFactory(): MsalGuardConfiguration {
 }
 
 export function MSALInterceptorConfigFactory(): MsalInterceptorConfiguration {
-  const protectedResourceMap = new Map<string, Array<string>>();
-  protectedResourceMap.set(`${environment.apiGatewayUrl}/*`, [
-    environment.msal.apiScope,
+  const apiBase = environment.apiGatewayUrl ?? '';
+  const apiScope = environment.msal.apiScope;
+  const protectedResourceMap = new Map<string, Array<string | { httpMethod: string; scopes: string[] | null }>>();
+  // Rutas publicas del catalogo: GET sin token para no forzar login.
+  // Deben ir primero: MsalInterceptor usa el primer match y null = bypass.
+  protectedResourceMap.set(`${apiBase}/v1/productos`, [
+    { httpMethod: 'GET', scopes: null },
   ]);
+  protectedResourceMap.set(`${apiBase}/v1/productos/*`, [
+    { httpMethod: 'GET', scopes: null },
+  ]);
+  // Resto del API protegido
+  if (apiScope) {
+    protectedResourceMap.set(`${apiBase}/*`, [apiScope]);
+  }
   return {
     interactionType: InteractionType.Redirect,
     protectedResourceMap,

@@ -149,7 +149,7 @@ public class PedidoService
     {
         var pedidos = pedidoRepository.findAll();
 
-        var estadosConReserva = Set.of(EstadoPedido.STOCK_RESERVADO, EstadoPedido.ACEPTADO, EstadoPedido.CONFIRMADO, EstadoPedido.EN_PREPARACION, EstadoPedido.DESPACHADO);
+        var estadosConReserva = Set.of(EstadoPedido.STOCK_RESERVADO, EstadoPedido.ACEPTADO, EstadoPedido.CONFIRMADO);
         for (var pedido : pedidos) 
         {
             if (estadosConReserva.contains(pedido.getEstadoPedido()) && !pedido.getProductos().isEmpty()) 
@@ -183,6 +183,19 @@ public class PedidoService
 
         EstadoPedido siguiente = pedido.getEstadoPedido().siguiente()
             .orElseThrow(() -> new InvalidInputException("El pedido ya está en un estado final: " + pedido.getEstadoPedido()));
+
+        if (siguiente == EstadoPedido.EN_PREPARACION && !pedido.getProductos().isEmpty())
+        {
+            var confirmarReq = new ProductoClient.ConfirmarStockRequest(
+                pedido.getId(),
+                pedido.getProductos().stream()
+                    .map(pp -> new ProductoClient.ConfirmarStockRequest.Item(pp.getProductoId(), pp.getCantidad()))
+                    .toList()
+            );
+
+            productoClientResiliente.confirmar(confirmarReq);
+            log.info("Stock confirmado pedidoId={} items={}", pedido.getId(), confirmarReq.items().size());
+        }
 
         String comentario = userTokenService.getAuditComentario("Estado actualizado a " + siguiente + " por");
         pedido.avanzarEstado(comentario);

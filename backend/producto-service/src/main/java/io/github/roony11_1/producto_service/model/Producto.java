@@ -99,6 +99,16 @@ public class Producto
         stockReservado -= cantidad;
     }
 
+    public void confirmarStock(int cantidad)
+    {
+        validarCantidad(cantidad);
+
+        if (cantidad > stockReservado)
+            throw new StockReservadoInsuficienteException(id, cantidad, stockReservado);
+
+        stockReservado -= cantidad;
+    }
+
     private void validarCantidad(int cantidad)
     {
         if (cantidad <= 0)
