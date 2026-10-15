@@ -25,7 +25,7 @@ export const routes: Routes =
 	 },
 	{
 		path: 'productos',
-		canActivate: [authGuard],
+		canActivate: [],
 		loadChildren: () => import('./features/productos/productos.routes')
 			.then(m => m.productosRoutes)
 	},

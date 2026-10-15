@@ -52,6 +52,13 @@ public class SecurityConfig
                 .requestMatchers("/actuator/health").permitAll()
                 .requestMatchers("/api/v1/productos/stock/**").permitAll()
                 .requestMatchers("/api/v1/productos/detalles").permitAll()
+                // Metodos libres
+                // - Listar cátalogo
+                .requestMatchers(HttpMethod.GET, "/api/v1/productos").permitAll()
+                // - Categorias del catalogo publico
+                .requestMatchers(HttpMethod.GET, "/api/v1/productos/categorias").permitAll()
+                // - Detalle de producto del catalogo publico
+                .requestMatchers(HttpMethod.GET, "/api/v1/productos/*").permitAll()
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .anyRequest().authenticated()
             )

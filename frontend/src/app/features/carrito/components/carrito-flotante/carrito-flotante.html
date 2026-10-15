@@ -72,6 +72,10 @@
                         {
                             Creando pedido...
                         }
+                        @else if (!user())
+                        {
+                            Inicia sesión para crear pedido
+                        }
                         @else
                         {
                             Crear pedido

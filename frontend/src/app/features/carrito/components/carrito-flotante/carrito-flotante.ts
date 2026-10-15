@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 
 import { CarritoService } from '@features/carrito/data/carrito.service';
 import { PedidoCheckoutService } from '@features/pedidos/data/pedido-checkout.service';
+import { AuthService } from '@core/auth/auth.service';
 
 @Component({
     selector: 'app-carrito-flotante',
@@ -18,6 +19,9 @@ export class CarritoFlotante
 {
     readonly carritoService = inject(CarritoService);
     readonly checkout = inject(PedidoCheckoutService);
+    private readonly auth = inject(AuthService);
+
+    readonly user = this.auth.user;
 
     readonly abierto = signal(false);
 

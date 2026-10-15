@@ -4,6 +4,7 @@ import { injectQuery } from '@tanstack/angular-query-experimental';
 import { lastValueFrom } from 'rxjs';
 
 import { NotificationService } from '@core/notification/notification.service';
+import { AuthService } from '@core/auth/auth.service';
 import { QueryState } from '@shared/components/query-state/query-state';
 import { CarritoService } from '@features/carrito/data/carrito.service';
 import { PedidoCheckoutService } from '@features/pedidos/data/pedido-checkout.service';
@@ -25,9 +26,12 @@ export class PedidosCreate
 {
     private readonly notify = inject(NotificationService);
     private readonly productosService = inject(ProductosService);
+    private readonly auth = inject(AuthService);
 
     readonly carrito = inject(CarritoService);
     readonly checkout = inject(PedidoCheckoutService);
+
+    readonly user = this.auth.user;
 
     readonly cantidades = signal<Record<string, number>>({});
 
