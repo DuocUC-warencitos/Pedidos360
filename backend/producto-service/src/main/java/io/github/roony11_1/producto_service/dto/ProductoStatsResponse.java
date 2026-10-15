@@ -14,4 +14,5 @@ public class ProductoStatsResponse
     private long total;
     private long activos;
     private long stockTotal;
+    private long stockReservadoTotal;
 }

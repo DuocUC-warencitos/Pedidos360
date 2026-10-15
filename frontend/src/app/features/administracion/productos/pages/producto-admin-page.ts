@@ -100,6 +100,7 @@ export class AdminProductoPage
     readonly totalProductos = computed(() => this.statsQuery.data()?.total ?? 0);
     readonly totalActivos = computed(() => this.statsQuery.data()?.activos ?? 0);
     readonly totalStock = computed(() => this.statsQuery.data()?.stockTotal ?? 0);
+    readonly totalReservado = computed(() => this.statsQuery.data()?.stockReservadoTotal ?? 0);
 
     private primeraEmision = true;
 

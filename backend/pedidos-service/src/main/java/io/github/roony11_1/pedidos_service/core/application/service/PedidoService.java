@@ -184,7 +184,7 @@ public class PedidoService
         EstadoPedido siguiente = pedido.getEstadoPedido().siguiente()
             .orElseThrow(() -> new InvalidInputException("El pedido ya está en un estado final: " + pedido.getEstadoPedido()));
 
-        if (siguiente == EstadoPedido.EN_PREPARACION && !pedido.getProductos().isEmpty())
+        if ((siguiente == EstadoPedido.EN_PREPARACION || siguiente == EstadoPedido.DESPACHADO) && !pedido.getProductos().isEmpty())
         {
             var confirmarReq = new ProductoClient.ConfirmarStockRequest(
                 pedido.getId(),
@@ -194,7 +194,7 @@ public class PedidoService
             );
 
             productoClientResiliente.confirmar(confirmarReq);
-            log.info("Stock confirmado pedidoId={} items={}", pedido.getId(), confirmarReq.items().size());
+            log.info("Stock confirmado pedidoId={} al avanzar a {} items={}", pedido.getId(), siguiente, confirmarReq.items().size());
         }
 
         String comentario = userTokenService.getAuditComentario("Estado actualizado a " + siguiente + " por");

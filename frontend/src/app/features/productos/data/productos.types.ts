@@ -34,6 +34,7 @@ export interface ProductoStatsResponse {
   total: number;
   activos: number;
   stockTotal: number;
+  stockReservadoTotal?: number;
 }
 
 export interface ProductoResponse
@@ -42,6 +43,7 @@ export interface ProductoResponse
     nombre: string;
     precio: number;
     stockDisponible: number;
+    stockReservado?: number;
     sku?: string;
     shortDescription?: string;
     activo?: boolean;

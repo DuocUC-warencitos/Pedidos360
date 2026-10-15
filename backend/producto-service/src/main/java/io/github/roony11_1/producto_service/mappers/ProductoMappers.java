@@ -32,6 +32,7 @@ public class ProductoMappers
             .nombre(producto.getNombre())
             .precio(producto.getPrecio())
             .stockDisponible(producto.getStockDisponible())
+            .stockReservado(producto.getStockReservado())
             .sku(producto.getSku())
             .shortDescription(producto.getShortDescription())
             .activo(producto.isActivo())

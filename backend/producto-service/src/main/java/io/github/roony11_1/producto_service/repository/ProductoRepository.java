@@ -17,6 +17,9 @@ public interface ProductoRepository extends JpaRepository<Producto, UUID>, JpaSp
     @Query("SELECT COALESCE(SUM(p.stockDisponible), 0) FROM Producto p")
     long sumarStockDisponible();
 
+    @Query("SELECT COALESCE(SUM(p.stockReservado), 0) FROM Producto p")
+    long sumarStockReservado();
+
     @Query("SELECT DISTINCT p.categoria FROM Producto p WHERE p.categoria IS NOT NULL ORDER BY p.categoria ASC")
     List<String> listarCategorias();
 }

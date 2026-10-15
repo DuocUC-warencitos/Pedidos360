@@ -37,6 +37,7 @@ public class ProductoAdminService
             .total(productoRepository.count())
             .activos(productoRepository.contarActivos())
             .stockTotal(productoRepository.sumarStockDisponible())
+            .stockReservadoTotal(productoRepository.sumarStockReservado())
             .build();
     }
 
