@@ -15,38 +15,26 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.github.roony11_1.pedidos_service.api.dto.request.CrearPedidoRequest;
 import io.github.roony11_1.pedidos_service.api.dto.response.PedidoJobStatusResponse;
-import io.github.roony11_1.pedidos_service.core.application.service.PedidoJobService;
 import io.github.roony11_1.pedidos_service.core.application.service.PedidoSagaService;
-import io.github.roony11_1.pedidos_service.core.domain.model.Pedido;
-import io.github.roony11_1.pedidos_service.core.domain.model.PedidoJob;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/v1/pedidos/saga")
-@RequiredArgsConstructor 
-public class PedidoSagaController 
+@RequiredArgsConstructor
+public class PedidoSagaController
 {
     private final PedidoSagaService pedidoSagaService;
-    private final PedidoJobService pedidojobService;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN','OPERADOR','CLIENTE')")
     public ResponseEntity<PedidoJobStatusResponse> crear(@RequestHeader("Idempotency-Key") String idempotencyKey, @Valid @RequestBody CrearPedidoRequest request)
     {
-        String correlationId = UUID.randomUUID().toString();
-
-        Pedido pedido = pedidoSagaService.crearPedido(request.toProductos(), idempotencyKey, correlationId);
-
-        var pedidoId = pedido.getId();
-
-        PedidoJob job = pedidojobService.crearEjecutar(pedidoId, idempotencyKey, correlationId);
-
-        String estadoPedido = pedido.getEstadoPedido().name();
+        PedidoJobStatusResponse response = pedidoSagaService.crearSaga(idempotencyKey, request.toProductos());
 
         return ResponseEntity.accepted()
-            .header("Location", "/api/v1/pedidos/saga/jobs/" + job.getId())
-            .body(PedidoJobStatusResponse.from(job, estadoPedido));
+            .header("Location", "/api/v1/pedidos/saga/jobs/" + response.jobId())
+            .body(response);
     }
 
     @PatchMapping("/{pedidoId}/cancelar")

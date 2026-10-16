@@ -1,5 +1,6 @@
 package io.github.roony11_1.pedidos_service.infrastructure.client;
 
+import feign.FeignException;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import io.github.roony11_1.pedidos_service.infrastructure.client.ProductoClient.ReservaStockRequest;
@@ -22,21 +23,48 @@ public class ProductoClientResiliente
     @Retry(name = "productoService")
     public ReservaStockResponse reservar(String idempotencyKey, ReservaStockRequest req)
     {
-        return productoClient.reservar(idempotencyKey, req);
+        try
+        {
+            return productoClient.reservar(idempotencyKey, req);
+        }
+        catch (FeignException ex)
+        {
+            if (ex.status() >= 400 && ex.status() < 500)
+                throw ReservaStockRechazadaException.fromFeign(ex);
+            throw ex;
+        }
     }
 
     @CircuitBreaker(name = "productoService", fallbackMethod = "liberarFallback")
     @Retry(name = "productoService")
     public void liberar(ProductoClient.LiberarStockRequest req)
     {
-        productoClient.liberar(req);
+        try
+        {
+            productoClient.liberar(req);
+        }
+        catch (FeignException ex)
+        {
+            if (ex.status() >= 400 && ex.status() < 500)
+                throw ReservaStockRechazadaException.fromFeign(ex);
+            throw ex;
+        }
     }
 
     @CircuitBreaker(name = "productoService", fallbackMethod = "confirmarFallback")
     @Retry(name = "productoService")
     public void confirmar(ProductoClient.ConfirmarStockRequest req)
     {
-        productoClient.confirmar(req);
+        try
+        {
+            productoClient.confirmar(req);
+        }
+        catch (FeignException ex)
+        {
+            if (ex.status() >= 400 && ex.status() < 500)
+                throw ReservaStockRechazadaException.fromFeign(ex);
+            throw ex;
+        }
     }
 
     @CircuitBreaker(name = "productoService", fallbackMethod = "obtenerDetallesFallback")

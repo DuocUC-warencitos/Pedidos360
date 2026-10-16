@@ -22,7 +22,6 @@ import io.github.roony11_1.pedidos_service.core.domain.repository.PedidoReposito
 import io.github.roony11_1.pedidos_service.infrastructure.client.ProductoClient;
 import io.github.roony11_1.pedidos_service.infrastructure.client.ProductoClientResiliente;
 import io.github.roony11_1.pedidos_service.infrastructure.client.ProductoServiceUnavailableException;
-import io.github.roony11_1.pedidos_service.infrastructure.mensajeria.PedidoEventoProducer;
 import io.github.roony11_1.pedidos_service.kernel.IUserTokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +36,22 @@ public class PedidoSagaService
     private final IUserTokenService userTokenService;
     private final TransactionTemplate txTemplate;
     private final ProductoClientResiliente productoClientResiliente;
+    private final PedidoJobCreator pedidoJobCreator;
+
+    public PedidoJobStatusResponse crearSaga(String idempotencyKey, List<PedidoProducto> productos)
+    {
+        String correlationId = UUID.randomUUID().toString();
+
+        Pedido pedido = crearPedido(productos, idempotencyKey, correlationId);
+
+        String effectiveCorrelationId = pedido.getCorrelationId() != null
+            ? pedido.getCorrelationId()
+            : correlationId;
+
+        PedidoJob job = pedidoJobCreator.crearEjecutar(pedido.getId(), idempotencyKey, effectiveCorrelationId);
+
+        return PedidoJobStatusResponse.from(job, pedido.getEstadoPedido().name());
+    }
 
     public Pedido crearPedido(
         List<PedidoProducto> productos,
@@ -59,6 +74,59 @@ public class PedidoSagaService
             return pedido;
         }
 
+        // Sin TX: validación barata + llamada remota fuera de la transacción
+        // para no mantener la conexión a Postgres tomada mientras esperamos a producto-service.
+        for (var p : productos)
+        {
+            if (p.getCantidad() <= 0)
+            {
+                throw new IllegalArgumentException(
+                    "La cantidad debe ser mayor que cero"
+                );
+            }
+        }
+
+        var productoIds = productos.stream()
+            .map(PedidoProducto::getProductoId)
+            .distinct()
+            .toList();
+
+        var detalles = productoClientResiliente.obtenerDetalles(productoIds);
+
+        var detallesPorId = detalles.stream()
+            .collect(Collectors.toMap(
+                ProductoClient.ProductoSnapshotResponse::id,
+                Function.identity(),
+                (a, b) -> a
+            ));
+
+        var productosSnapshot = productos.stream()
+            .map(producto ->
+            {
+                var detalle = detallesPorId.get(
+                    producto.getProductoId()
+                );
+
+                if (detalle == null)
+                {
+                    throw new NotFoundException(
+                        "Producto",
+                        producto.getProductoId()
+                    );
+                }
+
+                return PedidoProducto.builder()
+                    .productoId(producto.getProductoId())
+                    .nombreSnapshot(detalle.nombre())
+                    .precioSnapshot(detalle.precio())
+                    .cantidad(producto.getCantidad())
+                    .build();
+            })
+            .toList();
+
+        var userId = userTokenService.getUserId();
+        var comentario = userTokenService.getAuditComentario("Ingresado por");
+
         try
         {
             return txTemplate.execute(status ->
@@ -71,59 +139,13 @@ public class PedidoSagaService
                     return existenteTx.get();
                 }
 
-                var productoIds = productos.stream()
-                    .map(PedidoProducto::getProductoId)
-                    .distinct()
-                    .toList();
-
-                var detalles = productoClientResiliente.obtenerDetalles(productoIds);
-
-                var detallesPorId = detalles.stream()
-                    .collect(Collectors.toMap(
-                        ProductoClient.ProductoSnapshotResponse::id,
-                        Function.identity()
-                    ));
-
-                var productosSnapshot = productos.stream()
-                    .map(producto ->
-                    {
-                        var detalle = detallesPorId.get(
-                            producto.getProductoId()
-                        );
-
-                        if (detalle == null)
-                        {
-                            throw new NotFoundException(
-                                "Producto",
-                                producto.getProductoId()
-                            );
-                        }
-
-                        if (producto.getCantidad() <= 0)
-                        {
-                            throw new IllegalArgumentException(
-                                "La cantidad debe ser mayor que cero"
-                            );
-                        }
-
-                        return PedidoProducto.builder()
-                            .productoId(producto.getProductoId())
-                            .nombreSnapshot(detalle.nombre())
-                            .precioSnapshot(detalle.precio())
-                            .cantidad(producto.getCantidad())
-                            .build();
-                    })
-                    .toList();
-
                 var pedido = new Pedido();
 
                 productosSnapshot.forEach(pedido::addProducto);
 
-                pedido.setUserId(userTokenService.getUserId());
+                pedido.setUserId(userId);
                 pedido.setEstadoPedido(EstadoPedido.CREADO);
-                pedido.setComentario(
-                    userTokenService.getAuditComentario("Ingresado por")
-                );
+                pedido.setComentario(comentario);
                 pedido.setIdempotencyKey(idempotencyKey);
                 pedido.setCorrelationId(correlationId);
 

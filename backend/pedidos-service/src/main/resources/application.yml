@@ -35,10 +35,26 @@ spring:
         port: ${RABBITMQ_PORT}
         username: ${RABBITMQ_USERNAME}
         password: ${RABBITMQ_PASSWORD}
+        publisher-confirm-type: correlated
+        publisher-returns: true
         listener:
             simple:
                 acknowledge-mode: manual
-                prefetch: 1
+                prefetch: 10
+                concurrency: 4
+                max-concurrency: 16
+
+resilience4j:
+    retry:
+        instances:
+            productoService:
+                ignore-exceptions:
+                    - io.github.roony11_1.pedidos_service.infrastructure.client.ReservaStockRechazadaException
+    circuitbreaker:
+        instances:
+            productoService:
+                ignore-exceptions:
+                    - io.github.roony11_1.pedidos_service.infrastructure.client.ReservaStockRechazadaException
 
 app:
     security:

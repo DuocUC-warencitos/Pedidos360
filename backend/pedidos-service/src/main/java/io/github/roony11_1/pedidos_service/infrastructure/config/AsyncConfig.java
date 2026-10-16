@@ -1,17 +1,19 @@
 package io.github.roony11_1.pedidos_service.infrastructure.config;
 
+import org.springframework.amqp.core.AcknowledgeMode;
+import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.support.converter.JacksonJsonMessageConverter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
-@EnableAsync 
-public class AsyncConfig 
+public class AsyncConfig
 {
     @Bean("pedidoExecutor")
-    public TaskExecutor pedidExecutor()
+    public TaskExecutor pedidoExecutor()
     {
         var ex = new ThreadPoolTaskExecutor();
 
@@ -25,5 +27,30 @@ public class AsyncConfig
         ex.initialize();
 
         return ex;
+    }
+
+    @Bean
+    public JacksonJsonMessageConverter jacksonJsonMessageConverter()
+    {
+        return new JacksonJsonMessageConverter();
+    }
+
+    @Bean("pedidoRabbitListenerContainerFactory")
+    public SimpleRabbitListenerContainerFactory pedidoRabbitListenerContainerFactory(
+        ConnectionFactory connectionFactory,
+        TaskExecutor pedidoExecutor,
+        JacksonJsonMessageConverter jacksonJsonMessageConverter)
+    {
+        var factory = new SimpleRabbitListenerContainerFactory();
+        factory.setConnectionFactory(connectionFactory);
+        factory.setTaskExecutor(pedidoExecutor);
+        factory.setMessageConverter(jacksonJsonMessageConverter);
+        factory.setConcurrentConsumers(4);
+        factory.setMaxConcurrentConsumers(16);
+        factory.setPrefetchCount(10);
+        factory.setAcknowledgeMode(AcknowledgeMode.MANUAL);
+        factory.setDefaultRequeueRejected(false);
+
+        return factory;
     }
 }

@@ -83,6 +83,21 @@ export class PedidoCheckoutService
             return;
         }
 
+        const sinStock = items.filter(item =>
+            !Number.isInteger(item.cantidad) ||
+            item.cantidad < 1 ||
+            item.cantidad > item.producto.stockDisponible
+        );
+
+        if (sinStock.length > 0)
+        {
+            this.notify.warning(
+                `Stock insuficiente para ${sinStock[0].producto.nombre}`,
+                'Ajusta la cantidad o quítalo del carrito antes de reintentar.',
+            );
+            return;
+        }
+
         const request: CrearPedidoRequest = {
             items: items.map<ItemPedido>(item => ({
                 productoId: item.producto.id,
@@ -105,7 +120,6 @@ export class PedidoCheckoutService
             this.logger.debug('Job de pedido creado:', job);
 
             this.jobState.set(job);
-            this.carritoService.vaciar();
 
             await Promise.all([
                 this.queryClient.invalidateQueries({
@@ -173,6 +187,7 @@ export class PedidoCheckoutService
         if (job.estadoJob === 'COMPLETED')
         {
             this.idempotencyKey = crypto.randomUUID();
+            this.carritoService.vaciar();
 
             this.notify.success(
                 'Pedido confirmado. Redirigiendo al detalle',
@@ -188,9 +203,35 @@ export class PedidoCheckoutService
 
         this.idempotencyKey = crypto.randomUUID();
 
-        this.notify.error(job.error ?? 'Reserva de stock fallida');
+        // El carrito se conserva para que el usuario ajuste cantidades y reintente.
+        this.notify.error(this.mensajeErrorAmigable(job.error));
 
         void this.router.navigate(['/pedidos/lista']);
+    }
+
+    private mensajeErrorAmigable(error?: string | null): string
+    {
+        if (!error)
+        {
+            return 'Reserva de stock fallida';
+        }
+
+        const stock = error.match(/Stock insuficiente para producto:[^"}\]]+/);
+        if (stock)
+        {
+            return stock[0].replace(/\\"/g, '"').trim();
+        }
+
+        const embebido = error.match(/"message"\s*:\s*"((?:[^"\\]|\\.)*)"/);
+        if (embebido)
+        {
+            return embebido[1].replace(/\\"/g, '"').trim();
+        }
+
+        const limpio = error.replace(/https?:\/\/\S+/g, '').trim();
+        return limpio.length > 0 && limpio.length <= 300
+            ? limpio
+            : 'Reserva de stock fallida';
     }
 
     nuevoPedido(): void
