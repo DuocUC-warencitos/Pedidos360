@@ -43,6 +43,8 @@ public class ProductoController
         .id(producto.getId())
         .nombre(producto.getNombre())
         .precio(producto.getPrecio())
+        .stockDisponible(producto.getStockDisponible())
+        .activo(producto.isActivo())
         .build();
 
 

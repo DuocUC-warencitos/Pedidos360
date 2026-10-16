@@ -23,9 +23,9 @@ public interface ProductoClient
     @PostMapping("/api/v1/productos/detalles")
     List<ProductoSnapshotResponse> obtenerDetalles(@RequestBody List<UUID> productoIds);
 
-    record ProductoSnapshotResponse(UUID id, String nombre, int precio) 
+    record ProductoSnapshotResponse(UUID id, String nombre, int precio, int stockDisponible, boolean activo)
     {
-        
+
     }
 
     record ReservaStockRequest(UUID pedidoId, List<Item> items) 

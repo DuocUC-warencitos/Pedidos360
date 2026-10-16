@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { QueryClient } from '@tanstack/angular-query-experimental';
 import { lastValueFrom } from 'rxjs';
 
+import { isErrorResponse } from '@core/api/error-response';
 import { LoggingService } from '@core/logging/logging.service';
 import { NotificationService } from '@core/notification/notification.service';
 import { AuthService } from '@core/auth/auth.service';
@@ -137,6 +138,14 @@ export class PedidoCheckoutService
         catch (error)
         {
             this.logger.error('Error al crear pedido:', error);
+
+            // ERR-1002: el backend no guardó nada y devuelve las IDs en details[].
+            // Se quitan del carrito, se avisa y se queda en la página (misma key, nada persistido).
+            if (this.removerNoDisponiblesDelCarrito(error))
+            {
+                return;
+            }
+
             this.notify.error(
                 'No se pudo iniciar la creación del pedido',
             );
@@ -145,6 +154,35 @@ export class PedidoCheckoutService
         {
             this.guardandoState.set(false);
         }
+    }
+
+    private removerNoDisponiblesDelCarrito(error: unknown): boolean
+    {
+        const body = (error as { error?: unknown })?.error;
+
+        if (!isErrorResponse(body) || body.code !== 'ERR-1002' || !Array.isArray(body.details))
+        {
+            return false;
+        }
+
+        const ids = new Set<string>();
+
+        for (const d of body.details)
+        {
+            const m = d.match(/[0-9a-fA-F-]{36}/);
+            if (m) ids.add(m[0]);
+        }
+
+        ids.forEach(id => this.carritoService.quitarProducto(id));
+
+        this.notify.warning(
+            body.message || 'Algunos productos ya no están disponibles',
+            ids.size > 0
+                ? 'Se quitaron del carrito, revisa y reintenta.'
+                : 'Revisa el carrito y reintenta.',
+        );
+
+        return true;
     }
 
     private actualizarEstadoJob(job: PedidoJobStatusResponse): void

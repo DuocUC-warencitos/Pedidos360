@@ -4,8 +4,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -36,6 +34,7 @@ public class PedidoSagaService
     private final IUserTokenService userTokenService;
     private final TransactionTemplate txTemplate;
     private final ProductoClientResiliente productoClientResiliente;
+    private final DisponibilidadPedidoValidator disponibilidadValidator;
     private final PedidoJobCreator pedidoJobCreator;
 
     public PedidoJobStatusResponse crearSaga(String idempotencyKey, List<PedidoProducto> productos)
@@ -74,55 +73,14 @@ public class PedidoSagaService
             return pedido;
         }
 
-        // Sin TX: validación barata + llamada remota fuera de la transacción
-        // para no mantener la conexión a Postgres tomada mientras esperamos a producto-service.
-        for (var p : productos)
-        {
-            if (p.getCantidad() <= 0)
-            {
-                throw new IllegalArgumentException(
-                    "La cantidad debe ser mayor que cero"
-                );
-            }
-        }
+        // Sin TX y sin persistir: toda la disponibilidad vive en el validator.
+        // Si hay faltantes o sin stock se lanza ERR-1002 y no se guarda nada.
+        var pre = disponibilidadValidator.prevalidar(productos);
 
-        var productoIds = productos.stream()
-            .map(PedidoProducto::getProductoId)
-            .distinct()
-            .toList();
+        if (pre.tieneProblemas())
+            throw new ProductosNoDisponiblesException(pre.faltantes(), pre.sinStock());
 
-        var detalles = productoClientResiliente.obtenerDetalles(productoIds);
-
-        var detallesPorId = detalles.stream()
-            .collect(Collectors.toMap(
-                ProductoClient.ProductoSnapshotResponse::id,
-                Function.identity(),
-                (a, b) -> a
-            ));
-
-        var productosSnapshot = productos.stream()
-            .map(producto ->
-            {
-                var detalle = detallesPorId.get(
-                    producto.getProductoId()
-                );
-
-                if (detalle == null)
-                {
-                    throw new NotFoundException(
-                        "Producto",
-                        producto.getProductoId()
-                    );
-                }
-
-                return PedidoProducto.builder()
-                    .productoId(producto.getProductoId())
-                    .nombreSnapshot(detalle.nombre())
-                    .precioSnapshot(detalle.precio())
-                    .cantidad(producto.getCantidad())
-                    .build();
-            })
-            .toList();
+        var productosSnapshot = pre.snapshot();
 
         var userId = userTokenService.getUserId();
         var comentario = userTokenService.getAuditComentario("Ingresado por");

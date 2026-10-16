@@ -73,16 +73,19 @@ public class PedidoJobService implements ProcesarPedidoJobUseCase
 
             self().marcarCompletado(job.getId());
             publicarReservado(job, userId);
+            log.info("Job {} COMPLETED pedido {}", jobId, job.getPedidoId());
         }
         catch (NotFoundException | IllegalArgumentException ex)
         {
             self().marcarFallido(job.getId(), ex.getMessage());
             publicarFallido(job, userId, ex.getMessage());
+            log.info("Job {} FAILED negocio pedido {}: {}", jobId, job.getPedidoId(), ex.getMessage());
         }
         catch (ReservaStockRechazadaException ex)
         {
             self().marcarFallido(job.getId(), ex.getMessage());
             publicarFallido(job, userId, ex.getMessage());
+            log.info("Job {} FAILED negocio pedido {}: {}", jobId, job.getPedidoId(), ex.getMessage());
         }
         catch (FeignException ex)
         {
@@ -91,9 +94,11 @@ public class PedidoJobService implements ProcesarPedidoJobUseCase
                 String limpio = ReservaStockRechazadaException.fromFeign(ex).getMessage();
                 self().marcarFallido(job.getId(), limpio);
                 publicarFallido(job, userId, limpio);
+                log.info("Job {} FAILED negocio pedido {}: {}", jobId, job.getPedidoId(), limpio);
             }
             else
             {
+                log.warn("Job {} transitorio pedido {} -> DLQ: {}", jobId, job.getPedidoId(), ex.getMessage());
                 throw ex;
             }
         }
@@ -104,9 +109,11 @@ public class PedidoJobService implements ProcesarPedidoJobUseCase
             {
                 self().marcarFallido(job.getId(), limpio);
                 publicarFallido(job, userId, limpio);
+                log.info("Job {} FAILED negocio pedido {}: {}", jobId, job.getPedidoId(), limpio);
             }
             else
             {
+                log.warn("Job {} transitorio pedido {} -> DLQ: {}", jobId, job.getPedidoId(), ex.getMessage());
                 throw ex;
             }
         }
