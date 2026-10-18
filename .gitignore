@@ -18,6 +18,13 @@ infra/scripts/.env.deploy
 infra/envs/comun.env
 infra/envs/aws.env
 
+# Llaves SSH / certificados (nunca versionar)
+*.pem
+*.ppk
+*.p12
+*.jks
+*.key
+
 # =========================
 # Build / Dependencies
 # =========================

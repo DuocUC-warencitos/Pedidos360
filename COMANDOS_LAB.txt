@@ -63,6 +63,10 @@ notepad infra\envs\comun.env            # AWS_KEY_PATH (ruta al .pem); RABBITMQ_
 # Backends: .github/workflows/docker-publish.yml construye y publica en GHCR
 #   pedidos-service, producto-service y rabbitmq-admin-service al push a master
 #   (o GitHub -> Actions -> "Run workflow"). Ya no hay docker build/push a mano.
+# GHCR: si los paquetes quedan PRIVADOS, llena GHCR_USERNAME y GHCR_TOKEN
+#   (PAT clasico con scope read:packages) en infra\envs\comun.env; los deploy
+#   scripts hacen el docker login automaticamente en cada EC2. Si son publicos,
+#   dejalo vacio y no se hace login.
 # Frontend: Vercel (Root Directory = frontend; usa frontend/vercel.json).
 #   Env vars en Vercel (Production) - el build hornea public/env.js con scripts/set-env.mjs:
 #     API_GATEWAY_URL       = (terraform output apigw_url) + /api

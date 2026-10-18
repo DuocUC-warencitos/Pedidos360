@@ -45,6 +45,13 @@ Copy-Item infra\envs\rabbit-admin\.env.example infra\envs\rabbit-admin\.env
   (el 8080 publico restante es el que necesita API Gateway).
 - Local: la clave viene del `.env` versionado de `infra/docker`.
 
+## GHCR privado (opcional)
+
+Si los paquetes de `ghcr.io/duocuc-warencitos/*` son privados, define en `comun.env`:
+`GHCR_USERNAME` (tu usuario GitHub) y `GHCR_TOKEN` (PAT clasico con `read:packages`).
+Los deploy scripts de rabbit-admin/producto/pedidos hacen `docker login ghcr.io` en la EC2
+antes del `docker compose up`. Si los paquetes son publicos, deja ambos vacios.
+
 ## Git
 
 - `infra/envs/comun.env`, `infra/envs/aws.env` y `infra/envs/*/.env` estan **gitignored** (secretos locales).

@@ -379,3 +379,26 @@ function Assert-SshKey {
     }
     return $KeyPath
 }
+
+function Connect-RemoteGhcr {
+    param(
+        [Parameter(Mandatory)][hashtable]$Deploy,
+        [Parameter(Mandatory)][string]$SshTarget,
+        [Parameter(Mandatory)][AllowEmptyCollection()][string[]]$SshOptions
+    )
+
+    $username = $Deploy["GHCR_USERNAME"]
+    $token = $Deploy["GHCR_TOKEN"]
+
+    if (-not $username -or -not $token) {
+        Write-Host "==> GHCR_USERNAME/GHCR_TOKEN vacios: se asume imagen GHCR publica (sin login en la EC2)."
+        return
+    }
+
+    Write-Host "==> docker login ghcr.io en $SshTarget (usuario $username)"
+    $token | ssh @SshOptions $SshTarget "docker login ghcr.io -u $username --password-stdin"
+    if ($LASTEXITCODE -ne 0) {
+        throw "docker login ghcr.io fallo en $SshTarget. Revisa GHCR_USERNAME/GHCR_TOKEN (PAT con scope read:packages) o haz el paquete publico."
+    }
+    Write-Host "==> GHCR login OK en $SshTarget"
+}

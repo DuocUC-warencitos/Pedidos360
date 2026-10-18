@@ -77,6 +77,8 @@ try {
     scp @sshOptions "$PSScriptRoot\..\docker\rabbit-admin\docker-compose.yml" "${target}:$remoteDir/docker-compose.yml"
     scp @sshOptions $tmpEnv "${target}:$remoteDir/.env"
 
+    Connect-RemoteGhcr -Deploy $deploy -SshTarget $target -SshOptions $sshOptions
+
     Write-Host "==> Levantando rabbit-admin-service"
     ssh @sshOptions $target "cd $remoteDir && docker compose up -d && sleep 30 && docker logs --tail 60 rabbit-admin-service"
 }

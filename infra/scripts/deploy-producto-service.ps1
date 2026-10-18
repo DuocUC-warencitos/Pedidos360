@@ -91,6 +91,8 @@ try {
     scp @sshOptions "$PSScriptRoot\..\docker\producto-service\docker-compose.yml" "${target}:$AppDir/docker-compose.yml"
     scp @sshOptions $tmpEnv "${target}:$AppDir/.env"
 
+    Connect-RemoteGhcr -Deploy $deploy -SshTarget $target -SshOptions $sshOptions
+
     Write-Host "==> Levantando producto-service"
     $remoteScript | ssh @sshOptions $target "bash -s"
 }
