@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import io.github.roony11_1.producto_service.dto.ProductoAlertaStockResponse;
 import io.github.roony11_1.producto_service.dto.ProductoDetailResponse;
 import io.github.roony11_1.producto_service.dto.ProductoRequest;
 import io.github.roony11_1.producto_service.dto.ProductoResponse;
@@ -54,6 +55,13 @@ public class ProductoAdminController
     public ResponseEntity<ProductoStatsResponse> stats()
     {
         return ResponseEntity.ok(productoAdminService.stats());
+    }
+
+    @GetMapping("/alertas-stock")
+    @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
+    public ResponseEntity<List<ProductoAlertaStockResponse>> alertasStock()
+    {
+        return ResponseEntity.ok(productoAdminService.alertasStock());
     }
 
     @GetMapping("/{id}")

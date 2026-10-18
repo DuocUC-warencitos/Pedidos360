@@ -22,6 +22,14 @@ public class RabbitTopologyConfig {
     public static final String METRICAS = "pedidos360.metricas.queue";
     public static final String NOTIFICACIONES = "pedidos360.notificaciones.queue";
 
+    public static final String RK_PEDIDO_CREAR = "pedido.crear";
+    
+    public static final String RK_PEDIDO_CREADO = "pedido.creado";
+    
+    public static final String RK_STOCK_RESERVADO = "pedido.stock.reservado";
+    public static final String RK_STOCK_FALLIDO = "pedido.stock.fallido";
+    public static final String RK_ESTADO_CANCELADO = "pedido.estado.cancelado";
+
     @Bean
     public TopicExchange pedidosTopicExchange() {
         return new TopicExchange(TOPIC, true, false);
@@ -58,8 +66,27 @@ public class RabbitTopologyConfig {
     }
 
     @Bean
-    public Binding notificacionesStockBinding() {
+    public Binding notificacionesStockBinding() 
+    {
         return BindingBuilder.bind(notificacionesQueue()).to(pedidosTopicExchange()).with("pedido.stock.#");
+    }
+
+    @Bean
+    public Binding auditoriaFallidosBinding()
+    {
+        return BindingBuilder
+            .bind(auditoriaQueue())
+            .to(pedidosDlx())
+            .with(DLQ_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding metricasFallidosBinding()
+    {
+        return BindingBuilder
+            .bind(metricasQueue())
+            .to(pedidosDlx())
+            .with(DLQ_ROUTING_KEY);
     }
 
     @Bean

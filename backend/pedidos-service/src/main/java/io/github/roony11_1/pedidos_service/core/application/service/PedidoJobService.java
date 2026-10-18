@@ -1,6 +1,7 @@
 package io.github.roony11_1.pedidos_service.core.application.service;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import feign.FeignException;
 import io.github.roony11_1.error.core.exceptions.NotFoundException;
+import io.github.roony11_1.pedidos_service.core.application.event.PedidoCreacionCompletadaEvent;
 import io.github.roony11_1.pedidos_service.core.application.event.PedidoStockFallidoEvent;
 import io.github.roony11_1.pedidos_service.core.application.event.PedidoStockReservadoEvent;
 import io.github.roony11_1.pedidos_service.core.application.interfaces.PedidoEventPublisher;
@@ -18,6 +20,7 @@ import io.github.roony11_1.pedidos_service.core.application.interfaces.ProcesarP
 import io.github.roony11_1.pedidos_service.core.domain.model.EstadoPedido;
 import io.github.roony11_1.pedidos_service.core.domain.model.Pedido;
 import io.github.roony11_1.pedidos_service.core.domain.model.PedidoJob;
+import io.github.roony11_1.pedidos_service.core.domain.model.PedidoProducto;
 import io.github.roony11_1.pedidos_service.core.domain.repository.PedidoJobRepository;
 import io.github.roony11_1.pedidos_service.core.domain.repository.PedidoRepository;
 import io.github.roony11_1.pedidos_service.infrastructure.client.ProductoClient;
@@ -73,6 +76,7 @@ public class PedidoJobService implements ProcesarPedidoJobUseCase
 
             self().marcarCompletado(job.getId());
             publicarReservado(job, userId);
+            publicarCreacionCompletada(job, userId, pedido.getProductos());
             log.info("Job {} COMPLETED pedido {}", jobId, job.getPedidoId());
         }
         catch (NotFoundException | IllegalArgumentException ex)
@@ -129,6 +133,22 @@ public class PedidoJobService implements ProcesarPedidoJobUseCase
         catch (Exception ex)
         {
             log.warn("Publish stock.reservado falló jobId={}", job.getId(), ex);
+        }
+    }
+
+    private void publicarCreacionCompletada(PedidoJob job, String userId, List<PedidoProducto> productos)
+    {
+        try
+        {
+            eventPublisher.publicarCreacionCompletada(new PedidoCreacionCompletadaEvent(
+                job.getId(), job.getPedidoId(), userId, job.getCorrelationId(), Instant.now(),
+                productos.stream()
+                    .map(pp -> new PedidoCreacionCompletadaEvent.Item(pp.getProductoId(), pp.getCantidad()))
+                    .toList()));
+        }
+        catch (Exception ex)
+        {
+            log.warn("Publish pedido.creado falló jobId={}", job.getId(), ex);
         }
     }
 

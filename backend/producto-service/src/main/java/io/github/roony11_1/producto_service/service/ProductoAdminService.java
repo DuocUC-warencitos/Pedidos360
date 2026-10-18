@@ -11,6 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import io.github.roony11_1.producto_service.dto.ProductoAlertaStockResponse;
 import io.github.roony11_1.producto_service.dto.ProductoStatsResponse;
 import io.github.roony11_1.producto_service.infrastructure.spec.ProductoFiltrosParser;
 import io.github.roony11_1.producto_service.model.Producto;
@@ -39,6 +40,20 @@ public class ProductoAdminService
             .stockTotal(productoRepository.sumarStockDisponible())
             .stockReservadoTotal(productoRepository.sumarStockReservado())
             .build();
+    }
+
+    public List<ProductoAlertaStockResponse> alertasStock()
+    {
+        return productoRepository.listarAlertasStock()
+            .stream()
+            .map(p -> ProductoAlertaStockResponse.builder()
+                .id(p.getId())
+                .nombre(p.getNombre())
+                .sku(p.getSku())
+                .stockDisponible(p.getStockDisponible())
+                .stockMinimo(p.getStockMinimo())
+                .build())
+            .toList();
     }
 
     public Optional<Producto> obtenerPorId(UUID id)

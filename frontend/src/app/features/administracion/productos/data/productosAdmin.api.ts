@@ -8,6 +8,7 @@ export const apiAdminProductos =
     {
         findAll: base,
         stats: `${base}/stats`,
+        alertasStock: `${base}/alertas-stock`,
         byId: (id: string) => `${base}/${id}`
     },
     post: 

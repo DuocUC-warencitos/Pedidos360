@@ -65,3 +65,12 @@ export interface ProductoDetailResponse
     createdAt?: string;
     updatedAt?: string;
 }
+
+export interface ProductoAlertaStockResponse
+{
+    id: string;
+    nombre: string;
+    sku: string | null;
+    stockDisponible: number;
+    stockMinimo: number | null;
+}

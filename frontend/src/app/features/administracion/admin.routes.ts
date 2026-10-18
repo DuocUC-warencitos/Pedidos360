@@ -8,7 +8,12 @@ export const adminRoutes: Routes = [
 			{
 				path: '',
 				pathMatch: 'full',
-				redirectTo: 'rabbitmq',
+				redirectTo: 'dashboard',
+			},
+			{
+				path: 'dashboard',
+				loadChildren: () =>
+					import('./dashboard/dashboard.routes').then((m) => m.dashboardRoutes),
 			},
 			{
 				path: 'rabbitmq',

@@ -1,0 +1,350 @@
+<section class="mx-auto my-10 w-full max-w-6xl px-6 max-[600px]:px-4">
+  <header class="mb-10">
+    <span class="text-xs font-bold uppercase tracking-[0.18em] text-muted">Pedidos360 / Administración</span>
+    <h1 class="mb-0 mt-3 text-3xl font-bold tracking-tight text-[#1f2937] max-[600px]:text-2xl">Dashboard</h1>
+    <p class="mb-0 mt-2 text-sm leading-6 text-muted">
+      Métricas de los eventos del flujo de pedidos: KPIs del mes, actividad anual con detalle diario,
+      ranking de productos y actividad reciente. Se actualiza automáticamente cada 10 segundos.
+    </p>
+  </header>
+
+  <section class="mb-10">
+    <div class="mb-4">
+      <span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]">01 · Resumen</span>
+      <h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">KPIs del mes actual</h2>
+      <p class="mb-0 mt-1 text-sm text-muted">Cada indicador se compara con el mes anterior.</p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      @for (kpi of kpis(); track kpi.etiqueta) {
+        <article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+          <p class="m-0 text-sm font-medium text-muted">{{ kpi.etiqueta }}</p>
+          <p class="mb-0 mt-3 text-3xl font-bold tracking-tight text-[#1f2937]">{{ kpi.valor }}</p>
+          <p class="mb-0 mt-2 flex flex-wrap items-center gap-2 text-xs text-muted">
+            @if (kpi.delta !== null) {
+              <span
+                class="rounded-full px-2 py-0.5 font-bold"
+                [class]="kpi.delta >= 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'"
+              >
+                {{ kpi.delta >= 0 ? '▲' : '▼' }} {{ kpi.delta | number: '1.0-0' }}%
+              </span>
+              vs mes anterior
+            } @else {
+              {{ kpi.detalle }}
+            }
+          </p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="mb-10 border-t border-border pt-8">
+    <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]">02 · Alertas</span>
+        <h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">Alertas de stock</h2>
+        <p class="mb-0 mt-1 text-sm text-muted">Productos activos sin stock o por debajo de su mínimo configurado.</p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <span
+          class="rounded-full px-3 py-1.5 text-xs font-bold"
+          [class]="alertas().length > 0 ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'"
+        >
+          {{ alertas().length }} {{ alertas().length === 1 ? 'alerta' : 'alertas' }}
+        </span>
+
+        <a
+          routerLink="/admin/productos"
+          class="rounded-lg border border-border px-4 py-3 text-sm font-semibold text-[#1f2937] no-underline transition hover:bg-surface-secondary"
+        >
+          Gestionar productos
+        </a>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto rounded-2xl border border-border bg-white shadow-sm">
+      <table class="w-full min-w-[640px] border-collapse text-left">
+        <thead class="bg-surface-secondary">
+          <tr class="border-b border-border">
+            <th scope="col" class="px-5 py-4 text-xs font-bold uppercase tracking-wider text-muted">Producto</th>
+            <th scope="col" class="px-5 py-4 text-xs font-bold uppercase tracking-wider text-muted">SKU</th>
+            <th scope="col" class="px-5 py-4 text-xs font-bold uppercase tracking-wider text-muted">Estado</th>
+            <th scope="col" class="px-5 py-4 text-right text-xs font-bold uppercase tracking-wider text-muted">Disponible</th>
+            <th scope="col" class="px-5 py-4 text-right text-xs font-bold uppercase tracking-wider text-muted">Mínimo</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-border">
+          @for (alerta of alertas(); track alerta.id) {
+            <tr class="transition hover:bg-surface-secondary/60">
+              <td class="px-5 py-3">
+                <span class="text-sm font-semibold text-[#1f2937]">{{ alerta.nombre }}</span>
+              </td>
+              <td class="px-5 py-3 font-mono text-xs text-muted">{{ alerta.sku ?? '—' }}</td>
+              <td class="px-5 py-3">
+                <span class="inline-flex items-center rounded-full px-3 py-1.5 text-xs font-semibold" [class]="colorSeveridad(alerta)">
+                  {{ etiquetaSeveridad(alerta) }}
+                </span>
+              </td>
+              <td class="px-5 py-3 text-right text-sm font-bold" [class]="alerta.stockDisponible <= 0 ? 'text-red-700' : 'text-[#1f2937]'">
+                {{ alerta.stockDisponible }}
+              </td>
+              <td class="px-5 py-3 text-right text-sm text-muted">{{ alerta.stockMinimo ?? '—' }}</td>
+            </tr>
+          }
+
+          @if (alertasCargando()) {
+            <tr>
+              <td colspan="5" class="px-5 py-10 text-center text-sm text-muted">Cargando alertas…</td>
+            </tr>
+          } @else if (alertas().length === 0) {
+            <tr>
+              <td colspan="5" class="px-5 py-10 text-center text-sm text-muted">
+                ✓ Todo el stock sobre el mínimo configurado.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="mb-10 border-t border-border pt-8">
+    <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]">03 · Actividad</span>
+        <h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
+          @if (vista() === 'anual') {
+            Pedidos por mes
+          } @else {
+            Detalle diario · {{ tituloMesSeleccionado() }}
+          }
+        </h2>
+        <p class="mb-0 mt-1 text-sm text-muted">
+          @if (vista() === 'anual') {
+            Pedidos creados en los últimos 12 meses. Haz clic en un mes para ver el detalle diario.
+          } @else {
+            {{ totalMesSeleccionado() | number }} pedidos creados en el mes · el desglose inferior lista los eventos auditados.
+          }
+        </p>
+      </div>
+
+      @if (vista() === 'mensual') {
+        <button
+          type="button"
+          (click)="volverAnual()"
+          class="rounded-lg border border-border px-4 py-3 text-sm font-semibold text-[#1f2937] transition hover:bg-surface-secondary"
+        >
+          Volver a la vista anual
+        </button>
+      }
+    </div>
+
+    @if (vista() === 'anual') {
+      <div class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+        <div class="flex h-48 items-stretch gap-2 overflow-x-auto">
+          @for (mes of mesesAgrupados(); track mes.clave) {
+            <button
+              type="button"
+              (click)="seleccionarMes(mes.clave)"
+              [attr.title]="mes.etiqueta + ': ' + mes.total + ' pedidos'"
+              class="group flex h-full min-w-[44px] flex-1 cursor-pointer flex-col items-center justify-end gap-1 rounded-lg px-1 pb-1 transition hover:bg-surface-secondary"
+            >
+              <span class="text-[10px] font-semibold text-muted group-hover:text-[#1f2937]">{{ mes.total }}</span>
+              <span
+                class="w-full max-w-[46px] rounded-t-md bg-[#4055ba]/75 transition group-hover:bg-[#4055ba]"
+                [style.height.px]="alturaPx(mes.total, maxMes())"
+              ></span>
+              <span class="text-[11px] font-semibold text-muted">{{ mes.etiqueta }}</span>
+            </button>
+          }
+        </div>
+      </div>
+    } @else {
+      <div class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+        <div class="flex h-40 items-stretch gap-1 overflow-x-auto">
+          @for (dia of diasDelMes(); track dia.fecha) {
+            <span
+              class="group flex h-full min-w-[12px] flex-1 flex-col items-center justify-end gap-1 rounded-sm transition hover:bg-surface-secondary"
+              [attr.title]="dia.fecha + ': ' + dia.total + ' pedidos'"
+            >
+              <span
+                class="w-full max-w-[24px] rounded-t-sm bg-teal-600/70 transition group-hover:bg-teal-600"
+                [style.height.px]="alturaPx(dia.total, maxDia())"
+              ></span>
+              <span class="text-[9px] text-muted">{{ dia.etiqueta }}</span>
+            </span>
+          }
+        </div>
+      </div>
+
+      <div class="mt-4 overflow-x-auto rounded-2xl border border-border bg-white shadow-sm">
+        <table class="w-full min-w-[520px] border-collapse text-left">
+          <thead class="bg-surface-secondary">
+            <tr class="border-b border-border">
+              <th scope="col" class="px-5 py-4 text-xs font-bold uppercase tracking-wider text-muted">Tipo de evento</th>
+              <th scope="col" class="px-5 py-4 text-right text-xs font-bold uppercase tracking-wider text-muted">Eventos</th>
+              <th scope="col" class="px-5 py-4 text-right text-xs font-bold uppercase tracking-wider text-muted">% del mes</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-border">
+            @for (fila of desgloseMes(); track fila.routingKey) {
+              <tr class="transition hover:bg-surface-secondary/60">
+                <td class="px-5 py-3">
+                  <span class="inline-flex items-center rounded-full px-3 py-1.5 font-mono text-xs font-semibold" [class]="colorRoutingKey(fila.routingKey)">
+                    {{ fila.routingKey }}
+                  </span>
+                </td>
+                <td class="px-5 py-3 text-right text-sm font-semibold text-[#1f2937]">{{ fila.total | number }}</td>
+                <td class="px-5 py-3 text-right text-sm text-muted">{{ fila.porcentaje | number: '1.0-1' }}%</td>
+              </tr>
+            }
+
+            @if (desgloseMes().length === 0) {
+              <tr>
+                <td colspan="3" class="px-5 py-10 text-center text-sm text-muted">
+                  Sin eventos registrados en este mes.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+
+  <section class="mb-10 border-t border-border pt-8">
+    <div class="mb-4">
+      <span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]">04 · Productos</span>
+      <h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">Top productos</h2>
+      <p class="mb-0 mt-1 text-sm text-muted">
+        @if (vista() === 'anual') {
+          Unidades en pedidos aceptados de los últimos 12 meses.
+        } @else {
+          Unidades en pedidos aceptados de {{ tituloMesSeleccionado() }}.
+        }
+      </p>
+    </div>
+
+    <div class="overflow-x-auto rounded-2xl border border-border bg-white shadow-sm">
+      <table class="w-full min-w-[520px] border-collapse text-left">
+        <thead class="bg-surface-secondary">
+          <tr class="border-b border-border">
+            <th scope="col" class="px-5 py-4 text-xs font-bold uppercase tracking-wider text-muted">#</th>
+            <th scope="col" class="px-5 py-4 text-xs font-bold uppercase tracking-wider text-muted">Producto</th>
+            <th scope="col" class="px-5 py-4 text-right text-xs font-bold uppercase tracking-wider text-muted">Unidades</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-border">
+          @for (fila of ranking(); track fila.productoId; let posicion = $index) {
+            <tr class="transition hover:bg-surface-secondary/60">
+              <td class="px-5 py-3 text-sm font-bold text-muted">{{ posicion + 1 }}</td>
+              <td class="px-5 py-3">
+                @if (fila.nombre !== null) {
+                  <span class="text-sm font-semibold text-[#1f2937]">{{ fila.nombre }}</span>
+                } @else {
+                  <span class="font-mono text-sm text-muted">Producto {{ idCorto(fila.productoId) }}</span>
+                }
+              </td>
+              <td class="px-5 py-3 text-right text-sm font-semibold text-[#1f2937]">{{ fila.total | number }}</td>
+            </tr>
+          }
+
+          @if (rankingCargando()) {
+            <tr>
+              <td colspan="3" class="px-5 py-10 text-center text-sm text-muted">Cargando ranking…</td>
+            </tr>
+          } @else if (ranking().length === 0) {
+            <tr>
+              <td colspan="3" class="px-5 py-10 text-center text-sm text-muted">
+                Aún no hay productos vendidos en el periodo.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="mb-10 border-t border-border pt-8">
+    <div class="mb-4">
+      <span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]">05 · Actividad reciente</span>
+      <h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">Últimos eventos auditados</h2>
+      <p class="mb-0 mt-1 text-sm text-muted">Detalle crudo de los eventos recibidos por la cola de auditoría.</p>
+    </div>
+
+    <div class="overflow-x-auto rounded-2xl border border-border bg-white shadow-sm">
+      <table class="w-full min-w-[680px] border-collapse text-left">
+        <thead class="bg-surface-secondary">
+          <tr class="border-b border-border">
+            <th scope="col" class="px-5 py-4 text-xs font-bold uppercase tracking-wider text-muted">Fecha</th>
+            <th scope="col" class="px-5 py-4 text-xs font-bold uppercase tracking-wider text-muted">Tipo</th>
+            <th scope="col" class="px-5 py-4 text-xs font-bold uppercase tracking-wider text-muted">Pedido</th>
+            <th scope="col" class="px-5 py-4 text-xs font-bold uppercase tracking-wider text-muted">Correlation ID</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-border">
+          @for (evento of ultimos(); track $index) {
+            <tr class="transition hover:bg-surface-secondary/60">
+              <td class="px-5 py-3 text-sm text-muted">{{ evento.recibidoAt | date: 'dd/MM/yyyy HH:mm:ss' }}</td>
+              <td class="px-5 py-3">
+                <span class="inline-flex items-center rounded-full px-3 py-1.5 font-mono text-xs font-semibold" [class]="colorRoutingKey(evento.routingKey)">
+                  {{ evento.routingKey }}
+                </span>
+              </td>
+              <td class="px-5 py-3 font-mono text-xs text-[#1f2937]">{{ evento.pedidoId ?? '—' }}</td>
+              <td class="px-5 py-3 font-mono text-xs text-muted">{{ evento.correlationId ?? '—' }}</td>
+            </tr>
+          }
+
+          @if (ultimosCargando()) {
+            <tr>
+              <td colspan="4" class="px-5 py-10 text-center text-sm text-muted">Cargando eventos…</td>
+            </tr>
+          } @else if (ultimos().length === 0) {
+            <tr>
+              <td colspan="4" class="px-5 py-10 text-center text-sm text-muted">
+                Todavía no hay eventos auditados. Crea un pedido para verlos aquí.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="border-t border-border pt-8">
+    <div class="mb-4">
+      <span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]">06 · Operación</span>
+      <h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">Estado RabbitMQ</h2>
+      <p class="mb-0 mt-1 text-sm text-muted">Totales del broker según la Management API.</p>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+      <article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+        <p class="m-0 text-sm font-medium text-muted">Mensajes</p>
+        <p class="mb-0 mt-3 text-2xl font-bold tracking-tight text-[#1f2937]">{{ overview()?.queueTotals?.messages ?? 0 }}</p>
+      </article>
+      <article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+        <p class="m-0 text-sm font-medium text-muted">Listos</p>
+        <p class="mb-0 mt-3 text-2xl font-bold tracking-tight text-[#1f2937]">{{ overview()?.queueTotals?.messagesReady ?? 0 }}</p>
+      </article>
+      <article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+        <p class="m-0 text-sm font-medium text-muted">Sin ack</p>
+        <p class="mb-0 mt-3 text-2xl font-bold tracking-tight text-[#1f2937]">{{ overview()?.queueTotals?.messagesUnacknowledged ?? 0 }}</p>
+      </article>
+      <article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+        <p class="m-0 text-sm font-medium text-muted">Consumidores</p>
+        <p class="mb-0 mt-3 text-2xl font-bold tracking-tight text-[#1f2937]">{{ overview()?.objectTotals?.consumers ?? 0 }}</p>
+      </article>
+      <article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+        <p class="m-0 text-sm font-medium text-muted">Colas</p>
+        <p class="mb-0 mt-3 text-2xl font-bold tracking-tight text-[#1f2937]">{{ overview()?.objectTotals?.queues ?? 0 }}</p>
+      </article>
+      <article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+        <p class="m-0 text-sm font-medium text-muted">Exchanges</p>
+        <p class="mb-0 mt-3 text-2xl font-bold tracking-tight text-[#1f2937]">{{ overview()?.objectTotals?.exchanges ?? 0 }}</p>
+      </article>
+    </div>
+  </section>
+</section>
