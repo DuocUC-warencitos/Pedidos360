@@ -402,3 +402,19 @@ function Connect-RemoteGhcr {
     }
     Write-Host "==> GHCR login OK en $SshTarget"
 }
+
+function Ensure-RemoteDisk {
+    param(
+        [Parameter(Mandatory)][string]$SshTarget,
+        [Parameter(Mandatory)][AllowEmptyCollection()][string[]]$SshOptions
+    )
+
+    # Volumen EBS puede crecer en terraform: expande particion/filesystem si hace falta.
+    $cmd = "if command -v growpart >/dev/null 2>&1; then sudo growpart /dev/nvme0n1 1 >/dev/null 2>&1 || true; sudo xfs_growfs / >/dev/null 2>&1 || true; fi; df -h / | tail -1"
+    $out = (ssh @SshOptions $SshTarget $cmd 2>&1 | Out-String).Trim()
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "==> Aviso: no se pudo verificar/expandir disco en ${SshTarget}: $out"
+        return
+    }
+    Write-Host "==> Disco en ${SshTarget}: $out"
+}

@@ -1,6 +1,12 @@
 #!/bin/bash
 set -eux
 
+# Expande la particion raiz al tamano del volumen EBS (idempotente)
+if command -v growpart >/dev/null 2>&1; then
+  growpart /dev/nvme0n1 1 >/dev/null 2>&1 || true
+  xfs_growfs / >/dev/null 2>&1 || true
+fi
+
 # Actualiza e instala Docker + compose plugin (Amazon Linux 2023)
 yum update -y
 yum install -y docker

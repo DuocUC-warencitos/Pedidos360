@@ -42,6 +42,12 @@ variable "instance_type" {
   default     = "t3.micro"
 }
 
+variable "ec2_volume_size" {
+  description = "Tamano (GB) del volumen EBS raiz de las EC2"
+  type        = number
+  default     = 8
+}
+
 variable "ami_id" {
   description = "AMI Amazon Linux 2023 (vacío = último AL2023 x86_64)"
   type        = string
@@ -69,6 +75,12 @@ variable "db_name_pedidos" {
 variable "db_name_producto" {
   type    = string
   default = "productos"
+}
+
+variable "db_name_admin" {
+  description = "Base de datos logica propia de rabbitmq_admin_service (notificaciones/auditoria/metricas) dentro de la instancia RDS de pedidos"
+  type        = string
+  default     = "admin"
 }
 
 variable "db_username_pedidos" {

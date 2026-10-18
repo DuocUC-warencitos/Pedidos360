@@ -11,6 +11,10 @@ resource "aws_instance" "pedidos" {
   key_name                    = var.key_name
   associate_public_ip_address = true
 
+  root_block_device {
+    volume_size = var.ec2_volume_size
+  }
+
   user_data = templatefile("${path.module}/user_data.sh.tmpl", {
     spring_datasource_url = local.pedidos_spring_url
     db_username           = var.db_username_pedidos
@@ -35,6 +39,10 @@ resource "aws_instance" "producto" {
   vpc_security_group_ids      = [aws_security_group.ec2_producto.id]
   key_name                    = var.key_name
   associate_public_ip_address = true
+
+  root_block_device {
+    volume_size = var.ec2_volume_size
+  }
 
   user_data = templatefile("${path.module}/user_data.sh.tmpl", {
     spring_datasource_url = local.producto_spring_url

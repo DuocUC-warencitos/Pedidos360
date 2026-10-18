@@ -7,6 +7,10 @@ resource "aws_instance" "rabbit" {
   key_name                    = var.key_name
   associate_public_ip_address = true
 
+  root_block_device {
+    volume_size = var.ec2_volume_size
+  }
+
   user_data = templatefile("${path.module}/user_data_docker.sh.tmpl", {
     app_dir = "/opt/rabbit-cluster"
   })
@@ -22,6 +26,10 @@ resource "aws_instance" "rabbit_admin" {
   vpc_security_group_ids      = [aws_security_group.ec2_rabbit_admin.id]
   key_name                    = var.key_name
   associate_public_ip_address = true
+
+  root_block_device {
+    volume_size = var.ec2_volume_size
+  }
 
   user_data = templatefile("${path.module}/user_data_docker.sh.tmpl", {
     app_dir = "/opt/rabbit-admin"

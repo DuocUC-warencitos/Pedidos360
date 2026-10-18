@@ -28,7 +28,7 @@ Copiar el `.env.example` de la carpeta a `.env` (mismo directorio) y editar solo
 
 ```powershell
 Copy-Item infra\envs\rabbit-admin\.env.example infra\envs\rabbit-admin\.env
-# editar infra\envs\rabbit-admin\.env (ej: usar Supabase en vez del RDS de pedidos)
+# editar infra\envs\rabbit-admin\.env (ej: usar Supabase en vez del RDS admin)
 ```
 
 ## CORS

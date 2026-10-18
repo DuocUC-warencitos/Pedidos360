@@ -4,8 +4,9 @@
     Despliega rabbit-admin-service en su EC2 via SSH.
 .DESCRIPTION
     Sube infra/docker/rabbit-admin/docker-compose.yml + un .env generado desde
-    terraform (datasource RDS pedidos, IPs privadas) + infra/envs/comun.env
-    (JWT, credenciales RabbitMQ). Overrides en infra/envs/rabbit-admin/.env.
+    terraform (datasource RDS admin: base logica "admin" creada en la instancia
+    RDS de pedidos; IPs privadas) + infra/envs/comun.env (JWT, credenciales
+    RabbitMQ). Overrides en infra/envs/rabbit-admin/.env.
 .EXAMPLE
     .\deploy-rabbit-admin.ps1
 #>
@@ -31,9 +32,21 @@ $KeyPath = Assert-SshKey -KeyPath $KeyPath -Deploy $deploy -EnvPath $comun.Path
 if (-not $HostIp) { $HostIp = Get-TerraformOutput -Name "ec2_rabbit_admin_public_ip" -Exe $Exe -TerraformDir $TerraformDir }
 if (-not $RabbitPrivateIp) { $RabbitPrivateIp = Get-TerraformOutput -Name "ec2_rabbit_private_ip" -Exe $Exe -TerraformDir $TerraformDir }
 
-$dbUrl = Get-TerraformOutput -Name "spring_datasource_url_pedidos" -Exe $Exe -TerraformDir $TerraformDir
+$dbUrl = Get-TerraformOutput -Name "spring_datasource_url_admin" -Exe $Exe -TerraformDir $TerraformDir
 $dbUser = Get-TerraformOutput -Name "spring_datasource_username_pedidos" -Exe $Exe -TerraformDir $TerraformDir
 $dbPass = Get-TerraformOutput -Name "spring_datasource_password_pedidos" -Exe $Exe -TerraformDir $TerraformDir
+$dbUrlBase = Get-TerraformOutput -Name "spring_datasource_url_pedidos" -Exe $Exe -TerraformDir $TerraformDir
+
+if ($dbUrl -notmatch "jdbc:postgresql://([^:/\?]+):\d+/([^?\s]+)") {
+    throw "No se pudo parsear spring_datasource_url_admin: $dbUrl"
+}
+$dbHost = $Matches[1]
+$dbName = $Matches[2]
+
+if ($dbUrlBase -notmatch "jdbc:postgresql://[^:/\?]+:\d+/([^?\s]+)") {
+    throw "No se pudo parsear spring_datasource_url_pedidos: $dbUrlBase"
+}
+$dbInitial = $Matches[1]
 
 $image = if ($deploy["GHCR_IMAGE_RABBIT_ADMIN"]) { $deploy["GHCR_IMAGE_RABBIT_ADMIN"] } else { "ghcr.io/duocuc-warencitos/rabbitmq-admin-service:latest" }
 
@@ -66,6 +79,8 @@ $remoteDir = "/opt/rabbit-admin"
 $target = "$SshUser@$HostIp"
 $sshOptions = @("-i", $KeyPath, "-o", "StrictHostKeyChecking=accept-new")
 
+Ensure-RemoteDisk -SshTarget $target -SshOptions $sshOptions
+
 $tmpEnv = Join-Path $env:TEMP "rabbit-admin.env"
 Write-EnvFile -Path $tmpEnv -Lines $envLines
 
@@ -78,6 +93,21 @@ try {
     scp @sshOptions $tmpEnv "${target}:$remoteDir/.env"
 
     Connect-RemoteGhcr -Deploy $deploy -SshTarget $target -SshOptions $sshOptions
+
+    Write-Host "==> Asegurando base de datos '$dbName' en RDS ($dbHost)"
+    $psqlImage = "postgres:15-alpine"
+    $pullOut = (ssh @sshOptions $target "docker pull -q $psqlImage" 2>&1 | Out-String).Trim()
+    if ($LASTEXITCODE -ne 0) { throw "No se pudo descargar ${psqlImage} en la EC2: $pullOut" }
+
+    $psqlBase = "docker run --rm -e PGPASSWORD='$dbPass' $psqlImage psql -h $dbHost -p 5432 -U $dbUser -d $dbInitial"
+    $existsOut = (ssh @sshOptions $target "$psqlBase -tAc ""SELECT 1 FROM pg_database WHERE datname='$dbName'""" 2>&1 | Out-String).Trim()
+    if ($LASTEXITCODE -ne 0) { throw "psql no pudo conectar a RDS: $existsOut" }
+    $dbExists = ($existsOut -split "`r?`n" | Where-Object { $_.Trim() -eq "1" }).Count -gt 0
+    if (-not $dbExists) {
+        Write-Host "==> Creando base de datos '$dbName'"
+        $createOut = (ssh @sshOptions $target "$psqlBase -c ""CREATE DATABASE $dbName""" 2>&1 | Out-String).Trim()
+        if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la base '$dbName': $createOut" }
+    }
 
     Write-Host "==> Levantando rabbit-admin-service"
     ssh @sshOptions $target "cd $remoteDir && docker compose up -d && sleep 30 && docker logs --tail 60 rabbit-admin-service"

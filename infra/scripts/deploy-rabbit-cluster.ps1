@@ -44,6 +44,8 @@ $remoteDir = "/opt/rabbit-cluster"
 $target = "$SshUser@$HostIp"
 $sshOptions = @("-i", $KeyPath, "-o", "StrictHostKeyChecking=accept-new")
 
+Ensure-RemoteDisk -SshTarget $target -SshOptions $sshOptions
+
 $tmpEnv = Join-Path $env:TEMP "rabbit-cluster.env"
 Write-EnvFile -Path $tmpEnv -Lines $envLines
 

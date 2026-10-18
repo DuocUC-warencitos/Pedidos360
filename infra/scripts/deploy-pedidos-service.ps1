@@ -73,6 +73,8 @@ if (-not ($envLines | Where-Object { $_ -match "^INTERNAL_API_KEY=.+" })) {
 $target = "$SshUser@$HostIp"
 $sshOptions = @("-i", $KeyPath, "-o", "StrictHostKeyChecking=accept-new")
 
+Ensure-RemoteDisk -SshTarget $target -SshOptions $sshOptions
+
 $tmpEnv = Join-Path $env:TEMP "pedidos-service.env"
 Write-EnvFile -Path $tmpEnv -Lines $envLines
 

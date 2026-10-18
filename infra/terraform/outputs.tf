@@ -71,6 +71,11 @@ output "spring_datasource_url_producto" {
   value = "jdbc:postgresql://${aws_db_instance.producto.address}:5432/${var.db_name_producto}?ssl=true&sslmode=require"
 }
 
+output "spring_datasource_url_admin" {
+  description = "Datasource de rabbitmq_admin_service: base logica propia en la misma instancia RDS de pedidos"
+  value       = "jdbc:postgresql://${aws_db_instance.pedidos.address}:5432/${var.db_name_admin}?ssl=true&sslmode=require"
+}
+
 output "spring_datasource_username_pedidos" {
   value = var.db_username_pedidos
 }
