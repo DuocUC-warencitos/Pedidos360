@@ -4,6 +4,15 @@
             class="mt-3 flex justify-center gap-2 p-1.5 bg-white border border-border rounded-xl shadow-sm"
         >
             <a
+                routerLink="/admin/dashboard"
+                routerLinkActive="activo"
+                [routerLinkActiveOptions]="{ exact: true }"
+                class="px-5 py-2.5 rounded-lg text-muted no-underline font-bold transition hover:text-[#1f2937] hover:bg-[#f3f4f6] hover:-translate-y-px [&.activo]:bg-[#1976d2] [&.activo]:text-white"
+            >
+                Dashboard
+            </a>
+
+            <a
                 routerLink="/admin/rabbitmq"
                 routerLinkActive="activo"
                 [routerLinkActiveOptions]="{ exact: true }"

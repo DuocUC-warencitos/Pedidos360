@@ -4,7 +4,7 @@ import { Observable } from "rxjs";
 
 import { construirParams } from "@core/api/http-params";
 import { PageResponse } from "@core/api/page-response";
-import { ProductoDetailResponse, ProductoFiltros, ProductoRequest, ProductoResponse, ProductoStatsResponse } from "@features/productos/data/productos.types";
+import { ProductoAlertaStockResponse, ProductoDetailResponse, ProductoFiltros, ProductoRequest, ProductoResponse, ProductoStatsResponse } from "@features/productos/data/productos.types";
 
 import { apiAdminProductos } from "./productosAdmin.api";
 
@@ -23,6 +23,11 @@ export class ProductoAdminService
     obtenerStats(): Observable<ProductoStatsResponse>
     {
         return this.http.get<ProductoStatsResponse>(apiAdminProductos.get.stats);
+    }
+
+    obtenerAlertasStock(): Observable<ProductoAlertaStockResponse[]>
+    {
+        return this.http.get<ProductoAlertaStockResponse[]>(apiAdminProductos.get.alertasStock);
     }
 
     obtenerProductoPorId(id: string): Observable<ProductoDetailResponse>

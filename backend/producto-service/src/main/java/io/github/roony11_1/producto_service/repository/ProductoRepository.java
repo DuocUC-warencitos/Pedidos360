@@ -22,4 +22,10 @@ public interface ProductoRepository extends JpaRepository<Producto, UUID>, JpaSp
 
     @Query("SELECT DISTINCT p.categoria FROM Producto p WHERE p.categoria IS NOT NULL ORDER BY p.categoria ASC")
     List<String> listarCategorias();
+
+    @Query("SELECT p FROM Producto p WHERE p.activo = true "
+        + "AND (p.stockDisponible <= 0 "
+        + "OR (p.stockMinimo IS NOT NULL AND p.stockDisponible < p.stockMinimo)) "
+        + "ORDER BY p.stockDisponible ASC, p.nombre ASC")
+    List<Producto> listarAlertasStock();
 }

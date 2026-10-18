@@ -81,6 +81,15 @@ public class RabbitTopologyConfig {
     }
 
     @Bean
+    public Binding metricasFallidosBinding()
+    {
+        return BindingBuilder
+            .bind(metricasQueue())
+            .to(pedidosDlx())
+            .with(DLQ_ROUTING_KEY);
+    }
+
+    @Bean
     public Binding notificacionesEstadoBinding() {
         return BindingBuilder.bind(notificacionesQueue()).to(pedidosTopicExchange()).with("pedido.estado.#");
     }
