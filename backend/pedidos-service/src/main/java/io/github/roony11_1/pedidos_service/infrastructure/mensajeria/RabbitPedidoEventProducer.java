@@ -90,4 +90,14 @@ public class RabbitPedidoEventProducer implements PedidoEventPublisher
                 return message;
             });
     }
+
+    @Override
+    public void publicarCreadoFinal() 
+    {
+        rabbitTemplate.convertAndSend(
+            RabbitMQConfig.TOPIC,
+            RabbitMQConfig.RK_PEDIDO_CREADO,
+            ""
+        );
+    }
 }

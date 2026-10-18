@@ -21,6 +21,8 @@ public class RabbitMQConfig
     public static final String PEDIDOS_DLQ = "pedidos360.pedidos.queue.dlq";
 
     public static final String RK_PEDIDO_CREAR = "pedido.crear";
+    public static final String RK_PEDIDO_CREADO = "pedido.creado";
+    
     public static final String RK_STOCK_RESERVADO = "pedido.stock.reservado";
     public static final String RK_STOCK_FALLIDO = "pedido.stock.fallido";
     public static final String RK_ESTADO_CANCELADO = "pedido.estado.cancelado";
@@ -58,7 +60,10 @@ public class RabbitMQConfig
     @Bean
     Binding pedidosBinding()
     {
-        return BindingBuilder.bind(pedidosQueue()).to(pedidosTopicExchange()).with(RK_PEDIDO_CREAR);
+        return BindingBuilder
+            .bind(pedidosQueue())
+            .to(pedidosTopicExchange())
+            .with(RK_PEDIDO_CREAR);
     }
 
     @Bean

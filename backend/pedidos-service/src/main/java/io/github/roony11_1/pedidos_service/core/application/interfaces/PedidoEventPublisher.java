@@ -9,6 +9,8 @@ public interface PedidoEventPublisher
 {
     void publicarCreado(PedidoCreadoEvent event);
 
+    void publicarCreadoFinal();
+
     void publicarStockReservado(PedidoStockReservadoEvent event);
 
     void publicarStockFallido(PedidoStockFallidoEvent event);
