@@ -35,8 +35,6 @@ spring:
         port: ${RABBITMQ_PORT}
         username: ${RABBITMQ_USERNAME}
         password: ${RABBITMQ_PASSWORD}
-        publisher-confirm-type: correlated
-        publisher-returns: true
         listener:
             simple:
                 acknowledge-mode: manual

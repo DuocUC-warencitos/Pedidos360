@@ -1,5 +1,6 @@
 package io.github.roony11_1.pedidos_service.core.application.service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -11,6 +12,8 @@ import org.springframework.transaction.support.TransactionTemplate;
 
 import io.github.roony11_1.error.core.exceptions.NotFoundException;
 import io.github.roony11_1.pedidos_service.api.dto.response.PedidoJobStatusResponse;
+import io.github.roony11_1.pedidos_service.core.application.event.PedidoEstadoCanceladoEvent;
+import io.github.roony11_1.pedidos_service.core.application.interfaces.PedidoEventPublisher;
 import io.github.roony11_1.pedidos_service.core.domain.model.EstadoPedido;
 import io.github.roony11_1.pedidos_service.core.domain.model.Pedido;
 import io.github.roony11_1.pedidos_service.core.domain.model.PedidoJob;
@@ -36,6 +39,7 @@ public class PedidoSagaService
     private final ProductoClientResiliente productoClientResiliente;
     private final DisponibilidadPedidoValidator disponibilidadValidator;
     private final PedidoJobCreator pedidoJobCreator;
+    private final PedidoEventPublisher eventPublisher;
 
     public PedidoJobStatusResponse crearSaga(String idempotencyKey, List<PedidoProducto> productos)
     {
@@ -165,6 +169,21 @@ public class PedidoSagaService
                 
             pedidoTx.cancelar(userTokenService.getAuditComentario("Cancelado por: " + motivo));
         });
+
+        publicarCancelado(pedido, motivo);
+    }
+
+    private void publicarCancelado(Pedido pedido, String motivo)
+    {
+        try
+        {
+            eventPublisher.publicarEstadoCancelado(new PedidoEstadoCanceladoEvent(
+                pedido.getId(), userTokenService.getUserId(), pedido.getCorrelationId(), motivo, Instant.now()));
+        }
+        catch (Exception ex)
+        {
+            log.warn("Publish pedido.estado.cancelado falló pedidoId={}", pedido.getId(), ex);
+        }
     }
 
     public PedidoJobStatusResponse estado(UUID jobId)
