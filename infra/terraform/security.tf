@@ -53,7 +53,7 @@ resource "aws_security_group" "ec2_producto" {
   }
 
   ingress {
-    description     = "Llamadas internas pedidos -> producto (IP privada, red SG)"
+    description     = "Llamadas internas pedidos a producto (IP privada, red SG)"
     from_port       = 8080
     to_port         = 8080
     protocol        = "tcp"

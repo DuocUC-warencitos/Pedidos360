@@ -32,12 +32,13 @@ db_username_producto   = "producto_user"
 db_password          = "CHANGEME_SUPER_SEGURO_32CHARS_PEDIDOS"
 db_password_producto = "" # vacío = reutiliza db_password
 
-# JWT / Entra ID
-jwt_issuer_uri = "https://login.microsoftonline.com/1f3a849e-c198-4ff7-b67c-d17f15cbc152/v2.0"
-jwt_audience   = "api://374ba786-74ed-4b20-a6f5-b115c2e58625/Pedidos.Read"
-cors_origins   = "http://localhost:4200,https://pedidos360.vercel.app"
+# JWT / Entra ID (reemplaza <TENANT_ID> y <API_CLIENT_ID>)
+jwt_issuer_uri = "https://login.microsoftonline.com/<TENANT_ID>/v2.0"
+jwt_audience   = "api://<API_CLIENT_ID>/Pedidos.Read"
+cors_origins   = "http://localhost:4200,https://<tu-app>.vercel.app"
 
-# GHCR — ya públicas ghcr.io/duocuc-warencitos/*
+# GHCR — imagenes publicadas por el workflow (ghcr.io/duocuc-warencitos/*)
+# Si los paquetes son privados, define GHCR_USERNAME/GHCR_TOKEN en infra\envs\comun.env.
 ghcr_image_pedidos   = "ghcr.io/duocuc-warencitos/pedidos-service:latest"
 ghcr_image_producto  = "ghcr.io/duocuc-warencitos/producto-service:latest"
 tag                  = "latest"
