@@ -23,6 +23,7 @@ public class RabbitTopologyConfig {
     public static final String NOTIFICACIONES = "pedidos360.notificaciones.queue";
 
     public static final String RK_PEDIDO_CREAR = "pedido.crear";
+    
     public static final String RK_PEDIDO_CREADO = "pedido.creado";
     
     public static final String RK_STOCK_RESERVADO = "pedido.stock.reservado";
