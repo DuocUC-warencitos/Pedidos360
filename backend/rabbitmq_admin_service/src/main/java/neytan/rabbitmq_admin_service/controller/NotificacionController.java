@@ -4,6 +4,7 @@ import neytan.rabbitmq_admin_service.model.Notificacion;
 import neytan.rabbitmq_admin_service.service.NotificacionService;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,6 +23,7 @@ public class NotificacionController {
 
     // Listar todas las notificaciones
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<Notificacion>> listarTodas() {
 
         List<Notificacion> notificaciones =
@@ -31,12 +33,12 @@ public class NotificacionController {
     }
 
     // Buscar notificaciones por usuario
-    @GetMapping("/usuario/")
+    @GetMapping("/usuario")
     public ResponseEntity<List<Notificacion>> listarPorUsuario(
-            ) {
+            @RequestParam(defaultValue = "3") int limit) {
 
         List<Notificacion> notificaciones =
-                notificacionService.listarPorUsuario();
+                notificacionService.listarPorUsuario(limit);
 
         return ResponseEntity.ok(notificaciones);
     }

@@ -31,6 +31,18 @@
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.12);
   --shadow-lg: 0 8px 20px rgba(0, 0, 0, 0.1);
+  --animate-entrada: entrada 220ms ease-out both;
+
+  @keyframes entrada {
+    from {
+      opacity: 0;
+      transform: translateY(-6px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
 }
 
 /* === Reset global === */

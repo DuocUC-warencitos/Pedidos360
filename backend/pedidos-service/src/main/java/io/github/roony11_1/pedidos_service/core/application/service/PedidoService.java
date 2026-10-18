@@ -205,16 +205,6 @@ public class PedidoService
         publicarEstado(pedido);
     }
 
-    @Transactional
-    public void cancelar(UUID id)
-    {
-        var pedido = obtenerPedido(id);
-
-        String comentario = userTokenService.getAuditComentario("Cancelado por");
-        pedido.cancelar(comentario);
-        publicarEstado(pedido);
-    }
-
     private Pedido obtenerPedido(UUID id) 
     {
         return pedidoRepository.findById(id)
@@ -233,8 +223,18 @@ public class PedidoService
                 new NotFoundException("Pedido", id));
     }
     private final PedidoEventPublisher eventPublisher;
+
+    private static final Set<EstadoPedido> ESTADOS_NOTIFICABLES = Set.of(
+        EstadoPedido.CREADO,
+        EstadoPedido.EN_PREPARACION,
+        EstadoPedido.DESPACHADO,
+        EstadoPedido.ENTREGADO);
+
     private void publicarEstado(Pedido pedido)
     {
+        if (!ESTADOS_NOTIFICABLES.contains(pedido.getEstadoPedido()))
+            return;
+
         eventPublisher.publicarEstadoActualizado(
             new PedidoEstadoActualizadoEvent(
                 pedido.getId(),

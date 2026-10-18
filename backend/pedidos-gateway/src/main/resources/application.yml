@@ -46,6 +46,11 @@ spring:
               predicates:
                 - Path=/api/admin/metricas/**
 
+            - id: notificaciones-admin-service
+              uri: ${RABBIT_SERVICE_HOST:http://rabbit-admin-service:8080}
+              predicates:
+                - Path=/api/notificaciones/**
+
 app:
   security:
     cors:

@@ -4,10 +4,12 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '@core/auth/auth.service';
 import { AuthUser } from '@core/auth/authenticationProvider';
 
+import { NotificacionesBellComponent } from './notificaciones/notificaciones-bell';
+
 @Component({
 	selector: 'app-header',
 	standalone: true,
-	imports: [RouterLink, RouterLinkActive],
+	imports: [RouterLink, RouterLinkActive, NotificacionesBellComponent],
 	templateUrl: './header.html',
 })
 export class HeaderComponent {

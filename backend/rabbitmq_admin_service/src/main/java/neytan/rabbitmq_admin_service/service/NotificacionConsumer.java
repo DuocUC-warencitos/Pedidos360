@@ -1,18 +1,25 @@
 
 package neytan.rabbitmq_admin_service.service;
+import java.util.UUID;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.amqp.core.Message;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Component;
+
 import neytan.rabbitmq_admin_service.config.RabbitTopologyConfig;
 import neytan.rabbitmq_admin_service.model.Notificacion;
 import neytan.rabbitmq_admin_service.repository.NotificacionRepository;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
-import org.springframework.amqp.core.Message;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
-
 @Component
 public class NotificacionConsumer {
+
+    private static final Logger log =
+        LoggerFactory.getLogger(NotificacionConsumer.class);
 
     private final ObjectMapper objectMapper;
     private final NotificacionRepository repository;
@@ -25,19 +32,27 @@ public class NotificacionConsumer {
     }
 
     @RabbitListener(queues = RabbitTopologyConfig.NOTIFICACIONES)
-    @Transactional
-    public void recibir(Message message) throws Exception {
+    public void recibir(Message message) {
         String routingKey =
             message.getMessageProperties().getReceivedRoutingKey();
 
-        JsonNode evento = objectMapper.readTree(message.getBody());
+        JsonNode evento;
+
+        try {
+            evento = objectMapper.readTree(message.getBody());
+        } catch (Exception ex) {
+            log.warn("Evento descartado (payload ilegible) rk={}: {}",
+                routingKey, ex.getMessage());
+            return;
+        }
 
         String userId = texto(evento, "userId");
         String pedidoId = texto(evento, "pedidoId");
 
         if (userId == null || pedidoId == null) {
-            throw new IllegalArgumentException(
-                "El evento no contiene userId o pedidoId");
+            log.warn("Evento descartado (sin userId o pedidoId) rk={}",
+                routingKey);
+            return;
         }
 
         String estado;
@@ -67,8 +82,8 @@ public class NotificacionConsumer {
         }
 
         if (estado == null) {
-            throw new IllegalArgumentException(
-                "No se pudo determinar el estado del pedido");
+            log.warn("Evento descartado (sin estado) rk={}", routingKey);
+            return;
         }
 
         String mensaje = switch (estado) {
@@ -91,9 +106,34 @@ public class NotificacionConsumer {
             default -> null;
         };
 
-        if (mensaje != null) {
-            repository.save(new Notificacion(userId, mensaje));
+        if (mensaje == null) {
+            return;
         }
+
+        guardar(userId, mensaje, eventoId(message, routingKey));
+    }
+
+    private void guardar(String userId, String mensaje, String eventoId) {
+        if (repository.existsByEventoId(eventoId)) {
+            log.info("Notificación duplicada ignorada eventoId={}", eventoId);
+            return;
+        }
+
+        try {
+            repository.save(new Notificacion(userId, mensaje, eventoId));
+        } catch (DataIntegrityViolationException ex) {
+            log.info("Notificación duplicada ignorada (constraint) eventoId={}",
+                eventoId);
+        }
+    }
+
+    private String eventoId(Message message, String routingKey) {
+        String messageId = message.getMessageProperties().getMessageId();
+
+        if (messageId == null || messageId.isBlank())
+            messageId = UUID.nameUUIDFromBytes(message.getBody()).toString();
+
+        return routingKey + ":" + messageId;
     }
 
     private String texto(JsonNode nodo, String campo) {

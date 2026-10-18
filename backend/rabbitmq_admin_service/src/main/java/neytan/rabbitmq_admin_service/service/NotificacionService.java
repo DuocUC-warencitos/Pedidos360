@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import neytan.rabbitmq_admin_service.config.UnauthenticatedException;
 
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 import java.util.List;
@@ -45,8 +46,9 @@ public class NotificacionService
         return repository.findAll();
     }
 
-    public List<Notificacion> listarPorUsuario( ) {
-        return repository.findByIdUsuario(getUserId());
+    public List<Notificacion> listarPorUsuario(int limit) {
+        int limite = Math.min(Math.max(limit, 1), 50);
+        return repository.findByIdUsuarioOrderByIdDesc(getUserId(), PageRequest.of(0, limite));
     }
 
    
