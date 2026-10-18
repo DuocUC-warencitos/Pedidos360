@@ -57,5 +57,10 @@ notepad infra\envs\comun.env            # AWS_KEY_PATH (ruta al .pem); RABBITMQ_
 # Backends: .github/workflows/docker-publish.yml construye y publica en GHCR
 #   pedidos-service, producto-service y rabbitmq-admin-service al push a master
 #   (o GitHub -> Actions -> "Run workflow"). Ya no hay docker build/push a mano.
-# Frontend: Vercel despliega al push del repo. Variable en Vercel (de terraform):
-#   NG_APP_API_GATEWAY_URL = (terraform output apigw_url)
+# Frontend: Vercel (Root Directory = frontend; usa frontend/vercel.json).
+#   Env vars en Vercel (Production) - el build hornea public/env.js con scripts/set-env.mjs:
+#     API_GATEWAY_URL       = (terraform output apigw_url)
+#     MSAL_REDIRECT_URI     = https://<tu-app>.vercel.app  (registrarla como SPA en Entra ID)
+#     MSAL_POST_LOGOUT_URI  = https://<tu-app>.vercel.app
+#     ANGULAR_IS_PRODUCTION = true
+#   Los demas MSAL_* se heredan del public/env.js commiteado (valores locales).
