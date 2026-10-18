@@ -1,9 +1,12 @@
 package io.github.roony11_1.pedidos_service.infrastructure.mensajeria;
 
+import java.util.Map;
+
 import org.springframework.amqp.core.MessageDeliveryMode;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 
+import io.github.roony11_1.pedidos_service.core.application.event.PedidoCreacionCompletadaEvent;
 import io.github.roony11_1.pedidos_service.core.application.event.PedidoCreadoEvent;
 import io.github.roony11_1.pedidos_service.core.application.event.PedidoEstadoCanceladoEvent;
 import io.github.roony11_1.pedidos_service.core.application.event.PedidoStockFallidoEvent;
@@ -21,83 +24,78 @@ public class RabbitPedidoEventProducer implements PedidoEventPublisher
     @Override
     public void publicarCreado(PedidoCreadoEvent event)
     {
-        rabbitTemplate.convertAndSend(
-            RabbitMQConfig.TOPIC,
+        publicar(
             RabbitMQConfig.RK_PEDIDO_CREAR,
             event,
-            message ->
-            {
-                var props = message.getMessageProperties();
-                props.setDeliveryMode(MessageDeliveryMode.PERSISTENT);
-                props.setMessageId(event.jobId().toString());
-                props.setCorrelationId(event.correlationId());
-                props.setHeader("idempotencyKey", event.idempotencyKey());
-                props.setHeader("userId", event.userId());
-                return message;
-            });
+            event.jobId().toString(),
+            event.correlationId(),
+            Map.of("idempotencyKey", event.idempotencyKey(), "userId", event.userId()));
+    }
+
+    @Override
+    public void publicarCreacionCompletada(PedidoCreacionCompletadaEvent event)
+    {
+        publicar(
+            RabbitMQConfig.RK_PEDIDO_CREADO,
+            event,
+            event.jobId().toString(),
+            event.correlationId(),
+            Map.of("userId", event.userId()));
     }
 
     @Override
     public void publicarStockReservado(PedidoStockReservadoEvent event)
     {
-        rabbitTemplate.convertAndSend(
-            RabbitMQConfig.TOPIC,
+        publicar(
             RabbitMQConfig.RK_STOCK_RESERVADO,
             event,
-            message ->
-            {
-                var props = message.getMessageProperties();
-                props.setDeliveryMode(MessageDeliveryMode.PERSISTENT);
-                props.setMessageId(event.jobId().toString());
-                props.setCorrelationId(event.correlationId());
-                props.setHeader("userId", event.userId());
-                return message;
-            });
+            event.jobId().toString(),
+            event.correlationId(),
+            Map.of("userId", event.userId()));
     }
 
     @Override
     public void publicarStockFallido(PedidoStockFallidoEvent event)
     {
-        rabbitTemplate.convertAndSend(
-            RabbitMQConfig.TOPIC,
+        publicar(
             RabbitMQConfig.RK_STOCK_FALLIDO,
             event,
-            message ->
-            {
-                var props = message.getMessageProperties();
-                props.setDeliveryMode(MessageDeliveryMode.PERSISTENT);
-                props.setMessageId(event.jobId().toString());
-                props.setCorrelationId(event.correlationId());
-                props.setHeader("userId", event.userId());
-                return message;
-            });
+            event.jobId().toString(),
+            event.correlationId(),
+            Map.of("userId", event.userId()));
     }
 
     @Override
     public void publicarEstadoCancelado(PedidoEstadoCanceladoEvent event)
     {
+        publicar(
+            RabbitMQConfig.RK_ESTADO_CANCELADO,
+            event,
+            event.pedidoId().toString(),
+            event.correlationId(),
+            Map.of("userId", event.userId()));
+    }
+
+    private void publicar(String routingKey, Object event, String messageId, String correlationId, Map<String, String> headers)
+    {
         rabbitTemplate.convertAndSend(
             RabbitMQConfig.TOPIC,
-            RabbitMQConfig.RK_ESTADO_CANCELADO,
+            routingKey,
             event,
             message ->
             {
                 var props = message.getMessageProperties();
                 props.setDeliveryMode(MessageDeliveryMode.PERSISTENT);
-                props.setMessageId(event.pedidoId().toString());
-                props.setCorrelationId(event.correlationId());
-                props.setHeader("userId", event.userId());
+
+                if (messageId != null)
+                    props.setMessageId(messageId);
+
+                if (correlationId != null)
+                    props.setCorrelationId(correlationId);
+
+                headers.forEach(props::setHeader);
+
                 return message;
             });
-    }
-
-    @Override
-    public void publicarCreadoFinal() 
-    {
-        rabbitTemplate.convertAndSend(
-            RabbitMQConfig.TOPIC,
-            RabbitMQConfig.RK_PEDIDO_CREADO,
-            ""
-        );
     }
 }

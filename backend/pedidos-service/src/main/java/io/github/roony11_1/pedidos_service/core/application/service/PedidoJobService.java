@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import feign.FeignException;
 import io.github.roony11_1.error.core.exceptions.NotFoundException;
+import io.github.roony11_1.pedidos_service.core.application.event.PedidoCreacionCompletadaEvent;
 import io.github.roony11_1.pedidos_service.core.application.event.PedidoStockFallidoEvent;
 import io.github.roony11_1.pedidos_service.core.application.event.PedidoStockReservadoEvent;
 import io.github.roony11_1.pedidos_service.core.application.interfaces.PedidoEventPublisher;
@@ -73,6 +74,7 @@ public class PedidoJobService implements ProcesarPedidoJobUseCase
 
             self().marcarCompletado(job.getId());
             publicarReservado(job, userId);
+            publicarCreacionCompletada(job, userId);
             log.info("Job {} COMPLETED pedido {}", jobId, job.getPedidoId());
         }
         catch (NotFoundException | IllegalArgumentException ex)
@@ -129,6 +131,19 @@ public class PedidoJobService implements ProcesarPedidoJobUseCase
         catch (Exception ex)
         {
             log.warn("Publish stock.reservado falló jobId={}", job.getId(), ex);
+        }
+    }
+
+    private void publicarCreacionCompletada(PedidoJob job, String userId)
+    {
+        try
+        {
+            eventPublisher.publicarCreacionCompletada(new PedidoCreacionCompletadaEvent(
+                job.getId(), job.getPedidoId(), userId, job.getCorrelationId(), Instant.now()));
+        }
+        catch (Exception ex)
+        {
+            log.warn("Publish pedido.creado falló jobId={}", job.getId(), ex);
         }
     }
 
