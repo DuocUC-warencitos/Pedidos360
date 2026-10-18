@@ -16,6 +16,9 @@ key_name      = "vockey"
 instance_type = "t3.micro"
 # ami_id = "" # vacío = Amazon Linux 2023 último
 
+# Acceso admin: SSH y Management UI de Rabbit solo desde esta IP (tu IP publica + /32)
+admin_cidr = "TU_IP_PUBLICA/32"
+
 # RDS — 2 instancias separadas
 rds_instance_class    = "db.t3.micro"
 rds_allocated_storage = 20

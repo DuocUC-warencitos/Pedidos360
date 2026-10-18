@@ -37,18 +37,28 @@ $dbPass = Get-TerraformOutput -Name "spring_datasource_password_producto" -Exe $
 
 $image = if ($deploy["GHCR_IMAGE_PRODUCTO"]) { $deploy["GHCR_IMAGE_PRODUCTO"] } else { "ghcr.io/duocuc-warencitos/producto-service:latest" }
 
+# CORS en AWS: true por defecto (backend); CORS_ALLOWED_ORIGINS sale de comun.env.
+# En local los servicios van CORS_ENABLED=false (el gateway local maneja CORS).
 $baseLines = @(
     "SERVER_PORT=8080"
-    "CORS_ENABLED=false"
+    "CORS_ALLOWED_ORIGINS=$($deploy['CORS_ALLOWED_ORIGINS'])"
     "GHCR_IMAGE_PRODUCTO=$image"
     "SPRING_DATASOURCE_URL=$dbUrl"
     "SPRING_DATASOURCE_USERNAME=$dbUser"
     "SPRING_DATASOURCE_PASSWORD=$dbPass"
     "JWT_ISSUER_URI=$($deploy['JWT_ISSUER_URI'])"
+    "INTERNAL_API_KEY=$($deploy['INTERNAL_API_KEY'])"
 )
 
 $overrides = Get-ServiceOverrides -ScriptRoot $PSScriptRoot -Service "producto-service"
 $envLines = Merge-EnvLines -BaseLines $baseLines -Overrides $overrides
+
+if (-not ($envLines | Where-Object { $_ -match "^CORS_ALLOWED_ORIGINS=.+" })) {
+    Write-Host "==> Aviso: CORS_ALLOWED_ORIGINS vacio; el front (Vercel) no podra llamar a producto-service."
+}
+if (-not ($envLines | Where-Object { $_ -match "^INTERNAL_API_KEY=.+" })) {
+    Write-Host "==> Aviso: INTERNAL_API_KEY vacio; stock/detalles quedaran bloqueados (llamadas internas de pedidos)."
+}
 
 $target = "$SshUser@$HostIp"
 $sshOptions = @("-i", $KeyPath, "-o", "StrictHostKeyChecking=accept-new")

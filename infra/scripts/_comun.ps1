@@ -169,6 +169,10 @@ function Initialize-ComunEnv {
         $values["RABBITMQ_ERLANG_COOKIE"] = (New-GeneratedSecret -Length 32)
         $generated += "RABBITMQ_ERLANG_COOKIE"
     }
+    if (-not $values["INTERNAL_API_KEY"]) {
+        $values["INTERNAL_API_KEY"] = (New-GeneratedSecret -Length 32)
+        $generated += "INTERNAL_API_KEY"
+    }
 
     if ($generated.Count -gt 0) {
         Save-EnvValues -Path $comunPath -Values $values

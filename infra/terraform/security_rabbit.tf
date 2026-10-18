@@ -1,15 +1,15 @@
 # ---------- SG EC2 RabbitMQ (clúster 2 nodos) ----------
 resource "aws_security_group" "ec2_rabbit" {
   name_prefix = "${var.project}-ec2-rabbit-"
-  description = "EC2 RabbitMQ: SSH + AMQP desde apps + Management UI"
+  description = "EC2 RabbitMQ: SSH/Management UI solo admin + AMQP desde apps"
   vpc_id      = data.aws_vpc.default.id
 
   ingress {
-    description = "SSH lab"
+    description = "SSH solo IP del admin"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.admin_cidr]
   }
 
   ingress {
@@ -29,11 +29,11 @@ resource "aws_security_group" "ec2_rabbit" {
   }
 
   ingress {
-    description = "Management UI (demo/video)"
+    description = "Management UI solo IP del admin (demo/video)"
     from_port   = 15672
     to_port     = 15672
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.admin_cidr]
   }
 
   egress {
@@ -49,15 +49,15 @@ resource "aws_security_group" "ec2_rabbit" {
 # ---------- SG EC2 rabbit-admin-service ----------
 resource "aws_security_group" "ec2_rabbit_admin" {
   name_prefix = "${var.project}-ec2-rabbit-admin-"
-  description = "EC2 rabbit-admin-service: SSH + 8080 desde API Gateway"
+  description = "EC2 rabbit-admin-service: SSH (solo admin) + 8080 desde API Gateway"
   vpc_id      = data.aws_vpc.default.id
 
   ingress {
-    description = "SSH lab"
+    description = "SSH solo IP del admin"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.admin_cidr]
   }
 
   ingress {

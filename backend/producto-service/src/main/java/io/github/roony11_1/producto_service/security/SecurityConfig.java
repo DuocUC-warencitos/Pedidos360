@@ -1,5 +1,7 @@
 package io.github.roony11_1.producto_service.security;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -10,6 +12,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authorization.AuthorizationDecision;
+import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -23,6 +27,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoders;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -31,6 +36,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableMethodSecurity
 public class SecurityConfig
 {
+    private static final String INTERNAL_API_KEY_HEADER = "X-Internal-Api-Key";
+
     @Value("${spring.security.oauth2.resourceserver.jwt.issuer-uri}")
     private String issuerUri;
 
@@ -39,6 +46,9 @@ public class SecurityConfig
 
     @Value("${app.security.cors.enabled}")
     private boolean corsEnabled;
+
+    @Value("${app.security.internal-api-key:}")
+    private String internalApiKey;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception
@@ -50,8 +60,8 @@ public class SecurityConfig
             )
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/actuator/health").permitAll()
-                .requestMatchers("/api/v1/productos/stock/**").permitAll()
-                .requestMatchers("/api/v1/productos/detalles").permitAll()
+                .requestMatchers("/api/v1/productos/stock/**", "/api/v1/productos/detalles")
+                    .access(internalApiKeyAuthorizationManager())
                 // Metodos libres
                 // - Listar cátalogo
                 .requestMatchers(HttpMethod.GET, "/api/v1/productos").permitAll()
@@ -116,6 +126,27 @@ public class SecurityConfig
         });
 
         return converter;
+    }
+
+    @Bean
+    public AuthorizationManager<RequestAuthorizationContext> internalApiKeyAuthorizationManager()
+    {
+        return (authentication, context) ->
+        {
+            String providedKey = context.getRequest().getHeader(INTERNAL_API_KEY_HEADER);
+
+            if (providedKey == null || internalApiKey == null || internalApiKey.isBlank())
+            {
+                return new AuthorizationDecision(false);
+            }
+
+            boolean matches = MessageDigest.isEqual(
+                internalApiKey.getBytes(StandardCharsets.UTF_8),
+                providedKey.getBytes(StandardCharsets.UTF_8)
+            );
+
+            return new AuthorizationDecision(matches);
+        };
     }
 
     @Bean

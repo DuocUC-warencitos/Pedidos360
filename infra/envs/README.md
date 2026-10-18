@@ -13,7 +13,7 @@ Los scripts de `infra/scripts/` construyen ese `.env` combinando:
 # Opcion A: todo automatico (recomendado)
 .\infra\scripts\deploy-all.ps1 -AutoApprove
 #   - crea infra/envs/comun.env si no existe (desde comun.env.example)
-#   - genera solo RABBITMQ_PASSWORD y RABBITMQ_ERLANG_COOKIE si estan vacios
+#   - genera solo RABBITMQ_PASSWORD, RABBITMQ_ERLANG_COOKIE e INTERNAL_API_KEY si estan vacios
 #   - corre terraform apply y despliega las 4 EC2
 
 # Opcion B: manual
@@ -30,6 +30,20 @@ Copiar el `.env.example` de la carpeta a `.env` (mismo directorio) y editar solo
 Copy-Item infra\envs\rabbit-admin\.env.example infra\envs\rabbit-admin\.env
 # editar infra\envs\rabbit-admin\.env (ej: usar Supabase en vez del RDS de pedidos)
 ```
+
+## CORS
+
+- **AWS**: los servicios van con `CORS_ENABLED=true` (default del backend) y `CORS_ALLOWED_ORIGINS` del front (se define en `comun.env`, varios separados por coma; actual: `https://pedidos360-three.vercel.app`).
+- **Local** (`infra/docker/docker-compose.yml`): los servicios van con `CORS_ENABLED=false`; el `pedidos-gateway` local maneja CORS.
+
+## Seguridad servicio-a-servicio (pedidos -> producto)
+
+- `INTERNAL_API_KEY` (comun.env, autogenerada) viaja en el `.env` de pedidos y producto.
+- pedidos envia el header `X-Internal-Api-Key` en cada llamada Feign; producto lo exige en
+  `/api/v1/productos/stock/**` y `/api/v1/productos/detalles` (403 si falta o no coincide).
+- Red: pedidos llama por **IP privada** y el SG de producto solo abre 8080 desde el SG de pedidos
+  (el 8080 publico restante es el que necesita API Gateway).
+- Local: la clave viene del `.env` versionado de `infra/docker`.
 
 ## Git
 

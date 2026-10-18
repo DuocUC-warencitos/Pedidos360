@@ -43,6 +43,9 @@ services:
             SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME_PEDIDOS:-}
             SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD_PEDIDOS:-}
             PRODUCTO_SERVICE_URL: ${PRODUCTO_SERVICE_HOST:-}
+            INTERNAL_API_KEY: ${INTERNAL_API_KEY:-}
+            # Local: CORS false en los servicios; el gateway local agrega CORS.
+            # En AWS (composes de infra/docker/<servicio>) los servicios van true por defecto.
             CORS_ENABLED: false
             RABBITMQ_HOST: ${RABBITMQ_HOST}
             RABBITMQ_PORT: ${RABBITMQ_PORT}
@@ -61,6 +64,7 @@ services:
             SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL_PRODUCTOS:-}
             SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME_PRODUCTOS:-}
             SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD_PRODUCTOS:-}
+            INTERNAL_API_KEY: ${INTERNAL_API_KEY:-}
             CORS_ENABLED: false
 
     rabbit-admin-service:

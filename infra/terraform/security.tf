@@ -1,15 +1,15 @@
 # ---------- SG EC2 Pedidos ----------
 resource "aws_security_group" "ec2_pedidos" {
   name_prefix = "${var.project}-ec2-pedidos-"
-  description = "EC2 pedidos-service: SSH + 8080 desde API Gateway / lab"
+  description = "EC2 pedidos-service: SSH (solo admin) + 8080 desde API Gateway"
   vpc_id      = data.aws_vpc.default.id
 
   ingress {
-    description = "SSH lab"
+    description = "SSH solo IP del admin"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.admin_cidr]
   }
 
   ingress {
@@ -33,15 +33,15 @@ resource "aws_security_group" "ec2_pedidos" {
 # ---------- SG EC2 Producto ----------
 resource "aws_security_group" "ec2_producto" {
   name_prefix = "${var.project}-ec2-producto-"
-  description = "EC2 producto-service: SSH + 8080 + Feign desde pedidos"
+  description = "EC2 producto-service: SSH (solo admin) + 8080 desde API Gateway + s2s desde pedidos"
   vpc_id      = data.aws_vpc.default.id
 
   ingress {
-    description = "SSH lab"
+    description = "SSH solo IP del admin"
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = [var.admin_cidr]
   }
 
   ingress {
@@ -53,7 +53,7 @@ resource "aws_security_group" "ec2_producto" {
   }
 
   ingress {
-    description     = "Feign pedidos a producto"
+    description     = "Llamadas internas pedidos -> producto (IP privada, red SG)"
     from_port       = 8080
     to_port         = 8080
     protocol        = "tcp"

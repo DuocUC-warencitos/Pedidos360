@@ -144,6 +144,100 @@ resource "aws_apigatewayv2_route" "productos_root_options" {
 }
 
 # ──────────────────────────────────────────────────────────────
+# ADMIN (pantallas de administracion del front: /v1/admin/*)
+# ──────────────────────────────────────────────────────────────
+
+# Admin pedidos: /api/v1/admin/pedidos
+resource "aws_apigatewayv2_integration" "admin_pedidos_root" {
+  api_id                 = aws_apigatewayv2_api.main.id
+  integration_type       = "HTTP_PROXY"
+  integration_method     = "ANY"
+  integration_uri        = "http://${aws_instance.pedidos.public_ip}:8080/api/v1/admin/pedidos"
+  payload_format_version = "1.0"
+}
+
+resource "aws_apigatewayv2_integration" "admin_pedidos" {
+  api_id                 = aws_apigatewayv2_api.main.id
+  integration_type       = "HTTP_PROXY"
+  integration_method     = "ANY"
+  integration_uri        = "http://${aws_instance.pedidos.public_ip}:8080/api/v1/admin/pedidos/{proxy}"
+  payload_format_version = "1.0"
+}
+
+resource "aws_apigatewayv2_route" "admin_pedidos_root" {
+  api_id             = aws_apigatewayv2_api.main.id
+  route_key          = "ANY /api/v1/admin/pedidos"
+  target             = "integrations/${aws_apigatewayv2_integration.admin_pedidos_root.id}"
+  authorizer_id      = aws_apigatewayv2_authorizer.jwt.id
+  authorization_type = "JWT"
+}
+
+resource "aws_apigatewayv2_route" "admin_pedidos" {
+  api_id             = aws_apigatewayv2_api.main.id
+  route_key          = "ANY /api/v1/admin/pedidos/{proxy+}"
+  target             = "integrations/${aws_apigatewayv2_integration.admin_pedidos.id}"
+  authorizer_id      = aws_apigatewayv2_authorizer.jwt.id
+  authorization_type = "JWT"
+}
+
+resource "aws_apigatewayv2_route" "admin_pedidos_options" {
+  api_id    = aws_apigatewayv2_api.main.id
+  route_key = "OPTIONS /api/v1/admin/pedidos"
+  target    = "integrations/${aws_apigatewayv2_integration.admin_pedidos_root.id}"
+}
+
+resource "aws_apigatewayv2_route" "admin_pedidos_sub_options" {
+  api_id    = aws_apigatewayv2_api.main.id
+  route_key = "OPTIONS /api/v1/admin/pedidos/{proxy+}"
+  target    = "integrations/${aws_apigatewayv2_integration.admin_pedidos.id}"
+}
+
+# Admin productos: /api/v1/admin/productos
+resource "aws_apigatewayv2_integration" "admin_productos_root" {
+  api_id                 = aws_apigatewayv2_api.main.id
+  integration_type       = "HTTP_PROXY"
+  integration_method     = "ANY"
+  integration_uri        = "http://${aws_instance.producto.public_ip}:8080/api/v1/admin/productos"
+  payload_format_version = "1.0"
+}
+
+resource "aws_apigatewayv2_integration" "admin_productos" {
+  api_id                 = aws_apigatewayv2_api.main.id
+  integration_type       = "HTTP_PROXY"
+  integration_method     = "ANY"
+  integration_uri        = "http://${aws_instance.producto.public_ip}:8080/api/v1/admin/productos/{proxy}"
+  payload_format_version = "1.0"
+}
+
+resource "aws_apigatewayv2_route" "admin_productos_root" {
+  api_id             = aws_apigatewayv2_api.main.id
+  route_key          = "ANY /api/v1/admin/productos"
+  target             = "integrations/${aws_apigatewayv2_integration.admin_productos_root.id}"
+  authorizer_id      = aws_apigatewayv2_authorizer.jwt.id
+  authorization_type = "JWT"
+}
+
+resource "aws_apigatewayv2_route" "admin_productos" {
+  api_id             = aws_apigatewayv2_api.main.id
+  route_key          = "ANY /api/v1/admin/productos/{proxy+}"
+  target             = "integrations/${aws_apigatewayv2_integration.admin_productos.id}"
+  authorizer_id      = aws_apigatewayv2_authorizer.jwt.id
+  authorization_type = "JWT"
+}
+
+resource "aws_apigatewayv2_route" "admin_productos_options" {
+  api_id    = aws_apigatewayv2_api.main.id
+  route_key = "OPTIONS /api/v1/admin/productos"
+  target    = "integrations/${aws_apigatewayv2_integration.admin_productos_root.id}"
+}
+
+resource "aws_apigatewayv2_route" "admin_productos_sub_options" {
+  api_id    = aws_apigatewayv2_api.main.id
+  route_key = "OPTIONS /api/v1/admin/productos/{proxy+}"
+  target    = "integrations/${aws_apigatewayv2_integration.admin_productos.id}"
+}
+
+# ──────────────────────────────────────────────────────────────
 # RABBIT ADMIN (notificaciones + panel admin/metricas)
 # ──────────────────────────────────────────────────────────────
 

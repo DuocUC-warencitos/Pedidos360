@@ -61,3 +61,4 @@ app:
             allowed-origins: ${CORS_ALLOWED_ORIGINS:}
     producto-service:
         url: ${PRODUCTO_SERVICE_URL:}
+        internal-api-key: ${INTERNAL_API_KEY:}

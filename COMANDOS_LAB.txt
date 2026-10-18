@@ -42,16 +42,22 @@ aws sts get-caller-identity
 # Primera vez: configurar tfvars + comun.env
 cd infra/terraform
 Copy-Item terraform.tfvars.example terraform.tfvars
-notepad terraform.tfvars                # db_password (32 chars), key_name=vockey
+notepad terraform.tfvars                # db_password (32 chars), key_name=vockey, admin_cidr=TU_IP/32
 cd ..\..
 Copy-Item infra\envs\comun.env.example infra\envs\comun.env
-notepad infra\envs\comun.env            # AWS_KEY_PATH (ruta al .pem); RABBITMQ_PASSWORD/COOKIE se autogeneran
+notepad infra\envs\comun.env            # AWS_KEY_PATH (ruta al .pem); RABBITMQ_PASSWORD/COOKIE/INTERNAL_API_KEY se autogeneran
 # Cada deploy (desde la raiz del repo):
 .\infra\scripts\deploy-all.ps1
 #   terraform init/apply -> cluster RabbitMQ -> rabbit-admin -> producto -> pedidos
 #   arma el .env de cada EC2 desde terraform + comun.env y lo sube por SSH con el compose
 # Re-deploy sin tocar terraform (solo codigo/config):
 .\infra\scripts\deploy-all.ps1 -SkipTerraform
+#   Seguridad de red: SSH y Management UI de Rabbit (15672) solo desde admin_cidr
+#   (terraform.tfvars; actualizar si cambia tu IP publica).
+#   Servicio-a-servicio: pedidos llama a producto por IP PRIVADA y el SG de producto
+#   solo abre 8080 desde el SG de pedidos (mas el 8080 publico requerido por API Gateway).
+#   A nivel API: INTERNAL_API_KEY (autogenerada en comun.env) viaja a pedidos (la envia
+#   como header X-Internal-Api-Key) y a producto (rechaza /stock/** y /detalles sin ella).
 
 # ========= 5) Imagenes y frontend (automatico, sin pasos manuales) =========
 # Backends: .github/workflows/docker-publish.yml construye y publica en GHCR
@@ -59,8 +65,12 @@ notepad infra\envs\comun.env            # AWS_KEY_PATH (ruta al .pem); RABBITMQ_
 #   (o GitHub -> Actions -> "Run workflow"). Ya no hay docker build/push a mano.
 # Frontend: Vercel (Root Directory = frontend; usa frontend/vercel.json).
 #   Env vars en Vercel (Production) - el build hornea public/env.js con scripts/set-env.mjs:
-#     API_GATEWAY_URL       = (terraform output apigw_url)
-#     MSAL_REDIRECT_URI     = https://<tu-app>.vercel.app  (registrarla como SPA en Entra ID)
-#     MSAL_POST_LOGOUT_URI  = https://<tu-app>.vercel.app
+#     API_GATEWAY_URL       = (terraform output apigw_url) + /api
+#     MSAL_REDIRECT_URI     = https://pedidos360-three.vercel.app  (registrarla como SPA en Entra ID)
+#     MSAL_POST_LOGOUT_URI  = https://pedidos360-three.vercel.app
 #     ANGULAR_IS_PRODUCTION = true
 #   Los demas MSAL_* se heredan del public/env.js commiteado (valores locales).
+# CORS: en AWS los servicios van con CORS_ENABLED=true (default del backend) y
+#   CORS_ALLOWED_ORIGINS con el dominio del front (infra\envs\comun.env).
+#   En local (infra\docker) los servicios van CORS_ENABLED=false porque el
+#   pedidos-gateway local maneja CORS.

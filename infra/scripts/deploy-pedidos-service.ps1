@@ -42,15 +42,18 @@ $dbPass = Get-TerraformOutput -Name "spring_datasource_password_pedidos" -Exe $E
 
 $image = if ($deploy["GHCR_IMAGE_PEDIDOS"]) { $deploy["GHCR_IMAGE_PEDIDOS"] } else { "ghcr.io/duocuc-warencitos/pedidos-service:latest" }
 
+# CORS en AWS: true por defecto (backend); CORS_ALLOWED_ORIGINS sale de comun.env.
+# En local los servicios van CORS_ENABLED=false (el gateway local maneja CORS).
 $baseLines = @(
     "SERVER_PORT=8080"
-    "CORS_ENABLED=false"
+    "CORS_ALLOWED_ORIGINS=$($deploy['CORS_ALLOWED_ORIGINS'])"
     "GHCR_IMAGE_PEDIDOS=$image"
     "SPRING_DATASOURCE_URL=$dbUrl"
     "SPRING_DATASOURCE_USERNAME=$dbUser"
     "SPRING_DATASOURCE_PASSWORD=$dbPass"
     "JWT_ISSUER_URI=$($deploy['JWT_ISSUER_URI'])"
     "PRODUCTO_SERVICE_URL=http://${ProductoPrivateIp}:8080"
+    "INTERNAL_API_KEY=$($deploy['INTERNAL_API_KEY'])"
     "RABBITMQ_HOST=$RabbitPrivateIp"
     "RABBITMQ_PORT=5672"
     "RABBITMQ_USERNAME=$($deploy['RABBITMQ_USERNAME'])"
@@ -59,6 +62,13 @@ $baseLines = @(
 
 $overrides = Get-ServiceOverrides -ScriptRoot $PSScriptRoot -Service "pedidos-service"
 $envLines = Merge-EnvLines -BaseLines $baseLines -Overrides $overrides
+
+if (-not ($envLines | Where-Object { $_ -match "^CORS_ALLOWED_ORIGINS=.+" })) {
+    Write-Host "==> Aviso: CORS_ALLOWED_ORIGINS vacio; el front (Vercel) no podra llamar a pedidos-service."
+}
+if (-not ($envLines | Where-Object { $_ -match "^INTERNAL_API_KEY=.+" })) {
+    Write-Host "==> Aviso: INTERNAL_API_KEY vacio; producto-service rechazara las llamadas internas (stock/detalles)."
+}
 
 $target = "$SshUser@$HostIp"
 $sshOptions = @("-i", $KeyPath, "-o", "StrictHostKeyChecking=accept-new")

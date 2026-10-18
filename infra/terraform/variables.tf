@@ -30,6 +30,12 @@ variable "key_name" {
   default     = "vockey"
 }
 
+variable "admin_cidr" {
+  description = "CIDR con acceso SSH y Management UI de Rabbit (tu IP publica, ej 1.2.3.4/32). 0.0.0.0/0 = abierto (no recomendado)"
+  type        = string
+  default     = "0.0.0.0/0"
+}
+
 variable "instance_type" {
   description = "Tipo EC2"
   type        = string

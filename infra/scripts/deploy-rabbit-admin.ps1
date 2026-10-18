@@ -37,9 +37,11 @@ $dbPass = Get-TerraformOutput -Name "spring_datasource_password_pedidos" -Exe $E
 
 $image = if ($deploy["GHCR_IMAGE_RABBIT_ADMIN"]) { $deploy["GHCR_IMAGE_RABBIT_ADMIN"] } else { "ghcr.io/duocuc-warencitos/rabbitmq-admin-service:latest" }
 
+# CORS en AWS: true por defecto (backend); CORS_ALLOWED_ORIGINS sale de comun.env.
+# En local los servicios van CORS_ENABLED=false (el gateway local maneja CORS).
 $baseLines = @(
     "SERVER_PORT=8080"
-    "CORS_ENABLED=false"
+    "CORS_ALLOWED_ORIGINS=$($deploy['CORS_ALLOWED_ORIGINS'])"
     "GHCR_IMAGE_RABBIT_ADMIN=$image"
     "SPRING_DATASOURCE_URL=$dbUrl"
     "SPRING_DATASOURCE_USERNAME=$dbUser"
@@ -55,6 +57,10 @@ $baseLines = @(
 
 $overrides = Get-ServiceOverrides -ScriptRoot $PSScriptRoot -Service "rabbit-admin"
 $envLines = Merge-EnvLines -BaseLines $baseLines -Overrides $overrides
+
+if (-not ($envLines | Where-Object { $_ -match "^CORS_ALLOWED_ORIGINS=.+" })) {
+    Write-Host "==> Aviso: CORS_ALLOWED_ORIGINS vacio; el front (Vercel) no podra llamar a rabbit-admin-service."
+}
 
 $remoteDir = "/opt/rabbit-admin"
 $target = "$SshUser@$HostIp"

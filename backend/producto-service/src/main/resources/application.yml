@@ -28,3 +28,4 @@ app:
         cors:
             enabled: ${CORS_ENABLED:true}
             allowed-origins: ${CORS_ALLOWED_ORIGINS:}
+        internal-api-key: ${INTERNAL_API_KEY:}

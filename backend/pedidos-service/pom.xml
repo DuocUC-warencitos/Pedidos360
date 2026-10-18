@@ -25,6 +25,7 @@
 
         <spring-cloud.version>2025.1.2</spring-cloud.version>
         <resilience4j.version>2.4.0</resilience4j.version>
+        <lombok.version>1.18.48</lombok.version>
     </properties>
 
     <!-- Spring Cloud BOM -->
