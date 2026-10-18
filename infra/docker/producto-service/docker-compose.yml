@@ -1,0 +1,11 @@
+services:
+    producto-service:
+        image: ${GHCR_IMAGE_PRODUCTO:-ghcr.io/duocuc-warencitos/producto-service:latest}
+        container_name: producto-service
+        env_file: .env
+        environment:
+            SERVER_PORT: 8080
+            CORS_ENABLED: "false"
+        ports:
+            - "8080:8080"
+        restart: unless-stopped

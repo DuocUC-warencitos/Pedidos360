@@ -143,6 +143,67 @@ resource "aws_apigatewayv2_route" "productos_root_options" {
   target    = "integrations/${aws_apigatewayv2_integration.productos_root.id}"
 }
 
+# ──────────────────────────────────────────────────────────────
+# RABBIT ADMIN (notificaciones + panel admin/metricas)
+# ──────────────────────────────────────────────────────────────
+
+locals {
+  rabbit_admin_base = "http://${aws_instance.rabbit_admin.public_ip}:8080"
+  rabbit_admin_paths = {
+    notificaciones = "/api/notificaciones"
+    admin_rabbit   = "/api/admin/rabbit"
+    admin_metricas = "/api/admin/metricas"
+  }
+}
+
+resource "aws_apigatewayv2_integration" "rabbit_admin_root" {
+  for_each = local.rabbit_admin_paths
+
+  api_id                 = aws_apigatewayv2_api.main.id
+  integration_type       = "HTTP_PROXY"
+  integration_method     = "ANY"
+  integration_uri        = "${local.rabbit_admin_base}${each.value}"
+  payload_format_version = "1.0"
+}
+
+resource "aws_apigatewayv2_integration" "rabbit_admin_sub" {
+  for_each = local.rabbit_admin_paths
+
+  api_id                 = aws_apigatewayv2_api.main.id
+  integration_type       = "HTTP_PROXY"
+  integration_method     = "ANY"
+  integration_uri        = "${local.rabbit_admin_base}${each.value}/{proxy}"
+  payload_format_version = "1.0"
+}
+
+resource "aws_apigatewayv2_route" "rabbit_admin_root" {
+  for_each = local.rabbit_admin_paths
+
+  api_id             = aws_apigatewayv2_api.main.id
+  route_key          = "ANY ${each.value}"
+  target             = "integrations/${aws_apigatewayv2_integration.rabbit_admin_root[each.key].id}"
+  authorizer_id      = aws_apigatewayv2_authorizer.jwt.id
+  authorization_type = "JWT"
+}
+
+resource "aws_apigatewayv2_route" "rabbit_admin_sub" {
+  for_each = local.rabbit_admin_paths
+
+  api_id             = aws_apigatewayv2_api.main.id
+  route_key          = "ANY ${each.value}/{proxy+}"
+  target             = "integrations/${aws_apigatewayv2_integration.rabbit_admin_sub[each.key].id}"
+  authorizer_id      = aws_apigatewayv2_authorizer.jwt.id
+  authorization_type = "JWT"
+}
+
+resource "aws_apigatewayv2_route" "rabbit_admin_options" {
+  for_each = local.rabbit_admin_paths
+
+  api_id    = aws_apigatewayv2_api.main.id
+  route_key = "OPTIONS ${each.value}/{proxy+}"
+  target    = "integrations/${aws_apigatewayv2_integration.rabbit_admin_sub[each.key].id}"
+}
+
 resource "aws_apigatewayv2_stage" "prod" {
   api_id      = aws_apigatewayv2_api.main.id
   name        = "prod"

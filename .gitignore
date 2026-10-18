@@ -13,6 +13,11 @@ docs/
 # Keep Docker environment template/config if explicitly tracked
 !infra/docker/.env
 
+# Deploy EC2 (secretos locales)
+infra/scripts/.env.deploy
+infra/envs/comun.env
+infra/envs/aws.env
+
 # =========================
 # Build / Dependencies
 # =========================

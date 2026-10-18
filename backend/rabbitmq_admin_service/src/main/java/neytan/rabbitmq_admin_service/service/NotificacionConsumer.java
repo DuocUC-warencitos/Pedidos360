@@ -1,5 +1,6 @@
 
 package neytan.rabbitmq_admin_service.service;
+import java.io.IOException;
 import java.util.UUID;
 
 import org.slf4j.Logger;
@@ -8,6 +9,8 @@ import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
+
+import com.rabbitmq.client.Channel;
 
 import neytan.rabbitmq_admin_service.config.RabbitTopologyConfig;
 import neytan.rabbitmq_admin_service.model.Notificacion;
@@ -31,11 +34,29 @@ public class NotificacionConsumer {
         this.repository = repository;
     }
 
-    @RabbitListener(queues = RabbitTopologyConfig.NOTIFICACIONES)
-    public void recibir(Message message) {
+    @RabbitListener(
+        queues = RabbitTopologyConfig.NOTIFICACIONES,
+        containerFactory = "notificacionesRabbitListenerContainerFactory")
+    public void recibir(Message message, Channel channel) throws IOException {
         String routingKey =
             message.getMessageProperties().getReceivedRoutingKey();
+        long deliveryTag = message.getMessageProperties().getDeliveryTag();
 
+        try {
+            if (procesar(message, routingKey)) {
+                channel.basicAck(deliveryTag, false);
+            } else {
+                log.warn("Evento descartado hacia DLQ rk={}", routingKey);
+                channel.basicNack(deliveryTag, false, false);
+            }
+        } catch (Exception ex) {
+            log.error("Error procesando evento; enviado a DLQ rk={}: {}",
+                routingKey, ex.getMessage());
+            channel.basicNack(deliveryTag, false, false);
+        }
+    }
+
+    private boolean procesar(Message message, String routingKey) {
         JsonNode evento;
 
         try {
@@ -43,7 +64,7 @@ public class NotificacionConsumer {
         } catch (Exception ex) {
             log.warn("Evento descartado (payload ilegible) rk={}: {}",
                 routingKey, ex.getMessage());
-            return;
+            return false;
         }
 
         String userId = texto(evento, "userId");
@@ -52,7 +73,7 @@ public class NotificacionConsumer {
         if (userId == null || pedidoId == null) {
             log.warn("Evento descartado (sin userId o pedidoId) rk={}",
                 routingKey);
-            return;
+            return false;
         }
 
         String estado;
@@ -77,13 +98,13 @@ public class NotificacionConsumer {
             }
 
             default -> {
-                return;
+                return false;
             }
         }
 
         if (estado == null) {
             log.warn("Evento descartado (sin estado) rk={}", routingKey);
-            return;
+            return false;
         }
 
         String mensaje = switch (estado) {
@@ -107,10 +128,11 @@ public class NotificacionConsumer {
         };
 
         if (mensaje == null) {
-            return;
+            return false;
         }
 
         guardar(userId, mensaje, eventoId(message, routingKey));
+        return true;
     }
 
     private void guardar(String userId, String mensaje, String eventoId) {

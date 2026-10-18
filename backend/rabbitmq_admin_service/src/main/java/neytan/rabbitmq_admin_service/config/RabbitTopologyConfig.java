@@ -22,6 +22,14 @@ public class RabbitTopologyConfig {
     public static final String METRICAS = "pedidos360.metricas.queue";
     public static final String NOTIFICACIONES = "pedidos360.notificaciones.queue";
 
+    public static final String AUDITORIA_DLQ = AUDITORIA + ".dlq";
+    public static final String METRICAS_DLQ = METRICAS + ".dlq";
+    public static final String NOTIFICACIONES_DLQ = NOTIFICACIONES + ".dlq";
+
+    public static final String RK_AUDITORIA_FAILED = "auditoria.failed";
+    public static final String RK_METRICAS_FAILED = "metricas.failed";
+    public static final String RK_NOTIFICACIONES_FAILED = "notificaciones.failed";
+
     public static final String RK_PEDIDO_CREAR = "pedido.crear";
     
     public static final String RK_PEDIDO_CREADO = "pedido.creado";
@@ -42,17 +50,32 @@ public class RabbitTopologyConfig {
 
     @Bean
     public Queue auditoriaQueue() {
-        return durableQueueWithDlx(AUDITORIA);
+        return durableQueueWithDlx(AUDITORIA, RK_AUDITORIA_FAILED);
     }
 
     @Bean
     public Queue metricasQueue() {
-        return durableQueueWithDlx(METRICAS);
+        return durableQueueWithDlx(METRICAS, RK_METRICAS_FAILED);
     }
 
     @Bean
     public Queue notificacionesQueue() {
-        return durableQueueWithDlx(NOTIFICACIONES);
+        return durableQueueWithDlx(NOTIFICACIONES, RK_NOTIFICACIONES_FAILED);
+    }
+
+    @Bean
+    public Queue auditoriaDlq() {
+        return new Queue(AUDITORIA_DLQ, true);
+    }
+
+    @Bean
+    public Queue metricasDlq() {
+        return new Queue(METRICAS_DLQ, true);
+    }
+
+    @Bean
+    public Queue notificacionesDlq() {
+        return new Queue(NOTIFICACIONES_DLQ, true);
     }
 
     @Bean
@@ -69,6 +92,35 @@ public class RabbitTopologyConfig {
     public Binding notificacionesStockBinding() 
     {
         return BindingBuilder.bind(notificacionesQueue()).to(pedidosTopicExchange()).with("pedido.stock.#");
+    }
+
+    @Bean
+    public Binding notificacionesEstadoBinding() {
+        return BindingBuilder.bind(notificacionesQueue()).to(pedidosTopicExchange()).with("pedido.estado.#");
+    }
+
+    @Bean
+    public Binding auditoriaDlqBinding() {
+        return BindingBuilder
+            .bind(auditoriaDlq())
+            .to(pedidosDlx())
+            .with(RK_AUDITORIA_FAILED);
+    }
+
+    @Bean
+    public Binding metricasDlqBinding() {
+        return BindingBuilder
+            .bind(metricasDlq())
+            .to(pedidosDlx())
+            .with(RK_METRICAS_FAILED);
+    }
+
+    @Bean
+    public Binding notificacionesDlqBinding() {
+        return BindingBuilder
+            .bind(notificacionesDlq())
+            .to(pedidosDlx())
+            .with(RK_NOTIFICACIONES_FAILED);
     }
 
     @Bean
@@ -89,16 +141,13 @@ public class RabbitTopologyConfig {
             .with(DLQ_ROUTING_KEY);
     }
 
-    @Bean
-    public Binding notificacionesEstadoBinding() {
-        return BindingBuilder.bind(notificacionesQueue()).to(pedidosTopicExchange()).with("pedido.estado.#");
-    }
-
-    private Queue durableQueueWithDlx(String name) {
+    private Queue durableQueueWithDlx(String name, String deadLetterRoutingKey) {
         return QueueBuilder.durable(name)
             .withArguments(Map.of(
                 "x-dead-letter-exchange", DLX,
-                "x-dead-letter-routing-key", DLQ_ROUTING_KEY))
+                "x-dead-letter-routing-key", deadLetterRoutingKey,
+                "x-message-ttl", 600000,
+                "x-max-length", 1000))
             .build();
     }
 }

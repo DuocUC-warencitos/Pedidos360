@@ -1,0 +1,82 @@
+#Requires -Version 5.1
+<#
+.SYNOPSIS
+    Despliega rabbit-admin-service en su EC2 via SSH.
+.DESCRIPTION
+    Sube infra/docker/rabbit-admin/docker-compose.yml + un .env generado desde
+    terraform (datasource RDS pedidos, IPs privadas) + infra/envs/comun.env
+    (JWT, credenciales RabbitMQ). Overrides en infra/envs/rabbit-admin/.env.
+.EXAMPLE
+    .\deploy-rabbit-admin.ps1
+#>
+[CmdletBinding()]
+param(
+    [string]$KeyPath,
+    [string]$HostIp,
+    [string]$RabbitPrivateIp,
+    [string]$SshUser = "ec2-user",
+    [string]$TerraformExe,
+    [string]$EnvDeployFile
+)
+
+$ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "_comun.ps1")
+
+$TerraformDir = Join-Path $PSScriptRoot "..\terraform"
+$Exe = Get-TerraformExe -Override $TerraformExe
+$comun = Initialize-ComunEnv -ScriptRoot $PSScriptRoot -EnvDeployFile $EnvDeployFile
+$deploy = $comun.Values
+$KeyPath = Assert-SshKey -KeyPath $KeyPath -Deploy $deploy -EnvPath $comun.Path
+
+if (-not $HostIp) { $HostIp = Get-TerraformOutput -Name "ec2_rabbit_admin_public_ip" -Exe $Exe -TerraformDir $TerraformDir }
+if (-not $RabbitPrivateIp) { $RabbitPrivateIp = Get-TerraformOutput -Name "ec2_rabbit_private_ip" -Exe $Exe -TerraformDir $TerraformDir }
+
+$dbUrl = Get-TerraformOutput -Name "spring_datasource_url_pedidos" -Exe $Exe -TerraformDir $TerraformDir
+$dbUser = Get-TerraformOutput -Name "spring_datasource_username_pedidos" -Exe $Exe -TerraformDir $TerraformDir
+$dbPass = Get-TerraformOutput -Name "spring_datasource_password_pedidos" -Exe $Exe -TerraformDir $TerraformDir
+
+$image = if ($deploy["GHCR_IMAGE_RABBIT_ADMIN"]) { $deploy["GHCR_IMAGE_RABBIT_ADMIN"] } else { "ghcr.io/duocuc-warencitos/rabbitmq-admin-service:latest" }
+
+$baseLines = @(
+    "SERVER_PORT=8080"
+    "CORS_ENABLED=false"
+    "GHCR_IMAGE_RABBIT_ADMIN=$image"
+    "SPRING_DATASOURCE_URL=$dbUrl"
+    "SPRING_DATASOURCE_USERNAME=$dbUser"
+    "SPRING_DATASOURCE_PASSWORD=$dbPass"
+    "JWT_ISSUER_URI=$($deploy['JWT_ISSUER_URI'])"
+    "RABBITMQ_HOST=$RabbitPrivateIp"
+    "RABBITMQ_PORT=5672"
+    "RABBITMQ_USERNAME=$($deploy['RABBITMQ_USERNAME'])"
+    "RABBITMQ_PASSWORD=$($deploy['RABBITMQ_PASSWORD'])"
+    "RABBITMQ_ADMIN_PORT=15672"
+    "RABBITMQ_MANAGEMENT_URL=http://${RabbitPrivateIp}:15672"
+)
+
+$overrides = Get-ServiceOverrides -ScriptRoot $PSScriptRoot -Service "rabbit-admin"
+$envLines = Merge-EnvLines -BaseLines $baseLines -Overrides $overrides
+
+$remoteDir = "/opt/rabbit-admin"
+$target = "$SshUser@$HostIp"
+$sshOptions = @("-i", $KeyPath, "-o", "StrictHostKeyChecking=accept-new")
+
+$tmpEnv = Join-Path $env:TEMP "rabbit-admin.env"
+Write-EnvFile -Path $tmpEnv -Lines $envLines
+
+try {
+    Write-Host "==> Preparando $remoteDir en $target"
+    ssh @sshOptions $target "mkdir -p $remoteDir"
+
+    Write-Host "==> Subiendo docker-compose.yml + .env"
+    scp @sshOptions "$PSScriptRoot\..\docker\rabbit-admin\docker-compose.yml" "${target}:$remoteDir/docker-compose.yml"
+    scp @sshOptions $tmpEnv "${target}:$remoteDir/.env"
+
+    Write-Host "==> Levantando rabbit-admin-service"
+    ssh @sshOptions $target "cd $remoteDir && docker compose up -d && sleep 30 && docker logs --tail 60 rabbit-admin-service"
+}
+finally {
+    Remove-Item -LiteralPath $tmpEnv -Force -ErrorAction SilentlyContinue
+}
+
+Write-Host ""
+Write-Host "rabbit-admin-service desplegado. Prueba: http://${HostIp}:8080/api/admin/rabbit/overview"

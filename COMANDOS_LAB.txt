@@ -1,6 +1,6 @@
 # Pedidos360 - Comandos Lab (Windows + AWS Learner Lab)
-# VPC: vpc-02700295831c98cda | Region: us-east-1 | Plan: 18 to add (2 EC2 + 2 RDS + 4 SG + API GW)
-# Generado: terraform plan OK en infra/terraform
+# VPC: vpc-02700295831c98cda | Region: us-east-1
+# Deploy: infra/scripts/deploy-all.ps1 (terraform apply + sube .env/compose por SSH a las 4 EC2)
 
 # ========= 1) Instalar Terraform via winget =========
 winget install -e --id Hashicorp.Terraform
@@ -12,12 +12,11 @@ winget install -e --id Amazon.AWSCLI
 # Cierra y abre nueva pwsh
 aws --version
 
-# ========= 3) Credenciales AWS Lab (copiar desde Cloud Access → Copy to ~/.aws/credentials) =========
-# Cloud Access → [default]
-# aws_access_key_id=ASIA...
-# aws_secret_access_key=...
-# aws_session_token=IQoJ...
-# Region us-east-1 | Account 618255781710 | Session 03:51:22
+# ========= 3) Credenciales AWS Lab (expiran cada sesion: renovar al abrir el lab) =========
+# Recomendado: dejar tus credenciales escritas en infra\envs\aws.env (NO se versiona;
+# el ejemplo es infra\envs\aws.env.example). deploy-all.ps1 las carga solo. Si no existen
+# o expiraron, te las pide y ofrece guardarlas ahi. Las opciones de abajo tambien sirven.
+# Cloud Access -> "Copy to ~/.aws/credentials" o pegar a mano.
 # OPCION A - Env vars por sesion (recomendado Learner Lab, expira al cerrar pwsh):
 $env:AWS_ACCESS_KEY_ID="PEGA_AQUI_ASIA..."
 $env:AWS_SECRET_ACCESS_KEY="PEGA_AQUI_SECRET..."
@@ -39,21 +38,24 @@ aws sts get-caller-identity
 # output = json
 # "@ | Set-Content -Path "$env:USERPROFILE\.aws\config" -Encoding ascii
 
-# ========= 4) Terraform (desde Windows) =========
+# ========= 4) Deploy completo (ya NO se entra a cada EC2 a poner env a mano) =========
+# Primera vez: configurar tfvars + comun.env
 cd infra/terraform
 Copy-Item terraform.tfvars.example terraform.tfvars
-notepad terraform.tfvars  # completa db_password (32 chars), key_name=vockey
-terraform init
-terraform validate
-terraform plan -out=tfplan
-terraform apply tfplan
-terraform output apigw_url           # -> NG_APP_API_GATEWAY_URL para Vercel
-terraform output rds_pedidos_endpoint
-terraform output ec2_pedidos_public_ip
+notepad terraform.tfvars                # db_password (32 chars), key_name=vockey
+cd ..\..
+Copy-Item infra\envs\comun.env.example infra\envs\comun.env
+notepad infra\envs\comun.env            # AWS_KEY_PATH (ruta al .pem); RABBITMQ_PASSWORD/COOKIE se autogeneran
+# Cada deploy (desde la raiz del repo):
+.\infra\scripts\deploy-all.ps1
+#   terraform init/apply -> cluster RabbitMQ -> rabbit-admin -> producto -> pedidos
+#   arma el .env de cada EC2 desde terraform + comun.env y lo sube por SSH con el compose
+# Re-deploy sin tocar terraform (solo codigo/config):
+.\infra\scripts\deploy-all.ps1 -SkipTerraform
 
-# ========= 5) Local test prod con GHCR (opcional) =========
-# cd ..\..
-# Copy-Item .env.example .env
-# notepad .env  # completa endpoints RDS de output
-# docker compose -f docker-compose.prod.yml --env-file .env pull
-# docker compose -f docker-compose.prod.yml --env-file .env up -d
+# ========= 5) Imagenes y frontend (automatico, sin pasos manuales) =========
+# Backends: .github/workflows/docker-publish.yml construye y publica en GHCR
+#   pedidos-service, producto-service y rabbitmq-admin-service al push a master
+#   (o GitHub -> Actions -> "Run workflow"). Ya no hay docker build/push a mano.
+# Frontend: Vercel despliega al push del repo. Variable en Vercel (de terraform):
+#   NG_APP_API_GATEWAY_URL = (terraform output apigw_url)

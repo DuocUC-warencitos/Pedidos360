@@ -47,7 +47,9 @@ public class RabbitMQConfig
         return QueueBuilder.durable(PEDIDOS)
             .withArguments(Map.of(
                 "x-dead-letter-exchange", DLX,
-                "x-dead-letter-routing-key", DLQ_ROUTING_KEY))
+                "x-dead-letter-routing-key", DLQ_ROUTING_KEY,
+                "x-message-ttl", 600000,
+                "x-max-length", 1000))
             .build();
     }
 

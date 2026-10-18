@@ -1,0 +1,53 @@
+services:
+    rabbit1:
+        image: rabbitmq:3-management
+        container_name: rabbit1
+        hostname: rabbit1
+        environment:
+            RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE}
+            RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
+            RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+        ports:
+            - "5672:5672"
+            - "15672:15672"
+        volumes:
+            - rabbit1-data:/var/lib/rabbitmq
+        healthcheck:
+            test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+            interval: 10s
+            timeout: 5s
+            retries: 10
+        restart: unless-stopped
+
+    rabbit2:
+        image: rabbitmq:3-management
+        container_name: rabbit2
+        hostname: rabbit2
+        environment:
+            RABBITMQ_ERLANG_COOKIE: ${RABBITMQ_ERLANG_COOKIE}
+            RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
+            RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+        volumes:
+            - rabbit2-data:/var/lib/rabbitmq
+        depends_on:
+            rabbit1:
+                condition: service_healthy
+        command: >
+            bash -c "rabbitmq-server -detached &&
+            sleep 15 &&
+            rabbitmqctl stop_app &&
+            rabbitmqctl reset &&
+            rabbitmqctl join_cluster rabbit@rabbit1 &&
+            rabbitmqctl start_app &&
+            sleep infinity"
+        healthcheck:
+            test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+            interval: 15s
+            timeout: 5s
+            retries: 10
+            start_period: 90s
+        restart: unless-stopped
+
+volumes:
+    rabbit1-data:
+    rabbit2-data:
