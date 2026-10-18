@@ -19,7 +19,6 @@ public class RabbitMQConfig
 
     public static final String PEDIDOS = "pedidos360.pedidos.queue";
     public static final String PEDIDOS_DLQ = "pedidos360.pedidos.queue.dlq";
-    public static final String AUDITORIA = "pedidos360.auditoria.queue";
 
     public static final String RK_PEDIDO_CREAR = "pedido.crear";
     public static final String RK_STOCK_RESERVADO = "pedido.stock.reservado";
@@ -66,21 +65,5 @@ public class RabbitMQConfig
     Binding pedidosDlqBinding()
     {
         return BindingBuilder.bind(pedidosDlq()).to(pedidosDlx()).with(DLQ_ROUTING_KEY);
-    }
-
-    @Bean
-    Queue auditoriaQueue()
-    {
-        return QueueBuilder.durable(AUDITORIA)
-            .withArguments(Map.of(
-                "x-dead-letter-exchange", DLX,
-                "x-dead-letter-routing-key", DLQ_ROUTING_KEY))
-            .build();
-    }
-
-    @Bean
-    Binding auditoriaBinding()
-    {
-        return BindingBuilder.bind(auditoriaQueue()).to(pedidosTopicExchange()).with("#");
     }
 }
