@@ -21,6 +21,8 @@ export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot,): boolea
 
 	// Fallback: los roles que valida el backend vienen en el access token y
 	// pueden no estar aún en el usuario (se fusionan async). Verificarlos aquí.
+	const urlRetorno = router.currentNavigation()?.extractedUrl.toString();
+
 	let token$: Observable<string>;
 	try 
     {
@@ -38,6 +40,11 @@ export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot,): boolea
 			const roles = extractRolesFromJwt(token);
 			return roles.some((r) => esperados.includes(r)) ? true : denegado();
 		}),
-		catchError(() => of(denegado())),
+		catchError((error: unknown) => 
+        {
+			if (auth.reautenticarSiEsNecesario(error, urlRetorno))
+				return of(false);
+			return of(denegado());
+		}),
 	);
 };

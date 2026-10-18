@@ -62,4 +62,9 @@ export class AuthService
     {
         return this.authenticationProvider.getAccesToken();
     }
+
+    reautenticarSiEsNecesario(error: unknown, urlRetorno?: string): boolean
+    {
+        return this.authenticationProvider.reautenticarSiEsNecesario(error, urlRetorno);
+    }
 }

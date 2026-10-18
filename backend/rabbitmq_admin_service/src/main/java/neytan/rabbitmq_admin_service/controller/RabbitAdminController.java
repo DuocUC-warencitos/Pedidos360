@@ -9,17 +9,21 @@ import neytan.rabbitmq_admin_service.dto.CreateBindingRequest;
 import neytan.rabbitmq_admin_service.dto.CreateExchangeRequest;
 import neytan.rabbitmq_admin_service.dto.CreateQueueRequest;
 import neytan.rabbitmq_admin_service.dto.ExchangeInfo;
+import neytan.rabbitmq_admin_service.dto.OverviewInfo;
+import neytan.rabbitmq_admin_service.dto.PageResponse;
 import neytan.rabbitmq_admin_service.dto.QueueInfo;
 import neytan.rabbitmq_admin_service.service.RabbitAdminService;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin/rabbit")
+@PreAuthorize("hasRole('ADMIN')")
 public class RabbitAdminController {
 
     private final RabbitAdminService service;
@@ -29,18 +33,27 @@ public class RabbitAdminController {
     }
 
     @GetMapping("/queues")
-    public List<QueueInfo> listarColas() {
-        return service.listarColas();
+    public ResponseEntity<PageResponse<QueueInfo>> listarColas(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "8") int size,
+            @RequestParam(required = false) String name) {
+
+        return ResponseEntity.ok(service.listarColas(page, size, name));
     }
 
     @GetMapping("/exchanges")
-    public List<ExchangeInfo> listarExchanges() {
-        return service.listarExchanges();
+    public ResponseEntity<List<ExchangeInfo>> listarExchanges() {
+        return ResponseEntity.ok(service.listarExchanges());
     }
 
     @GetMapping("/bindings")
-    public List<BindingInfo> listarBindings() {
-        return service.listarBindings();
+    public ResponseEntity<List<BindingInfo>> listarBindings() {
+        return ResponseEntity.ok(service.listarBindings());
+    }
+
+    @GetMapping("/overview")
+    public ResponseEntity<OverviewInfo> obtenerOverview() {
+        return ResponseEntity.ok(service.obtenerOverview());
     }
 
     @PostMapping("/queues")

@@ -1,0 +1,427 @@
+<section class="mx-auto my-10 w-full max-w-6xl px-6 max-[600px]:px-4">
+  <header class="mb-10 flex flex-wrap items-end justify-between gap-5">
+    <div>
+      <span class="text-xs font-bold uppercase tracking-[0.18em] text-muted">Pedidos360 / Administración</span>
+      <h1 class="mb-0 mt-3 text-3xl font-bold tracking-tight text-[#1f2937] max-[600px]:text-2xl">RabbitMQ</h1>
+      <p class="mb-0 mt-2 text-sm leading-6 text-muted">
+        Administra colas, exchanges y bindings, y observa el estado de la mensajería en tiempo real.
+      </p>
+    </div>
+
+    <button
+      type="button"
+      (click)="refrescar()"
+      [disabled]="cargandoCatalogo()"
+      class="rounded-lg border border-border px-4 py-3 text-sm font-semibold text-[#1f2937] transition hover:bg-surface-secondary disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      {{ cargandoCatalogo() ? 'Actualizando…' : 'Actualizar catálogo' }}
+    </button>
+  </header>
+
+  <section class="mb-10">
+    <div class="mb-4">
+      <span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]">01 · Resumen</span>
+      <h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">Estado de la mensajería</h2>
+      <p class="mb-0 mt-1 text-sm text-muted">
+        Se refresca automáticamente cada 5 segundos; el filtro y la página quedan guardados en la URL.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+        <div class="flex items-center justify-between gap-3">
+          <p class="m-0 text-sm font-medium text-muted">Colas</p>
+          <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-lg text-[#1f2937]" aria-hidden="true">▤</span>
+        </div>
+        <p class="mb-0 mt-4 text-3xl font-bold tracking-tight text-[#1f2937]">
+          @if (overviewQuery.isPending() && colasQuery.isPending()) {
+            <span class="text-muted">…</span>
+          } @else {
+            {{ totalColas() }}
+          }
+        </p>
+        <p class="mb-0 mt-1 text-xs text-muted">Declaradas en RabbitMQ</p>
+      </article>
+
+      <article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+        <div class="flex items-center justify-between gap-3">
+          <p class="m-0 text-sm font-medium text-muted">Exchanges</p>
+          <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-lg text-blue-700" aria-hidden="true">⑂</span>
+        </div>
+        <p class="mb-0 mt-4 text-3xl font-bold tracking-tight text-[#1f2937]">
+          @if (overviewQuery.isPending() && exchangesQuery.isPending()) {
+            <span class="text-muted">…</span>
+          } @else {
+            {{ totalExchanges() }}
+          }
+        </p>
+        <p class="mb-0 mt-1 text-xs text-muted">Disponibles para enrutar</p>
+      </article>
+
+      <article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+        <div class="flex items-center justify-between gap-3">
+          <p class="m-0 text-sm font-medium text-muted">Bindings hacia colas</p>
+          <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-lg text-emerald-700" aria-hidden="true">⇄</span>
+        </div>
+        <p class="mb-0 mt-4 text-3xl font-bold tracking-tight text-[#1f2937]">
+          @if (bindingsQuery.isPending()) {
+            <span class="text-muted">…</span>
+          } @else {
+            {{ totalBindings() }}
+          }
+        </p>
+        <p class="mb-0 mt-1 text-xs text-muted">Relaciones exchange → cola</p>
+      </article>
+
+      <article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+        <div class="flex items-center justify-between gap-3">
+          <p class="m-0 text-sm font-medium text-muted">Mensajes pendientes</p>
+          <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-lg text-amber-700" aria-hidden="true">✉</span>
+        </div>
+        <p class="mb-0 mt-4 text-3xl font-bold tracking-tight text-[#1f2937]">
+          @if (overviewQuery.isPending()) {
+            <span class="text-muted">…</span>
+          } @else {
+            {{ totalMensajes() }}
+          }
+        </p>
+        <p class="mb-0 mt-1 text-xs text-muted">
+          {{ totalMensajesListos() }} listos · {{ totalMensajesSinAck() }} sin ack
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section class="mb-10 border-t border-border pt-8">
+    <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]">02 · Operaciones</span>
+        <h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">Crear recursos</h2>
+        <p class="mb-0 mt-1 text-sm text-muted">
+          Declara colas o exchanges nuevos. Verifica los recursos antes de eliminarlos,
+          especialmente si tienen mensajes pendientes.
+        </p>
+      </div>
+
+      <div class="inline-flex rounded-xl border border-border bg-white p-1 shadow-sm">
+        <button
+          type="button"
+          (click)="alternarCreacion('cola')"
+          [disabled]="procesando()"
+          [attr.aria-expanded]="panelCreacion() === 'cola'"
+          [class]="panelCreacion() === 'cola' ? 'bg-[#1f2937] text-white' : 'text-[#1f2937] hover:bg-surface-secondary'"
+          class="rounded-lg px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Nueva cola
+        </button>
+
+        <button
+          type="button"
+          (click)="alternarCreacion('exchange')"
+          [disabled]="procesando()"
+          [attr.aria-expanded]="panelCreacion() === 'exchange'"
+          [class]="panelCreacion() === 'exchange' ? 'bg-[#1f2937] text-white' : 'text-[#1f2937] hover:bg-surface-secondary'"
+          class="rounded-lg px-4 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Nuevo exchange
+        </button>
+      </div>
+    </div>
+
+    @if (panelCreacion() === 'cola') {
+      <article class="max-w-2xl rounded-2xl border border-border bg-white p-5 shadow-sm">
+        <div class="mb-5 flex items-start gap-3">
+          <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#eef1ff] text-xl text-[#4055ba]" aria-hidden="true">▤</span>
+          <div>
+            <h3 class="m-0 text-lg font-bold text-[#1f2937]">Crear cola</h3>
+            <p class="mb-0 mt-1 text-sm text-muted">Solo necesitas escribir el nombre corto.</p>
+          </div>
+        </div>
+
+        <form (ngSubmit)="crearCola()" class="flex flex-col gap-3">
+          <label class="block">
+            <span class="mb-1.5 block text-xs font-semibold text-muted">Nombre corto</span>
+            <input
+              type="text"
+              name="colaNombre"
+              [ngModel]="colaNombre()"
+              (ngModelChange)="colaNombre.set($event)"
+              maxlength="80"
+              placeholder="notificaciones"
+              class="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-[#1f2937] outline-none transition placeholder:text-muted focus:border-[#64748b]" />
+          </label>
+
+          <p class="m-0 text-xs leading-5 text-muted">
+            Nombre final:
+            <strong class="text-[#1f2937]">pedidos360.{{ colaNombre() || 'nombre' }}.queue</strong>
+          </p>
+
+          <label class="flex items-center gap-2 text-sm font-medium text-[#3f4b61]">
+            <input type="checkbox" name="colaDurable" [ngModel]="colaDurable()" (ngModelChange)="colaDurable.set($event)" class="h-4 w-4" />
+            Durable
+          </label>
+
+          <label class="flex items-center gap-2 text-sm font-medium text-[#3f4b61]">
+            <input type="checkbox" name="colaExclusive" [ngModel]="colaExclusive()" (ngModelChange)="colaExclusive.set($event)" class="h-4 w-4" />
+            Exclusive
+          </label>
+
+          <label class="flex items-center gap-2 text-sm font-medium text-[#3f4b61]">
+            <input type="checkbox" name="colaAutoDelete" [ngModel]="colaAutoDelete()" (ngModelChange)="colaAutoDelete.set($event)" class="h-4 w-4" />
+            Auto delete
+          </label>
+
+          <button
+            type="submit"
+            [disabled]="procesando() || colaNombre().trim() === ''"
+            class="mt-1 rounded-lg bg-[#1f2937] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#111827] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Crear cola
+          </button>
+        </form>
+      </article>
+    }
+
+    @if (panelCreacion() === 'exchange') {
+      <article class="max-w-2xl rounded-2xl border border-border bg-white p-5 shadow-sm">
+        <div class="mb-5 flex items-start gap-3">
+          <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#eef1ff] text-xl text-[#4055ba]" aria-hidden="true">⑂</span>
+          <div>
+            <h3 class="m-0 text-lg font-bold text-[#1f2937]">Crear exchange</h3>
+            <p class="mb-0 mt-1 text-sm text-muted">Define cómo se distribuyen los mensajes.</p>
+          </div>
+        </div>
+
+        <form (ngSubmit)="crearExchange()" class="flex flex-col gap-3">
+          <label class="block">
+            <span class="mb-1.5 block text-xs font-semibold text-muted">Nombre</span>
+            <input
+              type="text"
+              name="exchangeNombre"
+              [ngModel]="exchangeNombre()"
+              (ngModelChange)="exchangeNombre.set($event)"
+              maxlength="100"
+              placeholder="pedidos360.topic.exchange"
+              class="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-[#1f2937] outline-none transition placeholder:text-muted focus:border-[#64748b]" />
+          </label>
+
+          <label class="block">
+            <span class="mb-1.5 block text-xs font-semibold text-muted">Tipo</span>
+            <select
+              name="exchangeTipo"
+              [ngModel]="exchangeTipo()"
+              (ngModelChange)="exchangeTipo.set($event)"
+              class="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-[#1f2937] outline-none transition focus:border-[#64748b]">
+              <option value="direct">Direct</option>
+              <option value="topic">Topic</option>
+              <option value="fanout">Fanout</option>
+            </select>
+          </label>
+
+          <label class="flex items-center gap-2 text-sm font-medium text-[#3f4b61]">
+            <input type="checkbox" name="exchangeDurable" [ngModel]="exchangeDurable()" (ngModelChange)="exchangeDurable.set($event)" class="h-4 w-4" />
+            Durable
+          </label>
+
+          <button
+            type="submit"
+            [disabled]="procesando() || exchangeNombre().trim() === ''"
+            class="mt-1 rounded-lg bg-[#1f2937] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#111827] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Crear exchange
+          </button>
+        </form>
+      </article>
+    }
+  </section>
+
+  <section class="mb-10 border-t border-border pt-8">
+    <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]">03 · Colas</span>
+        <h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">Catálogo de colas</h2>
+        <p class="mb-0 mt-1 text-sm text-muted">
+          {{ totalElementos() }} {{ totalElementos() === 1 ? 'cola' : 'colas' }}
+          @if (colasQuery.isFetching() && !colasQuery.isPending()) {
+            <span class="ml-2 text-xs font-semibold text-muted">· Actualizando…</span>
+          }
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-end gap-2">
+        <label class="block w-56 max-[600px]:w-full">
+          <span class="mb-1.5 block text-xs font-semibold text-muted">Buscar por nombre</span>
+          <input
+            type="search"
+            name="q"
+            [ngModel]="textoBusqueda()"
+            (ngModelChange)="textoBusqueda.set($event)"
+            placeholder="pedidos360.pedidos.queue"
+            class="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-sm text-[#1f2937] outline-none transition placeholder:text-muted focus:border-[#64748b]" />
+        </label>
+
+        <button
+          type="button"
+          (click)="limpiarFiltros()"
+          [disabled]="!hayFiltros()"
+          class="rounded-lg border border-border px-4 py-2.5 text-sm font-semibold text-[#1f2937] transition hover:bg-surface-secondary disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Limpiar filtro
+        </button>
+      </div>
+    </div>
+
+    <app-query-state
+      [loading]="colasQuery.isPending()"
+      [error]="colasQuery.isError()"
+      [empty]="colas().length === 0"
+    >
+      <ng-template #loading>
+        <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          @for (item of [1, 2, 3, 4, 5, 6]; track item) {
+            <div class="animate-pulse rounded-2xl border border-border bg-white p-5">
+              <div class="mb-4 h-4 w-2/3 rounded bg-border"></div>
+              <div class="mb-6 h-3 w-1/3 rounded bg-border"></div>
+              <div class="mb-5 h-8 w-1/2 rounded bg-surface-secondary"></div>
+              <div class="h-10 w-full rounded bg-surface-secondary"></div>
+            </div>
+          }
+        </section>
+      </ng-template>
+
+      <ng-template #error>
+        <section class="rounded-2xl border border-danger-border bg-white p-8 text-center shadow-sm">
+          <h3 class="m-0 text-xl font-bold text-[#1f2937]">Catálogo de RabbitMQ no disponible</h3>
+          <p class="mb-0 mt-2 text-sm leading-6 text-muted">
+            No pudimos consultar las colas. Comprueba la conexión con el servicio y vuelve a intentarlo.
+          </p>
+          <button
+            type="button"
+            (click)="refrescar()"
+            class="mt-5 rounded-lg bg-[#1f2937] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#111827]"
+          >
+            Reintentar
+          </button>
+        </section>
+      </ng-template>
+
+      <ng-template #empty>
+        <section class="rounded-2xl border border-border bg-white p-6 shadow-sm">
+          <ui-empty-state
+            icon="▤"
+            [title]="hayFiltros() ? 'No encontramos colas' : 'Todavía no hay colas'"
+            [description]="hayFiltros() ? 'Prueba con otro nombre o limpia el filtro.' : 'Cuando declares colas en RabbitMQ aparecerán aquí.'">
+            @if (hayFiltros()) {
+              <button
+                type="button"
+                (click)="limpiarFiltros()"
+                class="mt-4 rounded-lg border border-border px-4 py-2.5 text-sm font-semibold text-[#1f2937] transition hover:bg-surface-secondary"
+              >
+                Limpiar filtro
+              </button>
+            }
+          </ui-empty-state>
+        </section>
+      </ng-template>
+
+      <ng-template #content>
+        <section class="grid grid-cols-1 items-stretch gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          @for (cola of colas(); track cola.name) {
+            <app-cola-card
+              [cola]="cola"
+              [bindings]="bindingsDe(cola.name)"
+              [exchanges]="exchanges()"
+              [procesando]="procesando()"
+              (crearBinding)="crearBinding($event)"
+              (eliminarBinding)="eliminarBinding($event)"
+              (eliminarCola)="eliminarCola(cola)"
+            />
+          }
+        </section>
+
+        @if (totalElementos() > 0) {
+          <section class="mt-4 rounded-2xl border border-border bg-white px-5 pb-5 pt-1 shadow-sm">
+            <ui-pager
+              [paginaActual]="pagina()"
+              [totalPaginas]="totalPaginas()"
+              [totalElementos]="totalElementos()"
+              [tamanoPagina]="tamano()"
+              (anterior)="irAPagina(pagina() - 1)"
+              (siguiente)="irAPagina(pagina() + 1)"
+              (tamanoChange)="cambiarTamano($event)"
+            />
+          </section>
+        }
+      </ng-template>
+    </app-query-state>
+  </section>
+
+  <section class="border-t border-border pt-8">
+    <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]">04 · Exchanges</span>
+        <h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">Exchanges</h2>
+        <p class="mb-0 mt-1 text-sm text-muted">
+          Recursos disponibles para crear bindings desde cada cola.
+        </p>
+      </div>
+      <span class="rounded-full bg-[#eef1ff] px-3 py-1.5 text-xs font-bold text-[#4055ba]">
+        {{ exchanges().length }} exchanges
+      </span>
+    </div>
+
+    <div class="overflow-x-auto rounded-2xl border border-border bg-white shadow-sm">
+      <table class="w-full min-w-[640px] border-collapse text-left">
+        <thead class="bg-surface-secondary">
+          <tr class="border-b border-border">
+            <th scope="col" class="px-5 py-4 text-xs font-bold uppercase tracking-wider text-muted">Nombre</th>
+            <th scope="col" class="px-5 py-4 text-xs font-bold uppercase tracking-wider text-muted">Tipo</th>
+            <th scope="col" class="px-5 py-4 text-xs font-bold uppercase tracking-wider text-muted">Durable</th>
+            <th scope="col" class="px-5 py-4 text-right text-xs font-bold uppercase tracking-wider text-muted">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-border">
+          @for (exchange of exchanges(); track exchange.name) {
+            <tr class="transition hover:bg-surface-secondary/60">
+              <td class="px-5 py-4">
+                <span class="font-mono text-sm font-semibold text-[#1f2937]">
+                  {{ exchange.name || '(default)' }}
+                </span>
+              </td>
+              <td class="px-5 py-4">
+                <span class="inline-flex items-center rounded-full bg-[#eef2f7] px-3 py-1.5 text-xs font-semibold text-[#4b5563]">
+                  {{ exchange.type }}
+                </span>
+              </td>
+              <td class="px-5 py-4 text-sm text-muted">
+                {{ exchange.durable ? 'Sí' : 'No' }}
+              </td>
+              <td class="px-5 py-4">
+                <div class="flex items-center justify-end">
+                  @if (exchange.name !== '') {
+                    <button
+                      type="button"
+                      (click)="eliminarExchange(exchange)"
+                      [disabled]="procesando()"
+                      class="rounded-lg border border-danger-border px-3 py-2 text-xs font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                      Eliminar
+                    </button>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+
+          @if (exchanges().length === 0) {
+            <tr>
+              <td colspan="4" class="px-5 py-10 text-center text-sm text-muted">
+                No hay exchanges para mostrar.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</section>

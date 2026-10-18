@@ -6,6 +6,8 @@ import neytan.rabbitmq_admin_service.dto.CreateBindingRequest;
 import neytan.rabbitmq_admin_service.dto.CreateExchangeRequest;
 import neytan.rabbitmq_admin_service.dto.CreateQueueRequest;
 import neytan.rabbitmq_admin_service.dto.ExchangeInfo;
+import neytan.rabbitmq_admin_service.dto.OverviewInfo;
+import neytan.rabbitmq_admin_service.dto.PageResponse;
 import neytan.rabbitmq_admin_service.dto.QueueInfo;
 
 import org.springframework.amqp.AmqpException;
@@ -35,8 +37,11 @@ public class RabbitAdminService {
         this.managementService = managementService;
     }
 
-    public List<QueueInfo> listarColas() {
-        return managementService.listarColas();
+    public PageResponse<QueueInfo> listarColas(
+            int page,
+            int size,
+            String name) {
+        return managementService.listarColasPagina(page, size, name);
     }
 
     public List<ExchangeInfo> listarExchanges() {
@@ -45,6 +50,10 @@ public class RabbitAdminService {
 
     public List<BindingInfo> listarBindings() {
         return managementService.listarBindings();
+    }
+
+    public OverviewInfo obtenerOverview() {
+        return managementService.obtenerOverview();
     }
 
     public void crearCola(CreateQueueRequest request) {
@@ -69,7 +78,7 @@ public class RabbitAdminService {
     public void eliminarCola(String name) {
     final String nombre = validarNombre(name);
 
-    boolean existe = managementService.listarColas().stream()
+    boolean existe = managementService.listarTodasLasColas().stream()
             .anyMatch(queue -> queue.name().equals(nombre));
 
     if (!existe) {
@@ -149,7 +158,7 @@ public class RabbitAdminService {
                 ? ""
                 : request.routingKey().trim();
 
-        boolean queueExists = managementService.listarColas().stream()
+        boolean queueExists = managementService.listarTodasLasColas().stream()
                 .anyMatch(queue -> queue.name().equals(queueName));
 
         if (!queueExists) {

@@ -1,0 +1,205 @@
+<section
+    class="group flex h-full min-w-0 flex-col rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-200 hover:border-gray-300 hover:shadow-md"
+>
+    <header class="flex items-start justify-between gap-3 border-b border-gray-100 pb-4">
+        <div class="min-w-0 flex-1">
+            <p class="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-gray-500">
+                Cola
+            </p>
+
+            <h2
+                class="m-0 wrap-break-word text-base font-bold leading-snug text-gray-900"
+                [title]="cola().name"
+            >
+                {{ cola().name }}
+            </h2>
+
+            <div class="mt-2 flex flex-wrap gap-1.5">
+                @if (cola().durable) {
+                    <span class="inline-flex items-center rounded-full border border-[#dfe3e8] bg-[#eef2f7] px-2.5 py-1 text-[11px] font-bold tracking-wide text-[#4b5563]">
+                        Durable
+                    </span>
+                }
+
+                @if (cola().exclusive) {
+                    <span class="inline-flex items-center rounded-full border border-[#f2ddb0] bg-[#fff5e0] px-2.5 py-1 text-[11px] font-bold tracking-wide text-[#9a6400]">
+                        Exclusive
+                    </span>
+                }
+
+                @if (cola().autoDelete) {
+                    <span class="inline-flex items-center rounded-full border border-[#f5c6c3] bg-[#fdecec] px-2.5 py-1 text-[11px] font-bold tracking-wide text-[#b3261e]">
+                        Auto delete
+                    </span>
+                }
+            </div>
+        </div>
+    </header>
+
+    <div class="grid grid-cols-2 gap-4 py-5">
+        <div class="flex min-w-0 flex-col gap-1">
+            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                Mensajes
+            </span>
+
+            <strong class="text-2xl font-bold tracking-tight text-gray-900">
+                {{ cola().messages }}
+            </strong>
+
+            <span class="text-xs text-gray-500">
+                {{ cola().messagesReady }} listos ·
+                {{ cola().messagesUnacknowledged }} sin ack
+            </span>
+        </div>
+
+        <div class="flex min-w-0 flex-col gap-1">
+            <span class="text-[10px] font-bold uppercase tracking-widest text-gray-500">
+                Consumidores
+            </span>
+
+            <strong class="text-2xl font-bold tracking-tight text-gray-900">
+                {{ cola().consumers }}
+            </strong>
+
+            <span class="text-xs text-gray-500">conectados</span>
+        </div>
+    </div>
+
+    <div class="flex flex-1 flex-col pt-1">
+        <div class="mb-3 flex items-center justify-between gap-3">
+            <h3 class="m-0 text-sm font-bold text-gray-900">
+                Bindings
+            </h3>
+
+            <button
+                type="button"
+                (click)="abrirFormulario()"
+                [disabled]="procesando() || mostrandoFormulario()"
+                class="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+            >
+                + Binding
+            </button>
+        </div>
+
+        @if (bindingsVisibles().length === 0) {
+            <div
+                class="flex min-h-20 flex-1 flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 p-4 text-center"
+            >
+                <p class="m-0 text-sm font-medium text-gray-500">
+                    Sin bindings para esta cola
+                </p>
+            </div>
+        } @else {
+            <ul class="m-0 flex list-none flex-col gap-2 p-0">
+                @for (item of bindingsVisibles(); track item.source + '|' + item.routingKey) {
+                    <li
+                        class="flex min-w-0 items-center justify-between gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2"
+                    >
+                        <div class="min-w-0">
+                            <p
+                                class="m-0 truncate text-xs font-semibold text-gray-800"
+                                [title]="item.source || '(default)'"
+                            >
+                                {{ item.source || '(default)' }}
+                            </p>
+
+                            <p
+                                class="m-0 mt-0.5 truncate font-mono text-[11px] text-gray-500"
+                                [title]="item.routingKey"
+                            >
+                                {{ item.routingKey || '(sin routing key)' }}
+                            </p>
+                        </div>
+
+                        @if (!esDefaultExchange(item)) {
+                            <button
+                                type="button"
+                                (click)="solicitarEliminarBinding(item)"
+                                [disabled]="procesando()"
+                                aria-label="Eliminar binding"
+                                title="Eliminar binding"
+                                class="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-red-200 text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                                ✕
+                            </button>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+
+        @if (mostrandoFormulario()) {
+            <form
+                (ngSubmit)="enviarBinding()"
+                class="mt-3 flex flex-col gap-2 rounded-xl border border-gray-200 bg-gray-50 p-3"
+            >
+                <label class="block">
+                    <span class="mb-1 block text-[11px] font-semibold text-gray-500">
+                        Exchange
+                    </span>
+
+                    <select
+                        name="bindingExchange"
+                        [ngModel]="exchangeSeleccionado()"
+                        (ngModelChange)="exchangeSeleccionado.set($event)"
+                        [disabled]="procesando()"
+                        class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 outline-none transition focus:border-gray-400 disabled:opacity-60"
+                    >
+                        <option value="">Seleccionar exchange...</option>
+
+                        @for (exchange of exchangesDisponibles(); track exchange.name) {
+                            <option [value]="exchange.name">
+                                {{ exchange.name }} ({{ exchange.type }})
+                            </option>
+                        }
+                    </select>
+                </label>
+
+                <label class="block">
+                    <span class="mb-1 block text-[11px] font-semibold text-gray-500">
+                        Routing key
+                    </span>
+
+                    <input
+                        type="text"
+                        name="bindingRoutingKey"
+                        [ngModel]="routingKey()"
+                        (ngModelChange)="routingKey.set($event)"
+                        maxlength="255"
+                        placeholder="pedido.aceptado"
+                        [disabled]="procesando()"
+                        class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 font-mono text-sm text-gray-900 outline-none transition placeholder:text-gray-400 focus:border-gray-400 disabled:opacity-60"
+                    />
+                </label>
+
+                <div class="flex justify-end gap-2">
+                    <button
+                        type="button"
+                        (click)="cancelarFormulario()"
+                        [disabled]="procesando()"
+                        class="rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 transition hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        Cancelar
+                    </button>
+
+                    <button
+                        type="submit"
+                        [disabled]="procesando() || !exchangeSeleccionado()"
+                        class="rounded-lg bg-[#1f2937] px-3 py-2 text-xs font-semibold text-white transition hover:bg-[#111827] disabled:cursor-not-allowed disabled:opacity-50"
+                    >
+                        Crear binding
+                    </button>
+                </div>
+            </form>
+        }
+    </div>
+
+    <button
+        type="button"
+        (click)="solicitarEliminarCola()"
+        [disabled]="procesando()"
+        class="mt-5 inline-flex w-full items-center justify-center gap-2 rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-semibold text-red-700 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+    >
+        Eliminar cola
+    </button>
+</section>

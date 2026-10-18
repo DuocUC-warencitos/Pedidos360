@@ -3,7 +3,6 @@ package neytan.rabbitmq_admin_service.controller;
 import neytan.rabbitmq_admin_service.model.Notificacion;
 import neytan.rabbitmq_admin_service.service.NotificacionService;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

@@ -1,11 +1,21 @@
 import { Injectable, signal } from '@angular/core';
 import { MsalBroadcastService, MsalService } from '@azure/msal-angular';
-import { AccountInfo, InteractionStatus } from '@azure/msal-browser';
+import { AccountInfo, InteractionRequiredAuthError, InteractionStatus } from '@azure/msal-browser';
 import { BehaviorSubject, filter, map, Observable, Subject, takeUntil } from 'rxjs';
 
+import { LoggingService } from '@core/logging/logging.service';
 import { environment } from '@env/environment';
 
 import { AuthenticationProvider, AuthUser, extractRolesFromJwt } from '../authenticationProvider';
+
+const CODIGOS_REAUTENTICACION = new Set([
+    'interaction_required',
+    'login_required',
+    'consent_required',
+    'refresh_token_expired',
+    'no_tokens_found',
+    'no_account_error',
+]);
 
 @Injectable({providedIn: 'root'})
 export class MsalAuthenticationProvider implements AuthenticationProvider
@@ -21,13 +31,20 @@ export class MsalAuthenticationProvider implements AuthenticationProvider
 
     private readonly msalService: MsalService;
     private readonly msalBroadcast: MsalBroadcastService;
+    private readonly logger: LoggingService;
 
     private readonly destroying$ = new Subject<void>();
 
-    constructor(msalService: MsalService, msalBroadcast: MsalBroadcastService)
+    private reautenticando = false;
+
+    constructor(
+        msalService: MsalService,
+        msalBroadcast: MsalBroadcastService,
+        logger: LoggingService)
     {
         this.msalService = msalService;
         this.msalBroadcast = msalBroadcast;
+        this.logger = logger;
 
         this.inicializar();
     }
@@ -75,6 +92,64 @@ export class MsalAuthenticationProvider implements AuthenticationProvider
             .pipe(
                 map(result => result.accessToken)
             );
+    }
+
+    reautenticarSiEsNecesario(error: unknown, urlRetorno?: string): boolean
+    {
+        if (!this.requiereInteraccion(error)) return false;
+
+        if (this.reautenticando) return true;
+
+        this.reautenticando = true;
+
+        const account = this.msalService.instance.getActiveAccount();
+        const redirectStartPage = urlRetorno ?? window.location.href;
+
+        const solicitud$ = account
+            ? this.msalService.acquireTokenRedirect(
+                {
+                    account,
+                    scopes: [environment.msal.apiScope],
+                    redirectStartPage,
+                })
+            : this.msalService.loginRedirect(
+                {
+                    scopes: this.scopesDeLogin(),
+                    redirectStartPage,
+                });
+
+        this.logger.warn(
+            'Sesión expirada: redirigiendo a Microsoft para reautenticar',
+            { urlRetorno: redirectStartPage });
+
+        solicitud$.subscribe(
+        {
+            error: (err) =>
+            {
+                this.reautenticando = false;
+                this.logger.error('No se pudo iniciar la reautenticación', err);
+            },
+        });
+
+        return true;
+    }
+
+    private requiereInteraccion(error: unknown): boolean
+    {
+        if (error instanceof InteractionRequiredAuthError) return true;
+
+        const codigo = (error as { errorCode?: unknown } | null)?.errorCode;
+
+        return typeof codigo === 'string' && CODIGOS_REAUTENTICACION.has(codigo);
+    }
+
+    private scopesDeLogin(): string[]
+    {
+        const scopes = ['openid', 'profile', 'email'];
+
+        if (environment.msal.apiScope) scopes.push(environment.msal.apiScope);
+
+        return scopes;
     }
     
     private inicializar(): void 

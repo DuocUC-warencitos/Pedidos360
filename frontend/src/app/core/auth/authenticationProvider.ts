@@ -20,6 +20,7 @@ export interface AuthenticationProvider
     login(): void;
     logout(): void;
     getAccesToken(): Observable<string>;
+    reautenticarSiEsNecesario(error: unknown, urlRetorno?: string): boolean;
 }
 
 export const AUTHENTICATION_PROVIDER = new InjectionToken<AuthenticationProvider>('AuthenticationProvider');

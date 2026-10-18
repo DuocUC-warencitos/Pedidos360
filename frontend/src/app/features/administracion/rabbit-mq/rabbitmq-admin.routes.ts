@@ -1,9 +1,13 @@
 import { Routes } from '@angular/router';
 
+import { roleGuard } from '@core/auth/guards/role.guard';
+
 export const rabbitmqAdminRoutes: Routes = [
 	{
 		path: '',
+		canActivate: [roleGuard],
+		data: { roles: ['ADMIN'] },
 		loadComponent: () =>
-			import('./rabbitmq-admin.component').then((m) => m.RabbitmqAdminComponent),
+			import('./pages/rabbitmq-admin-page').then((m) => m.RabbitmqAdminPage),
 	},
 ];

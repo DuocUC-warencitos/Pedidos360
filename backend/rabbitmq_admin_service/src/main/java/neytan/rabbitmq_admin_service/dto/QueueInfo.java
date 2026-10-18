@@ -1,8 +1,8 @@
 
 package neytan.rabbitmq_admin_service.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record QueueInfo(
@@ -10,9 +10,16 @@ public record QueueInfo(
         boolean durable,
         boolean exclusive,
 
-        @JsonProperty("auto_delete")
+        @JsonAlias("auto_delete")
         boolean autoDelete,
 
         int messages,
+
+        @JsonAlias("messages_ready")
+        int messagesReady,
+
+        @JsonAlias("messages_unacknowledged")
+        int messagesUnacknowledged,
+
         int consumers
 ) {}
