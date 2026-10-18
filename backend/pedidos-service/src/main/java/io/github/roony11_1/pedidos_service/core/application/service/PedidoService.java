@@ -15,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import io.github.roony11_1.error.core.exceptions.InvalidInputException;
 import io.github.roony11_1.error.core.exceptions.NotFoundException;
 import io.github.roony11_1.pedidos_service.api.dto.response.PedidoStatsResponse;
+import io.github.roony11_1.pedidos_service.core.application.event.PedidoEstadoActualizadoEvent;
+import io.github.roony11_1.pedidos_service.core.application.interfaces.PedidoEventPublisher;
 import io.github.roony11_1.pedidos_service.core.domain.model.EstadoPedido;
 import io.github.roony11_1.pedidos_service.core.domain.model.Pedido;
 import io.github.roony11_1.pedidos_service.core.domain.model.PedidoProducto;
@@ -51,6 +53,7 @@ public class PedidoService
         pedido.setComentario(userTokenService.getAuditComentario("Ingresado por"));
 
         var saved = pedidoRepository.save(pedido);
+        publicarEstado(saved);
 
         return saved;
     }
@@ -199,6 +202,7 @@ public class PedidoService
 
         String comentario = userTokenService.getAuditComentario("Estado actualizado a " + siguiente + " por");
         pedido.avanzarEstado(comentario);
+        publicarEstado(pedido);
     }
 
     @Transactional
@@ -208,6 +212,7 @@ public class PedidoService
 
         String comentario = userTokenService.getAuditComentario("Cancelado por");
         pedido.cancelar(comentario);
+        publicarEstado(pedido);
     }
 
     private Pedido obtenerPedido(UUID id) 
@@ -226,5 +231,18 @@ public class PedidoService
         return pedidoRepository.findOne(specification)
             .orElseThrow(() ->
                 new NotFoundException("Pedido", id));
+    }
+    private final PedidoEventPublisher eventPublisher;
+    private void publicarEstado(Pedido pedido)
+    {
+        eventPublisher.publicarEstadoActualizado(
+            new PedidoEstadoActualizadoEvent(
+                pedido.getId(),
+                pedido.getUserId(),
+                pedido.getEstadoPedido().name(),
+                pedido.getCorrelationId(),
+                java.time.Instant.now()
+            )
+        );
     }
 }

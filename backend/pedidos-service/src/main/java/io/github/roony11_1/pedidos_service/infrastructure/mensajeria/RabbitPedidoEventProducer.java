@@ -5,6 +5,7 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 
 import io.github.roony11_1.pedidos_service.core.application.event.PedidoCreadoEvent;
+import io.github.roony11_1.pedidos_service.core.application.event.PedidoEstadoActualizadoEvent;
 import io.github.roony11_1.pedidos_service.core.application.event.PedidoEstadoCanceladoEvent;
 import io.github.roony11_1.pedidos_service.core.application.event.PedidoStockFallidoEvent;
 import io.github.roony11_1.pedidos_service.core.application.event.PedidoStockReservadoEvent;
@@ -100,4 +101,24 @@ public class RabbitPedidoEventProducer implements PedidoEventPublisher
             ""
         );
     }
+    
+    @Override
+    public void publicarEstadoActualizado(PedidoEstadoActualizadoEvent event)
+    {
+        rabbitTemplate.convertAndSend(
+            RabbitMQConfig.TOPIC,
+            "pedido.estado.actualizado",
+            event,
+            message -> {
+                message.getMessageProperties()
+                    .setDeliveryMode(MessageDeliveryMode.PERSISTENT);
+                message.getMessageProperties()
+                    .setMessageId(event.pedidoId() + "-" + event.estado());
+                message.getMessageProperties()
+                    .setHeader("userId", event.userId());
+                return message;
+            }
+        );
+    }
+
 }
