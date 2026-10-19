@@ -11,7 +11,8 @@ resource "aws_apigatewayv2_authorizer" "jwt" {
   name             = "entra-jwt"
 
   jwt_configuration {
-    audience = [var.jwt_audience]
+    # v2.0: aud = client ID (GUID). v1.0: aud = App ID URI api://{guid}.
+    audience = distinct(compact([var.jwt_audience, "api://${var.jwt_audience}"]))
     issuer   = var.jwt_issuer_uri
   }
 }

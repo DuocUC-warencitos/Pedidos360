@@ -33,8 +33,9 @@ db_password          = "CHANGEME_SUPER_SEGURO_32CHARS_PEDIDOS"
 db_password_producto = "" # vacío = reutiliza db_password
 
 # JWT / Entra ID (reemplaza <TENANT_ID> y <API_CLIENT_ID>)
+# jwt_audience = Client ID (GUID) de la API, NO el scope api://.../Pedidos.Read
 jwt_issuer_uri = "https://login.microsoftonline.com/<TENANT_ID>/v2.0"
-jwt_audience   = "api://<API_CLIENT_ID>/Pedidos.Read"
+jwt_audience   = "<API_CLIENT_ID>"
 cors_origins   = "http://localhost:4200,https://<tu-app>.vercel.app"
 
 # GHCR — imagenes publicadas por el workflow (ghcr.io/duocuc-warencitos/*)
