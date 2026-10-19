@@ -28,6 +28,52 @@ export class ColaCard {
   readonly mostrandoFormulario = signal(false);
   readonly exchangeSeleccionado = signal('');
   readonly routingKey = signal('');
+  readonly argumentosAbiertos = signal(false);
+
+  private static readonly ORDEN_ARGUMENTOS = [
+    'x-dead-letter-exchange',
+    'x-dead-letter-routing-key',
+    'x-message-ttl',
+    'x-max-length',
+  ];
+
+  readonly argumentos = computed<{ clave: string; valor: string }[]>(() => {
+    const entradas = Object.entries(this.cola().arguments ?? {});
+
+    return entradas
+      .sort(([a], [b]) => {
+        const indiceA = ColaCard.ORDEN_ARGUMENTOS.indexOf(a);
+        const indiceB = ColaCard.ORDEN_ARGUMENTOS.indexOf(b);
+        const posicionA = indiceA === -1 ? Number.MAX_SAFE_INTEGER : indiceA;
+        const posicionB = indiceB === -1 ? Number.MAX_SAFE_INTEGER : indiceB;
+
+        return posicionA - posicionB || a.localeCompare(b);
+      })
+      .map(([clave, valor]) => ({
+        clave,
+        valor: this.formatearArgumento(clave, valor),
+      }));
+  });
+
+  private formatearArgumento(clave: string, valor: unknown): string {
+    if (clave === 'x-message-ttl' && typeof valor === 'number') {
+      if (valor >= 60_000 && valor % 60_000 === 0) {
+        return `${valor} ms (${valor / 60_000} min)`;
+      }
+
+      if (valor >= 1_000 && valor % 1_000 === 0) {
+        return `${valor} ms (${valor / 1_000} s)`;
+      }
+
+      return `${valor} ms`;
+    }
+
+    return String(valor);
+  }
+
+  toggleArgumentos(): void {
+    this.argumentosAbiertos.update((abierto) => !abierto);
+  }
 
   readonly exchangesDisponibles = computed(() =>
     this.exchanges().filter((item) => item.name !== ''),

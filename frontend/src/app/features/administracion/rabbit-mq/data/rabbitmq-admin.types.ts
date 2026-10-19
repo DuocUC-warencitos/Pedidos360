@@ -12,6 +12,7 @@ export interface QueueInfo {
   messagesReady: number;
   messagesUnacknowledged: number;
   consumers: number;
+  arguments?: Record<string, unknown> | null;
 }
 
 export interface ExchangeInfo {

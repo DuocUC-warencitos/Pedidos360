@@ -4,6 +4,8 @@ package neytan.rabbitmq_admin_service.dto;
 import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.util.Map;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record QueueInfo(
         String name,
@@ -21,5 +23,7 @@ public record QueueInfo(
         @JsonAlias("messages_unacknowledged")
         int messagesUnacknowledged,
 
-        int consumers
+        int consumers,
+
+        Map<String, Object> arguments
 ) {}
