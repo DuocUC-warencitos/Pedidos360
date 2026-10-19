@@ -396,7 +396,8 @@ function Connect-RemoteGhcr {
     }
 
     Write-Host "==> docker login ghcr.io en $SshTarget (usuario $username)"
-    $token | ssh @SshOptions $SshTarget "docker login ghcr.io -u $username --password-stdin"
+    # 2>&1 remoto: el warning de docker login viaja por stdout y no rompe $ErrorActionPreference=Stop
+    $token | ssh @SshOptions $SshTarget "docker login ghcr.io -u $username --password-stdin 2>&1"
     if ($LASTEXITCODE -ne 0) {
         throw "docker login ghcr.io fallo en $SshTarget. Revisa GHCR_USERNAME/GHCR_TOKEN (PAT con scope read:packages) o haz el paquete publico."
     }

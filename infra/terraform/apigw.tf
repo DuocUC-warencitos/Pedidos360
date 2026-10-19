@@ -92,6 +92,19 @@ resource "aws_apigatewayv2_route" "productos" {
   authorization_type = "JWT"
 }
 
+# Catálogo público: GET sin JWT (la ruta con método específico gana a la ANY)
+resource "aws_apigatewayv2_route" "productos_root_get" {
+  api_id    = aws_apigatewayv2_api.main.id
+  route_key = "GET /api/v1/productos"
+  target    = "integrations/${aws_apigatewayv2_integration.productos_root.id}"
+}
+
+resource "aws_apigatewayv2_route" "productos_get" {
+  api_id    = aws_apigatewayv2_api.main.id
+  route_key = "GET /api/v1/productos/{proxy+}"
+  target    = "integrations/${aws_apigatewayv2_integration.productos.id}"
+}
+
 # ──────────────────────────────────────────────────────────────
 # HEALTH (sin auth)
 # ──────────────────────────────────────────────────────────────
@@ -296,6 +309,14 @@ resource "aws_apigatewayv2_route" "rabbit_admin_options" {
   api_id    = aws_apigatewayv2_api.main.id
   route_key = "OPTIONS ${each.value}/{proxy+}"
   target    = "integrations/${aws_apigatewayv2_integration.rabbit_admin_sub[each.key].id}"
+}
+
+resource "aws_apigatewayv2_route" "rabbit_admin_root_options" {
+  for_each = local.rabbit_admin_paths
+
+  api_id    = aws_apigatewayv2_api.main.id
+  route_key = "OPTIONS ${each.value}"
+  target    = "integrations/${aws_apigatewayv2_integration.rabbit_admin_root[each.key].id}"
 }
 
 resource "aws_apigatewayv2_stage" "prod" {

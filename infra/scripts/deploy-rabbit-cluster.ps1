@@ -51,7 +51,7 @@ Write-EnvFile -Path $tmpEnv -Lines $envLines
 
 try {
     Write-Host "==> Preparando $remoteDir en $target"
-    ssh @sshOptions $target "mkdir -p $remoteDir"
+    ssh @sshOptions $target "sudo mkdir -p $remoteDir && sudo chown -R ec2-user:ec2-user $remoteDir"
 
     Write-Host "==> Subiendo docker-compose.yml + .env"
     scp @sshOptions "$PSScriptRoot\..\docker\rabbit-cluster\docker-compose.yml" "${target}:$remoteDir/docker-compose.yml"

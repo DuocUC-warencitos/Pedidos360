@@ -22,6 +22,7 @@ fi
 
 # Directorio app
 mkdir -p /opt/pedidos360
+chown ec2-user:ec2-user /opt/pedidos360
 cd /opt/pedidos360
 
 # Crea .env para docker-compose.prod.yml desde variables Terraform
@@ -61,6 +62,9 @@ services:
       - "8080:8080"
     restart: unless-stopped
 COMPEOF
+
+# Los archivos recien creados quedan como ec2-user para que deploy-*.ps1 pueda sobreescribirlos
+chown -R ec2-user:ec2-user /opt/pedidos360
 
 # Pull y levantar (GHCR públicas no requieren login)
 docker compose --env-file .env pull || true

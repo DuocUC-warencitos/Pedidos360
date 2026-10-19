@@ -22,3 +22,4 @@ fi
 
 # Directorio de despliegue (el compose y .env los sube infra/scripts/deploy-*.ps1)
 mkdir -p ${app_dir}
+chown ec2-user:ec2-user ${app_dir}

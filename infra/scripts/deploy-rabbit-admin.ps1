@@ -86,7 +86,7 @@ Write-EnvFile -Path $tmpEnv -Lines $envLines
 
 try {
     Write-Host "==> Preparando $remoteDir en $target"
-    ssh @sshOptions $target "mkdir -p $remoteDir"
+    ssh @sshOptions $target "sudo mkdir -p $remoteDir && sudo chown -R ec2-user:ec2-user $remoteDir"
 
     Write-Host "==> Subiendo docker-compose.yml + .env"
     scp @sshOptions "$PSScriptRoot\..\docker\rabbit-admin\docker-compose.yml" "${target}:$remoteDir/docker-compose.yml"
@@ -99,14 +99,14 @@ try {
     $pullOut = (ssh @sshOptions $target "docker pull -q $psqlImage" 2>&1 | Out-String).Trim()
     if ($LASTEXITCODE -ne 0) { throw "No se pudo descargar ${psqlImage} en la EC2: $pullOut" }
 
-    $psqlBase = "docker run --rm -e PGPASSWORD='$dbPass' $psqlImage psql -h $dbHost -p 5432 -U $dbUser -d $dbInitial"
-    $existsOut = (ssh @sshOptions $target "$psqlBase -tAc ""SELECT 1 FROM pg_database WHERE datname='$dbName'""" 2>&1 | Out-String).Trim()
-    if ($LASTEXITCODE -ne 0) { throw "psql no pudo conectar a RDS: $existsOut" }
+    $psqlBase = "docker run -i --rm -e PGPASSWORD='$dbPass' $psqlImage psql -h $dbHost -p 5432 -U $dbUser -d postgres -tA"
+    $existsOut = (("SELECT 1 FROM pg_database WHERE datname='$dbName';") | ssh @sshOptions $target $psqlBase | Out-String).Trim()
+    if ($LASTEXITCODE -ne 0) { throw "psql no pudo conectar a RDS (exit $LASTEXITCODE)" }
     $dbExists = ($existsOut -split "`r?`n" | Where-Object { $_.Trim() -eq "1" }).Count -gt 0
     if (-not $dbExists) {
         Write-Host "==> Creando base de datos '$dbName'"
-        $createOut = (ssh @sshOptions $target "$psqlBase -c ""CREATE DATABASE $dbName""" 2>&1 | Out-String).Trim()
-        if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la base '$dbName': $createOut" }
+        ("CREATE DATABASE $dbName;") | ssh @sshOptions $target $psqlBase | Out-Null
+        if ($LASTEXITCODE -ne 0) { throw "No se pudo crear la base '$dbName' (exit $LASTEXITCODE)" }
     }
 
     Write-Host "==> Levantando rabbit-admin-service"

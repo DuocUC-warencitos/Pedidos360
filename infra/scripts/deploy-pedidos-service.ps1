@@ -97,7 +97,7 @@ $remoteScript = ($remoteScript.Replace("__APP_DIR__", $AppDir)) -replace "`r", "
 
 try {
     Write-Host "==> Preparando $AppDir en $target"
-    ssh @sshOptions $target "mkdir -p $AppDir"
+    ssh @sshOptions $target "sudo mkdir -p $AppDir && sudo chown -R ec2-user:ec2-user $AppDir"
 
     Write-Host "==> Subiendo docker-compose.yml + .env"
     scp @sshOptions "$PSScriptRoot\..\docker\pedidos-service\docker-compose.yml" "${target}:$AppDir/docker-compose.yml"
