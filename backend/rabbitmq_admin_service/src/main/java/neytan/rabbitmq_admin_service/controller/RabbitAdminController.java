@@ -56,6 +56,16 @@ public class RabbitAdminController {
         return ResponseEntity.ok(service.obtenerOverview());
     }
 
+    @PostMapping("/demo/fallo-controlado")
+    public ResponseEntity<ApiMessage> demoFalloControlado() {
+        return ResponseEntity.ok(service.demoFalloControlado());
+    }
+
+    @PostMapping("/demo/ttl")
+    public ResponseEntity<ApiMessage> demoTtl() {
+        return ResponseEntity.ok(service.demoTtl());
+    }
+
     @PostMapping("/queues")
     public ResponseEntity<ApiMessage> crearCola(
             @Valid @RequestBody CreateQueueRequest request) {

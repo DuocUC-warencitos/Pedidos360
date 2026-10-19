@@ -16,6 +16,8 @@ export const apiAdminRabbit =
         queues: `${base}/queues`,
         exchanges: `${base}/exchanges`,
         bindings: `${base}/bindings`,
+        demoFalloControlado: `${base}/demo/fallo-controlado`,
+        demoTtl: `${base}/demo/ttl`,
     },
     delete:
     {

@@ -13,6 +13,8 @@ import {
     useCrearBindingMutation,
     useCrearColaMutation,
     useCrearExchangeMutation,
+    useDemoFalloControladoMutation,
+    useDemoTtlMutation,
     useEliminarBindingMutation,
     useEliminarColaMutation,
     useEliminarExchangeMutation,
@@ -121,13 +123,31 @@ export class RabbitmqAdminPage {
         () => undefined,
     );
 
+    private readonly demoFalloControladoMutation = useDemoFalloControladoMutation(
+        (data) =>
+            this.notify.success(
+                `Fallo controlado publicado. Mensaje en DLQ: ${data.resource ?? 'notificaciones.queue.dlq'}`,
+            ),
+        () => this.notify.error('No se pudo publicar el mensaje corrupto.'),
+    );
+
+    private readonly demoTtlMutation = useDemoTtlMutation(
+        (data) =>
+            this.notify.success(
+                `Demo TTL creada. En ~8 s el mensaje pasara a ${data.resource ?? 'su DLQ'}.`,
+            ),
+        () => this.notify.error('No se pudo crear la demo TTL.'),
+    );
+
     readonly procesando = computed(() =>
         this.crearColaMutation.isPending() ||
         this.eliminarColaMutation.isPending() ||
         this.crearExchangeMutation.isPending() ||
         this.eliminarExchangeMutation.isPending() ||
         this.crearBindingMutation.isPending() ||
-        this.eliminarBindingMutation.isPending(),
+        this.eliminarBindingMutation.isPending() ||
+        this.demoFalloControladoMutation.isPending() ||
+        this.demoTtlMutation.isPending(),
     );
 
     readonly cargandoCatalogo = computed(() =>
@@ -328,5 +348,15 @@ export class RabbitmqAdminPage {
             exchangeName: item.source,
             routingKey: item.routingKey ?? '',
         });
+    }
+
+    enviarFalloControlado(): void {
+        if (this.procesando()) return;
+        this.demoFalloControladoMutation.mutate();
+    }
+
+    crearDemoTtl(): void {
+        if (this.procesando()) return;
+        this.demoTtlMutation.mutate();
     }
 }

@@ -236,9 +236,70 @@
   </section>
 
   <section class="mb-10 border-t border-border pt-8">
+    <div class="mb-4">
+      <span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]">03 · Resiliencia</span>
+      <h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">Demos de fallo y retención</h2>
+      <p class="mb-0 mt-1 text-sm text-muted">
+        Pruebas controladas para verificar DLQ, TTL y el comportamiento del consumer sin tocar las colas de negocio.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+      <article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+        <div class="mb-4 flex items-start gap-3">
+          <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-50 text-xl text-red-700" aria-hidden="true">⚠</span>
+          <div>
+            <h3 class="m-0 text-lg font-bold text-[#1f2937]">Fallo controlado → DLQ</h3>
+            <p class="mb-0 mt-1 text-sm leading-6 text-muted">
+              Publica un mensaje corrupto en <strong class="text-[#1f2937]">notificaciones.queue</strong>
+              (rk <span class="font-mono">pedido.stock.reservado</span>). El consumer lo rechaza con
+              NACK sin requeue y el mensaje cae en
+              <strong class="text-[#1f2937]">notificaciones.queue.dlq</strong>. En los logs del servicio
+              verás: <span class="font-mono">Evento descartado hacia DLQ rk=pedido.stock.reservado</span>.
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          (click)="enviarFalloControlado()"
+          [disabled]="procesando()"
+          class="rounded-lg bg-[#1f2937] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#111827] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Enviar mensaje corrupto
+        </button>
+      </article>
+
+      <article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+        <div class="mb-4 flex items-start gap-3">
+          <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-xl text-amber-700" aria-hidden="true">⏱</span>
+          <div>
+            <h3 class="m-0 text-lg font-bold text-[#1f2937]">TTL / max-length</h3>
+            <p class="mb-0 mt-1 text-sm leading-6 text-muted">
+              Las colas de negocio usan TTL de 10 minutos y máximo de 1000 mensajes.
+              Este botón crea <strong class="text-[#1f2937]">pedidos360.demo.ttl.queue</strong>
+              (TTL 8 s) y publica 1 mensaje: al refrescar el catálogo verás que expira y
+              aparece en <strong class="text-[#1f2937]">pedidos360.demo.ttl.queue.dlq</strong>.
+            </p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          (click)="crearDemoTtl()"
+          [disabled]="procesando()"
+          class="rounded-lg bg-[#1f2937] px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-[#111827] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Crear demo TTL 8 s
+        </button>
+      </article>
+    </div>
+  </section>
+
+  <section class="mb-10 border-t border-border pt-8">
     <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
       <div>
-        <span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]">03 · Colas</span>
+        <span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]">04 · Colas</span>
         <h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">Catálogo de colas</h2>
         <p class="mb-0 mt-1 text-sm text-muted">
           {{ totalElementos() }} {{ totalElementos() === 1 ? 'cola' : 'colas' }}
@@ -359,7 +420,7 @@
   <section class="border-t border-border pt-8">
     <div class="mb-4 flex flex-wrap items-end justify-between gap-3">
       <div>
-        <span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]">04 · Exchanges</span>
+        <span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]">05 · Exchanges</span>
         <h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">Exchanges</h2>
         <p class="mb-0 mt-1 text-sm text-muted">
           Recursos disponibles para crear bindings desde cada cola.

@@ -13,6 +13,14 @@ resource "aws_security_group" "ec2_rabbit" {
   }
 
   ingress {
+    description = "SSH desde EC2 Instance Connect (consola AWS)"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.instance_connect_cidr]
+  }
+
+  ingress {
     description     = "AMQP desde rabbit-admin"
     from_port       = 5672
     to_port         = 5672
@@ -66,6 +74,14 @@ resource "aws_security_group" "ec2_rabbit_admin" {
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = [var.admin_cidr]
+  }
+
+  ingress {
+    description = "SSH desde EC2 Instance Connect (consola AWS)"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.instance_connect_cidr]
   }
 
   ingress {

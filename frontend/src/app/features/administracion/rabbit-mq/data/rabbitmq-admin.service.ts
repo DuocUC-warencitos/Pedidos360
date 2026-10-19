@@ -69,4 +69,15 @@ export class RabbitmqAdminService {
       body: request,
     });
   }
+
+  demoFalloControlado(): Observable<ApiMessage> {
+    return this.http.post<ApiMessage>(
+      apiAdminRabbit.post.demoFalloControlado,
+      {},
+    );
+  }
+
+  demoTtl(): Observable<ApiMessage> {
+    return this.http.post<ApiMessage>(apiAdminRabbit.post.demoTtl, {});
+  }
 }

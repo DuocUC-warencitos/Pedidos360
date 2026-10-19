@@ -13,6 +13,14 @@ resource "aws_security_group" "ec2_pedidos" {
   }
 
   ingress {
+    description = "SSH desde EC2 Instance Connect (consola AWS)"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.instance_connect_cidr]
+  }
+
+  ingress {
     description = "App 8080 desde API Gateway publico"
     from_port   = 8080
     to_port     = 8080
@@ -42,6 +50,14 @@ resource "aws_security_group" "ec2_producto" {
     to_port     = 22
     protocol    = "tcp"
     cidr_blocks = [var.admin_cidr]
+  }
+
+  ingress {
+    description = "SSH desde EC2 Instance Connect (consola AWS)"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.instance_connect_cidr]
   }
 
   ingress {

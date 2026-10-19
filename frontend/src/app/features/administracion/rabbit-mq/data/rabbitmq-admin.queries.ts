@@ -6,6 +6,7 @@ import { PageResponse } from '@core/api/page-response';
 
 import { RabbitmqAdminService } from './rabbitmq-admin.service';
 import {
+  ApiMessage,
   BindingInfo,
   CreateBindingRequest,
   CreateExchangeRequest,
@@ -167,6 +168,38 @@ export function useEliminarBindingMutation(
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: CLAVE_RABBITMQ });
       onSuccessCb();
+    },
+    onError: onErrorCb,
+  }));
+}
+
+export function useDemoFalloControladoMutation(
+  onSuccessCb: (data: ApiMessage) => void,
+  onErrorCb: (err: unknown) => void,
+) {
+  const service = inject(RabbitmqAdminService);
+  const qc = inject(QueryClient);
+  return injectMutation(() => ({
+    mutationFn: () => lastValueFrom(service.demoFalloControlado()),
+    onSuccess: (data: ApiMessage) => {
+      void qc.invalidateQueries({ queryKey: CLAVE_RABBITMQ });
+      onSuccessCb(data);
+    },
+    onError: onErrorCb,
+  }));
+}
+
+export function useDemoTtlMutation(
+  onSuccessCb: (data: ApiMessage) => void,
+  onErrorCb: (err: unknown) => void,
+) {
+  const service = inject(RabbitmqAdminService);
+  const qc = inject(QueryClient);
+  return injectMutation(() => ({
+    mutationFn: () => lastValueFrom(service.demoTtl()),
+    onSuccess: (data: ApiMessage) => {
+      void qc.invalidateQueries({ queryKey: CLAVE_RABBITMQ });
+      onSuccessCb(data);
     },
     onError: onErrorCb,
   }));

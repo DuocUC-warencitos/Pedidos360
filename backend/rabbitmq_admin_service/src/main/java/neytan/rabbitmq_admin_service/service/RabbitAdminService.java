@@ -1,6 +1,8 @@
 
 package neytan.rabbitmq_admin_service.service;
 
+import neytan.rabbitmq_admin_service.config.RabbitTopologyConfig;
+import neytan.rabbitmq_admin_service.dto.ApiMessage;
 import neytan.rabbitmq_admin_service.dto.BindingInfo;
 import neytan.rabbitmq_admin_service.dto.CreateBindingRequest;
 import neytan.rabbitmq_admin_service.dto.CreateExchangeRequest;
@@ -16,25 +18,31 @@ import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.FanoutExchange;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.core.QueueBuilder;
 import org.springframework.amqp.core.TopicExchange;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 @Service
 public class RabbitAdminService {
 
     private final AmqpAdmin amqpAdmin;
     private final RabbitManagementService managementService;
+    private final RabbitTemplate rabbitTemplate;
 
     public RabbitAdminService(
             AmqpAdmin amqpAdmin,
-            RabbitManagementService managementService) {
+            RabbitManagementService managementService,
+            RabbitTemplate rabbitTemplate) {
         this.amqpAdmin = amqpAdmin;
         this.managementService = managementService;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     public PageResponse<QueueInfo> listarColas(
@@ -54,6 +62,64 @@ public class RabbitAdminService {
 
     public OverviewInfo obtenerOverview() {
         return managementService.obtenerOverview();
+    }
+
+    public ApiMessage demoFalloControlado() {
+        String payload = "{\"demo\":true,\"origen\":\"panel-admin\"}";
+
+        rabbitTemplate.convertAndSend(
+                RabbitTopologyConfig.TOPIC,
+                RabbitTopologyConfig.RK_STOCK_RESERVADO,
+                payload);
+
+        return new ApiMessage(
+                "Mensaje corrupto publicado en pedidos360.topic "
+                        + "(rk=pedido.stock.reservado). El consumer lo rechaza "
+                        + "(NACK sin requeue): revisa la cola "
+                        + RabbitTopologyConfig.NOTIFICACIONES_DLQ
+                        + " y los logs del servicio "
+                        + "(Evento descartado hacia DLQ rk=pedido.stock.reservado).",
+                RabbitTopologyConfig.NOTIFICACIONES_DLQ);
+    }
+
+    public ApiMessage demoTtl() {
+        String colaDemo = "pedidos360.demo.ttl.queue";
+        String colaDemoDlq = colaDemo + ".dlq";
+        String rkFallido = "demo.ttl.failed";
+
+        try {
+            amqpAdmin.declareQueue(QueueBuilder.durable(colaDemo)
+                    .withArguments(Map.of(
+                            "x-message-ttl", 8000,
+                            "x-dead-letter-exchange", RabbitTopologyConfig.DLX,
+                            "x-dead-letter-routing-key", rkFallido))
+                    .build());
+
+            amqpAdmin.declareQueue(new Queue(colaDemoDlq, true));
+
+            amqpAdmin.declareBinding(new Binding(
+                    colaDemoDlq,
+                    Binding.DestinationType.QUEUE,
+                    RabbitTopologyConfig.DLX,
+                    rkFallido,
+                    null));
+        } catch (AmqpException ex) {
+            throw new ResponseStatusException(
+                    HttpStatus.CONFLICT,
+                    "No se pudo crear la cola demo (quiza ya existe con otra configuracion).",
+                    ex);
+        }
+
+        rabbitTemplate.convertAndSend(
+                "",
+                colaDemo,
+                "{\"demo\":\"ttl\",\"nota\":\"mensaje que expira en 8 segundos\"}");
+
+        return new ApiMessage(
+                "Cola demo creada con TTL de 8000 ms y 1 mensaje publicado. "
+                        + "En ~8 segundos el mensaje expira y pasa a su DLQ; "
+                        + "refresca el catalogo de colas para verlo.",
+                colaDemoDlq);
     }
 
     public void crearCola(CreateQueueRequest request) {

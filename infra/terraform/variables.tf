@@ -36,6 +36,12 @@ variable "admin_cidr" {
   default     = "0.0.0.0/0"
 }
 
+variable "instance_connect_cidr" {
+  description = "CIDR del servicio EC2 Instance Connect para SSH desde la consola AWS (us-east-1 = 18.206.107.24/29)"
+  type        = string
+  default     = "18.206.107.24/29"
+}
+
 variable "instance_type" {
   description = "Tipo EC2"
   type        = string
