@@ -36,6 +36,14 @@ resource "aws_security_group" "ec2_rabbit" {
     cidr_blocks = [var.admin_cidr]
   }
 
+  ingress {
+    description     = "Management API desde rabbit-admin-service"
+    from_port       = 15672
+    to_port         = 15672
+    protocol        = "tcp"
+    security_groups = [aws_security_group.ec2_rabbit_admin.id]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
