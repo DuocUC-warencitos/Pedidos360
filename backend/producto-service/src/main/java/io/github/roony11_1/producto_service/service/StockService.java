@@ -56,27 +56,32 @@ public class StockService
     }
 
     @Transactional
-    public void liberar(LiberarStockRequest request) {
+    public void liberar(LiberarStockRequest request) 
+    {
         var reservaOpt = reservaStockRepository.findByPedidoId(request.pedidoId());
 
-        if (reservaOpt.isEmpty()) {
+        if (reservaOpt.isEmpty()) 
+        {
             log.warn("Liberar idempotente: no existe reserva para pedidoId={} -> no-op", request.pedidoId());
             return;
         }
 
         var reserva = reservaOpt.get();
 
-        if (reserva.getEstado() == EstadoReserva.LIBERADO) {
+        if (reserva.getEstado() == EstadoReserva.LIBERADO) 
+        {
             log.info("Liberar idempotente: pedidoId={} ya LIBERADO -> no-op", request.pedidoId());
             return;
         }
 
-        if (reserva.getEstado() != EstadoReserva.RESERVADO) {
+        if (reserva.getEstado() != EstadoReserva.RESERVADO) 
+        {
             log.warn("Liberar: pedidoId={} estado={} no es RESERVADO -> no-op", request.pedidoId(), reserva.getEstado());
             return;
         }
 
-        for (var item : request.items()) {
+        for (var item : request.items()) 
+        {
             var p = productoRepository.findById(item.productoId())
                 .orElseThrow(() -> new NotFoundException("Producto", item.productoId()));
             p.liberarStock(item.cantidad());
@@ -88,27 +93,32 @@ public class StockService
     }
 
     @Transactional
-    public void confirmar(ConfirmarStockRequest request) {
+    public void confirmar(ConfirmarStockRequest request) 
+    {
         var reservaOpt = reservaStockRepository.findByPedidoId(request.pedidoId());
 
-        if (reservaOpt.isEmpty()) {
+        if (reservaOpt.isEmpty()) 
+        {
             log.warn("Confirmar idempotente: no existe reserva para pedidoId={} -> no-op", request.pedidoId());
             return;
         }
 
         var reserva = reservaOpt.get();
 
-        if (reserva.getEstado() == EstadoReserva.CONFIRMADO) {
+        if (reserva.getEstado() == EstadoReserva.CONFIRMADO) 
+        {
             log.info("Confirmar idempotente: pedidoId={} ya CONFIRMADO -> no-op", request.pedidoId());
             return;
         }
 
-        if (reserva.getEstado() != EstadoReserva.RESERVADO) {
+        if (reserva.getEstado() != EstadoReserva.RESERVADO) 
+        {
             log.warn("Confirmar: pedidoId={} estado={} no es RESERVADO -> no-op", request.pedidoId(), reserva.getEstado());
             return;
         }
 
-        for (var item : request.items()) {
+        for (var item : request.items()) 
+        {
             var p = productoRepository.findById(item.productoId())
                 .orElseThrow(() -> new NotFoundException("Producto", item.productoId()));
             p.confirmarStock(item.cantidad());
