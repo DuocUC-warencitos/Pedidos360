@@ -1,27 +1,38 @@
+
 server:
     port: ${SERVER_PORT:8080}
 
 spring:
     application:
         name: producto-service
+
     datasource:
         url: ${SPRING_DATASOURCE_URL:}
         username: ${SPRING_DATASOURCE_USERNAME:}
         password: ${SPRING_DATASOURCE_PASSWORD:}
         driver-class-name: org.postgresql.Driver
+
     jpa:
         hibernate:
             ddl-auto: update
         show-sql: false
         open-in-view: false
         database-platform: org.hibernate.dialect.PostgreSQLDialect
+
     jackson:
         default-property-inclusion: non_null
+
     security:
         oauth2:
             resourceserver:
                 jwt:
                     issuer-uri: ${JWT_ISSUER_URI:}
+
+    kafka:
+        bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+        producer:
+            key-serializer: org.apache.kafka.common.serialization.StringSerializer
+            value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
 
 app:
     security:
