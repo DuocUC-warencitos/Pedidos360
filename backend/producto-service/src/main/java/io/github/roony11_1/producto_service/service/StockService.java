@@ -1,10 +1,16 @@
 package io.github.roony11_1.producto_service.service;
 
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.github.roony11_1.producto_service.dto.ConfirmarStockRequest;
 import io.github.roony11_1.producto_service.dto.LiberarStockRequest;
+import io.github.roony11_1.producto_service.dto.ProductoStockEvent;
 import io.github.roony11_1.producto_service.dto.ReservaStockRequest;
 import io.github.roony11_1.producto_service.dto.ReservaStockResponse;
 import io.github.roony11_1.error.core.exceptions.NotFoundException;
@@ -17,31 +23,54 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Service 
+@Service
 @RequiredArgsConstructor
-public class StockService 
-{
+public class StockService {
+
     private final ProductoRepository productoRepository;
     private final ReservaStockRepository reservaStockRepository;
+    private final KafkaEventPublisher kafkaEventPublisher;
 
     @Transactional
-    public ReservaStockResponse reservar(String idempotencyKey, ReservaStockRequest request)
-    {
-        var previa = reservaStockRepository.findByIdempotencyKey(idempotencyKey);
+    public ReservaStockResponse reservar(
+        String idempotencyKey,
+        ReservaStockRequest request
+    ) {
 
-        if (previa.isPresent())
+        var previa =
+            reservaStockRepository.findByIdempotencyKey(idempotencyKey);
+
+        if (previa.isPresent()) {
             return toResponse(previa.get(), true);
+        }
 
-        for (var producto : request.items())
-        {
+        List<ProductoStockEvent> eventos = new ArrayList<>();
+
+        for (var producto : request.items()) {
+
             var p = productoRepository.findById(producto.productoId())
-                .orElseThrow(() -> new NotFoundException("Producto", producto.productoId()));
+                .orElseThrow(() ->
+                    new NotFoundException("Producto", producto.productoId())
+                );
 
-            if (p.getStockDisponible() < producto.cantidad())
-                throw new StockInsuficienteException(p.getId(), producto.cantidad(), p.getStockDisponible());
+            if (p.getStockDisponible() < producto.cantidad()) {
+                throw new StockInsuficienteException(
+                    p.getId(),
+                    producto.cantidad(),
+                    p.getStockDisponible()
+                );
+            }
 
-            // Esta mapeado con @Version, siguiendo el contexto de Hibernate. Intentara actualizar si el UPDATE difiere en el Version fallara con http 409
             p.reservarStock(producto.cantidad());
+
+            eventos.add(new ProductoStockEvent(
+                UUID.randomUUID(),
+                EstadoReserva.RESERVADO,
+                p.getId(),
+                p.getStockDisponible(),
+                p.getStockReservado(),
+                Instant.now()
+            ));
         }
 
         ReservaStock reserva = ReservaStock.builder()
@@ -52,85 +81,147 @@ public class StockService
 
         reserva = reservaStockRepository.save(reserva);
 
+        eventos.forEach(kafkaEventPublisher::publicarStock);
+
         return toResponse(reserva, false);
     }
 
     @Transactional
-    public void liberar(LiberarStockRequest request) 
-    {
-        var reservaOpt = reservaStockRepository.findByPedidoId(request.pedidoId());
+    public void liberar(LiberarStockRequest request) {
 
-        if (reservaOpt.isEmpty()) 
-        {
-            log.warn("Liberar idempotente: no existe reserva para pedidoId={} -> no-op", request.pedidoId());
+        var reservaOpt =
+            reservaStockRepository.findByPedidoId(request.pedidoId());
+
+        if (reservaOpt.isEmpty()) {
+            log.warn(
+                "Liberar idempotente: no existe reserva para pedidoId={} -> no-op",
+                request.pedidoId()
+            );
             return;
         }
 
         var reserva = reservaOpt.get();
 
-        if (reserva.getEstado() == EstadoReserva.LIBERADO) 
-        {
-            log.info("Liberar idempotente: pedidoId={} ya LIBERADO -> no-op", request.pedidoId());
+        if (reserva.getEstado() == EstadoReserva.LIBERADO) {
+            log.info(
+                "Liberar idempotente: pedidoId={} ya LIBERADO -> no-op",
+                request.pedidoId()
+            );
             return;
         }
 
-        if (reserva.getEstado() != EstadoReserva.RESERVADO) 
-        {
-            log.warn("Liberar: pedidoId={} estado={} no es RESERVADO -> no-op", request.pedidoId(), reserva.getEstado());
+        if (reserva.getEstado() != EstadoReserva.RESERVADO) {
+            log.warn(
+                "Liberar: pedidoId={} estado={} no es RESERVADO -> no-op",
+                request.pedidoId(),
+                reserva.getEstado()
+            );
             return;
         }
 
-        for (var item : request.items()) 
-        {
+        List<ProductoStockEvent> eventos = new ArrayList<>();
+
+        for (var item : request.items()) {
+
             var p = productoRepository.findById(item.productoId())
-                .orElseThrow(() -> new NotFoundException("Producto", item.productoId()));
+                .orElseThrow(() ->
+                    new NotFoundException("Producto", item.productoId())
+                );
+
             p.liberarStock(item.cantidad());
+
+            eventos.add(new ProductoStockEvent(
+                UUID.randomUUID(),
+                EstadoReserva.LIBERADO,
+                p.getId(),
+                p.getStockDisponible(),
+                p.getStockReservado(),
+                Instant.now()
+            ));
         }
 
         reserva.setEstado(EstadoReserva.LIBERADO);
         reservaStockRepository.save(reserva);
-        log.info("Stock liberado pedidoId={} items={}", request.pedidoId(), request.items().size());
+
+        eventos.forEach(kafkaEventPublisher::publicarStock);
+
+        log.info(
+            "Stock liberado pedidoId={} items={}",
+            request.pedidoId(),
+            request.items().size()
+        );
     }
 
     @Transactional
-    public void confirmar(ConfirmarStockRequest request) 
-    {
-        var reservaOpt = reservaStockRepository.findByPedidoId(request.pedidoId());
+    public void confirmar(ConfirmarStockRequest request) {
 
-        if (reservaOpt.isEmpty()) 
-        {
-            log.warn("Confirmar idempotente: no existe reserva para pedidoId={} -> no-op", request.pedidoId());
+        var reservaOpt =
+            reservaStockRepository.findByPedidoId(request.pedidoId());
+
+        if (reservaOpt.isEmpty()) {
+            log.warn(
+                "Confirmar idempotente: no existe reserva para pedidoId={} -> no-op",
+                request.pedidoId()
+            );
             return;
         }
 
         var reserva = reservaOpt.get();
 
-        if (reserva.getEstado() == EstadoReserva.CONFIRMADO) 
-        {
-            log.info("Confirmar idempotente: pedidoId={} ya CONFIRMADO -> no-op", request.pedidoId());
+        if (reserva.getEstado() == EstadoReserva.CONFIRMADO) {
+            log.info(
+                "Confirmar idempotente: pedidoId={} ya CONFIRMADO -> no-op",
+                request.pedidoId()
+            );
             return;
         }
 
-        if (reserva.getEstado() != EstadoReserva.RESERVADO) 
-        {
-            log.warn("Confirmar: pedidoId={} estado={} no es RESERVADO -> no-op", request.pedidoId(), reserva.getEstado());
+        if (reserva.getEstado() != EstadoReserva.RESERVADO) {
+            log.warn(
+                "Confirmar: pedidoId={} estado={} no es RESERVADO -> no-op",
+                request.pedidoId(),
+                reserva.getEstado()
+            );
             return;
         }
 
-        for (var item : request.items()) 
-        {
+        List<ProductoStockEvent> eventos = new ArrayList<>();
+
+        for (var item : request.items()) {
+
             var p = productoRepository.findById(item.productoId())
-                .orElseThrow(() -> new NotFoundException("Producto", item.productoId()));
+                .orElseThrow(() ->
+                    new NotFoundException("Producto", item.productoId())
+                );
+
             p.confirmarStock(item.cantidad());
+
+            eventos.add(new ProductoStockEvent(
+                UUID.randomUUID(),
+                EstadoReserva.CONFIRMADO,
+                p.getId(),
+                p.getStockDisponible(),
+                p.getStockReservado(),
+                Instant.now()
+            ));
         }
 
         reserva.setEstado(EstadoReserva.CONFIRMADO);
         reservaStockRepository.save(reserva);
-        log.info("Stock confirmado pedidoId={} items={}", request.pedidoId(), request.items().size());
+
+        eventos.forEach(kafkaEventPublisher::publicarStock);
+
+        log.info(
+            "Stock confirmado pedidoId={} items={}",
+            request.pedidoId(),
+            request.items().size()
+        );
     }
 
-    private ReservaStockResponse toResponse(ReservaStock r, boolean idempotente) 
-    {
+    private ReservaStockResponse toResponse(
+        ReservaStock r,
+        boolean idempotente
+    ) {
         return ReservaStockResponse.builder()
             .reservaId(r.getId())
             .pedidoId(r.getPedidoId())

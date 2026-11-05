@@ -28,6 +28,11 @@ public class KafkaAfterCommitListener {
             key,
             evento
         );
+        kafkaTemplate.send(
+            KafkaTopicConfig.TOPIC_REPORTERIA,
+            key,
+            evento
+        );
 
         log.info(
             "Evento de auditoría enviado a Kafka. eventoId={} productoId={} accion={}",
