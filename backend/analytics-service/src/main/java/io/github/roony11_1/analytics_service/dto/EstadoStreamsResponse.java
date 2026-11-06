@@ -7,6 +7,6 @@ public record EstadoStreamsResponse(
     List<String> stores,
     long productos,
     long movimientos,
-    long eventos
-) {
+    long eventos) 
+{
 }

@@ -7,6 +7,6 @@ public record AlertaStockResponse(
     String nombre,
     String sku,
     int stockDisponible,
-    Integer stockMinimo
-) {
+    Integer stockMinimo) 
+{
 }

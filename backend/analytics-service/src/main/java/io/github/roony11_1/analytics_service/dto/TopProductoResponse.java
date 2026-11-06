@@ -7,6 +7,6 @@ public record TopProductoResponse(
     String nombre,
     String sku,
     long unidades,
-    long ingresos
-) {
+    long ingresos) 
+{
 }

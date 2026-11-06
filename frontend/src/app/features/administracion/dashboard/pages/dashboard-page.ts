@@ -1,29 +1,32 @@
-import { DatePipe, DecimalPipe } from '@angular/common';
+
+import { CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { Component, computed, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
-import { ProductoAlertaStockResponse } from '@features/productos/data/productos.types';
-
 import {
-	useAlertasStockQuery,
-	useMetricasDiariasQuery,
-	useRabbitOverviewQuery,
-	useRankingProductosQuery,
-	useUltimosEventosQuery,
+    useAlertasAnaliticasQuery,
+    useTopProductosQuery,
+} from '../data/analiticas.queries';
+import {
+    useMetricasDiariasQuery,
+    useRabbitOverviewQuery,
+    useUltimosEventosQuery,
 } from '../data/dashboard.queries';
 import {
-	DesgloseTipo,
-	DiaAgrupado,
-	EventoReciente,
-	KpiMes,
-	MesAgrupado,
-	ProductoRankingConNombre,
+    AlertaStock,
+    DesgloseTipo,
+    DiaAgrupado,
+    EventoReciente,
+    KpiMes,
+    MesAgrupado,
+    TopProducto,
 } from '../data/dashboard.types';
 
 const MESES_CORTOS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
 const MESES_LARGOS = [
-	'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
-	'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+    'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+    'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
 ];
 
 const RK_CREADOS = 'pedido.crear';
@@ -39,277 +42,389 @@ const LIMITE_ULTIMOS = 20;
 
 function aIso(fecha: Date): string
 {
-	const anio = fecha.getFullYear();
-	const mes = String(fecha.getMonth() + 1).padStart(2, '0');
-	const dia = String(fecha.getDate()).padStart(2, '0');
+    const anio = fecha.getFullYear();
+    const mes = String(fecha.getMonth() + 1).padStart(2, '0');
+    const dia = String(fecha.getDate()).padStart(2, '0');
 
-	return `${anio}-${mes}-${dia}`;
+    return `${anio}-${mes}-${dia}`;
 }
 
 function claveDeMes(fecha: Date): string
 {
-	return aIso(fecha).slice(0, 7);
+    return aIso(fecha).slice(0, 7);
 }
 
 @Component({
-	selector: 'app-dashboard-page',
-	standalone: true,
-	imports: [DatePipe, DecimalPipe, RouterLink],
-	templateUrl: './dashboard-page.html',
+    selector: 'app-dashboard-page',
+    standalone: true,
+    imports: [DatePipe, DecimalPipe, CurrencyPipe, RouterLink],
+    templateUrl: './dashboard-page.html',
 })
 export class DashboardPage
 {
-	protected readonly vista = signal<'anual' | 'mensual'>('anual');
-	protected readonly mesSeleccionado = signal<string | null>(null);
+    protected readonly vista = signal<'anual' | 'mensual'>('anual');
+    protected readonly mesSeleccionado = signal<string | null>(null);
 
-	private readonly periodoRanking = computed(() =>
-	{
-		const ahora = new Date();
-		const clave = this.mesSeleccionado();
+    private readonly periodoRanking = computed(() =>
+    {
+        const ahora = new Date();
+        const clave = this.mesSeleccionado();
 
-		if (this.vista() === 'mensual' && clave !== null)
-		{
-			const [anio, mes] = clave.split('-').map(Number);
-			const desde = new Date(anio, mes - 1, 1);
-			const hasta = new Date(anio, mes, 0);
+        if (this.vista() === 'mensual' && clave !== null)
+        {
+            const [anio, mes] = clave.split('-').map(Number);
+            const desde = new Date(anio, mes - 1, 1);
+            const hasta = new Date(anio, mes, 0);
 
-			return { desde: aIso(desde), hasta: aIso(hasta) };
-		}
+            return { desde: aIso(desde), hasta: aIso(hasta) };
+        }
 
-		return {
-			desde: aIso(new Date(ahora.getFullYear(), ahora.getMonth() - (MESES_VENTANA - 1), 1)),
-			hasta: aIso(ahora),
-		};
-	});
+        return {
+            desde: aIso(new Date(
+                ahora.getFullYear(),
+                ahora.getMonth() - (MESES_VENTANA - 1),
+                1
+            )),
+            hasta: aIso(ahora),
+        };
+    });
 
-	private readonly diariasQuery = useMetricasDiariasQuery(MESES_VENTANA);
-	private readonly rankingQuery = useRankingProductosQuery(() => this.periodoRanking());
-	private readonly ultimosQuery = useUltimosEventosQuery(LIMITE_ULTIMOS);
-	private readonly overviewQuery = useRabbitOverviewQuery();
-	private readonly alertasQuery = useAlertasStockQuery();
+    // RabbitMQ
+    private readonly diariasQuery = useMetricasDiariasQuery(MESES_VENTANA);
+    private readonly ultimosQuery = useUltimosEventosQuery(LIMITE_ULTIMOS);
+    private readonly overviewQuery = useRabbitOverviewQuery();
 
-	protected readonly puntos = computed(() => this.diariasQuery.data() ?? []);
+    // Analytics Service
+    private readonly rankingQuery = useTopProductosQuery(
+        () => this.periodoRanking()
+    );
 
-	protected readonly mesesAgrupados = computed<MesAgrupado[]>(() =>
-	{
-		const hoy = new Date();
-		const lista: MesAgrupado[] = [];
+    private readonly alertasQuery = useAlertasAnaliticasQuery();
 
-		for (let i = MESES_VENTANA - 1; i >= 0; i--)
-		{
-			const mes = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
-			const clave = claveDeMes(mes);
+    protected readonly puntos = computed(() =>
+        this.diariasQuery.data() ?? []
+    );
 
-			lista.push({
-				clave,
-				etiqueta: `${MESES_CORTOS[mes.getMonth()]} ${String(mes.getFullYear()).slice(2)}`,
-				total: this.pedidosDeMes(clave),
-			});
-		}
+    protected readonly mesesAgrupados = computed<MesAgrupado[]>(() =>
+    {
+        const hoy = new Date();
+        const lista: MesAgrupado[] = [];
 
-		return lista;
-	});
+        for (let i = MESES_VENTANA - 1; i >= 0; i--)
+        {
+            const mes = new Date(hoy.getFullYear(), hoy.getMonth() - i, 1);
+            const clave = claveDeMes(mes);
 
-	protected readonly maxMes = computed(() =>
-		Math.max(1, ...this.mesesAgrupados().map((mes) => mes.total)));
+            lista.push({
+                clave,
+                etiqueta: `${MESES_CORTOS[mes.getMonth()]} ${String(mes.getFullYear()).slice(2)}`,
+                total: this.pedidosDeMes(clave),
+            });
+        }
 
-	protected readonly tituloMesSeleccionado = computed(() =>
-	{
-		const clave = this.mesSeleccionado();
+        return lista;
+    });
 
-		if (clave === null)
-			return '';
+    protected readonly maxMes = computed(() =>
+        Math.max(1, ...this.mesesAgrupados().map((mes) => mes.total))
+    );
 
-		const [anio, mes] = clave.split('-').map(Number);
+    protected readonly tituloMesSeleccionado = computed(() =>
+    {
+        const clave = this.mesSeleccionado();
 
-		return `${MESES_LARGOS[mes - 1]} ${anio}`;
-	});
+        if (clave === null)
+            return '';
 
-	protected readonly diasDelMes = computed<DiaAgrupado[]>(() =>
-	{
-		const clave = this.mesSeleccionado();
+        const [anio, mes] = clave.split('-').map(Number);
 
-		if (clave === null)
-			return [];
+        return `${MESES_LARGOS[mes - 1]} ${anio}`;
+    });
 
-		const [anio, mes] = clave.split('-').map(Number);
-		const ultimoDia = new Date(anio, mes, 0).getDate();
-		const porDia = new Map<string, number>();
+    protected readonly diasDelMes = computed<DiaAgrupado[]>(() =>
+    {
+        const clave = this.mesSeleccionado();
 
-		for (const punto of this.puntos())
-		{
-			if (punto.fecha.startsWith(clave) && punto.routingKey === RK_CREADOS)
-				porDia.set(punto.fecha, (porDia.get(punto.fecha) ?? 0) + punto.total);
-		}
+        if (clave === null)
+            return [];
 
-		const lista: DiaAgrupado[] = [];
+        const [anio, mes] = clave.split('-').map(Number);
+        const ultimoDia = new Date(anio, mes, 0).getDate();
+        const porDia = new Map<string, number>();
 
-		for (let dia = 1; dia <= ultimoDia; dia++)
-		{
-			const fecha = `${clave}-${String(dia).padStart(2, '0')}`;
+        for (const punto of this.puntos())
+        {
+            if (
+                punto.fecha.startsWith(clave) &&
+                punto.routingKey === RK_CREADOS
+            )
+            {
+                porDia.set(
+                    punto.fecha,
+                    (porDia.get(punto.fecha) ?? 0) + punto.total
+                );
+            }
+        }
 
-			lista.push({ fecha, etiqueta: String(dia), total: porDia.get(fecha) ?? 0 });
-		}
+        const lista: DiaAgrupado[] = [];
 
-		return lista;
-	});
+        for (let dia = 1; dia <= ultimoDia; dia++)
+        {
+            const fecha = `${clave}-${String(dia).padStart(2, '0')}`;
 
-	protected readonly maxDia = computed(() =>
-		Math.max(1, ...this.diasDelMes().map((dia) => dia.total)));
+            lista.push({
+                fecha,
+                etiqueta: String(dia),
+                total: porDia.get(fecha) ?? 0,
+            });
+        }
 
-	protected readonly desgloseMes = computed<DesgloseTipo[]>(() =>
-	{
-		const clave = this.mesSeleccionado();
+        return lista;
+    });
 
-		if (clave === null)
-			return [];
+    protected readonly maxDia = computed(() =>
+        Math.max(1, ...this.diasDelMes().map((dia) => dia.total))
+    );
 
-		const totales = this.totalesMes(clave);
-		const totalMes = [...totales.values()].reduce((acc, total) => acc + total, 0) || 1;
+    protected readonly desgloseMes = computed<DesgloseTipo[]>(() =>
+    {
+        const clave = this.mesSeleccionado();
 
-		return [...totales.entries()]
-			.map(([routingKey, total]) => ({
-				routingKey,
-				total,
-				porcentaje: Math.round((total / totalMes) * 1000) / 10,
-			}))
-			.sort((a, b) => b.total - a.total);
-	});
+        if (clave === null)
+            return [];
 
-	protected readonly totalMesSeleccionado = computed(() =>
-		this.diasDelMes().reduce((acc, dia) => acc + dia.total, 0));
+        const totales = this.totalesMes(clave);
+        const totalMes = [...totales.values()]
+            .reduce((acc, total) => acc + total, 0) || 1;
 
-	protected readonly kpis = computed<KpiMes[]>(() =>
-	{
-		const ahora = new Date();
-		const claveActual = claveDeMes(ahora);
-		const claveAnterior = claveDeMes(new Date(ahora.getFullYear(), ahora.getMonth() - 1, 1));
-		const actual = this.totalesMes(claveActual);
-		const anterior = this.totalesMes(claveAnterior);
+        return [...totales.entries()]
+            .map(([routingKey, total]) => ({
+                routingKey,
+                total,
+                porcentaje: Math.round((total / totalMes) * 1000) / 10,
+            }))
+            .sort((a, b) => b.total - a.total);
+    });
 
-		const totalActual = [...actual.values()].reduce((acc, total) => acc + total, 0);
-		const totalAnterior = [...anterior.values()].reduce((acc, total) => acc + total, 0);
+    protected readonly totalMesSeleccionado = computed(() =>
+        this.diasDelMes().reduce((acc, dia) => acc + dia.total, 0)
+    );
 
-		const creados = actual.get(RK_CREADOS) ?? 0;
-		const aceptados = actual.get(RK_ACEPTADOS) ?? 0;
-		const tasa = creados > 0 ? Math.round((aceptados / creados) * 1000) / 10 : 0;
+    protected readonly kpis = computed<KpiMes[]>(() =>
+    {
+        const ahora = new Date();
+        const claveActual = claveDeMes(ahora);
+        const claveAnterior = claveDeMes(
+            new Date(ahora.getFullYear(), ahora.getMonth() - 1, 1)
+        );
 
-		return [
-			this.kpi('Pedidos creados', creados, anterior.get(RK_CREADOS) ?? 0, 'Jobs encolados'),
-			this.kpi('Pedidos aceptados', aceptados, anterior.get(RK_ACEPTADOS) ?? 0, 'Listos para entrega'),
-			{
-				etiqueta: 'Tasa de aceptación',
-				valor: `${tasa.toLocaleString('es-CL', { maximumFractionDigits: 1 })}%`,
-				delta: null,
-				detalle: 'Aceptados / creados del mes',
-			},
-			this.kpi('Reservas de stock', actual.get(RK_RESERVADOS) ?? 0, anterior.get(RK_RESERVADOS) ?? 0, 'Stock confirmado'),
-			this.kpi('Fallos de stock', actual.get(RK_FALLIDOS_STOCK) ?? 0, anterior.get(RK_FALLIDOS_STOCK) ?? 0, 'Sin stock disponible'),
-			this.kpi('Cancelaciones', actual.get(RK_CANCELADOS) ?? 0, anterior.get(RK_CANCELADOS) ?? 0, 'Con compensación'),
-			this.kpi('Fallos transitorios', actual.get(RK_DLQ) ?? 0, anterior.get(RK_DLQ) ?? 0, 'Enviados a DLQ'),
-			this.kpi('Total eventos', totalActual, totalAnterior, 'Todos los tipos'),
-		];
-	});
+        const actual = this.totalesMes(claveActual);
+        const anterior = this.totalesMes(claveAnterior);
 
-	protected readonly ranking = computed<ProductoRankingConNombre[]>(() =>
-		this.rankingQuery.data() ?? []);
+        const totalActual = [...actual.values()]
+            .reduce((acc, total) => acc + total, 0);
 
-	protected readonly rankingCargando = computed(() => this.rankingQuery.isPending());
+        const totalAnterior = [...anterior.values()]
+            .reduce((acc, total) => acc + total, 0);
 
-	protected readonly ultimos = computed<EventoReciente[]>(() =>
-		this.ultimosQuery.data() ?? []);
+        const creados = actual.get(RK_CREADOS) ?? 0;
+        const aceptados = actual.get(RK_ACEPTADOS) ?? 0;
 
-	protected readonly ultimosCargando = computed(() => this.ultimosQuery.isPending());
+        const tasa = creados > 0
+            ? Math.round((aceptados / creados) * 1000) / 10
+            : 0;
 
-	protected readonly overview = computed(() => this.overviewQuery.data());
+        return [
+            this.kpi(
+                'Pedidos creados',
+                creados,
+                anterior.get(RK_CREADOS) ?? 0,
+                'Jobs encolados'
+            ),
+            this.kpi(
+                'Pedidos aceptados',
+                aceptados,
+                anterior.get(RK_ACEPTADOS) ?? 0,
+                'Listos para entrega'
+            ),
+            {
+                etiqueta: 'Tasa de aceptación',
+                valor: `${tasa.toLocaleString('es-CL', { maximumFractionDigits: 1 })}%`,
+                delta: null,
+                detalle: 'Aceptados / creados del mes',
+            },
+            this.kpi(
+                'Reservas de stock',
+                actual.get(RK_RESERVADOS) ?? 0,
+                anterior.get(RK_RESERVADOS) ?? 0,
+                'Stock confirmado'
+            ),
+            this.kpi(
+                'Fallos de stock',
+                actual.get(RK_FALLIDOS_STOCK) ?? 0,
+                anterior.get(RK_FALLIDOS_STOCK) ?? 0,
+                'Sin stock disponible'
+            ),
+            this.kpi(
+                'Cancelaciones',
+                actual.get(RK_CANCELADOS) ?? 0,
+                anterior.get(RK_CANCELADOS) ?? 0,
+                'Con compensación'
+            ),
+            this.kpi(
+                'Fallos transitorios',
+                actual.get(RK_DLQ) ?? 0,
+                anterior.get(RK_DLQ) ?? 0,
+                'Enviados a DLQ'
+            ),
+            this.kpi(
+                'Total eventos',
+                totalActual,
+                totalAnterior,
+                'Todos los tipos'
+            ),
+        ];
+    });
 
-	protected readonly alertas = computed<ProductoAlertaStockResponse[]>(() =>
-		this.alertasQuery.data() ?? []);
+    protected readonly ranking = computed<TopProducto[]>(() =>
+        this.rankingQuery.data() ?? []
+    );
 
-	protected readonly alertasCargando = computed(() => this.alertasQuery.isPending());
+    protected readonly rankingCargando = computed(() =>
+        this.rankingQuery.isPending()
+    );
 
-	protected seleccionarMes(clave: string): void
-	{
-		this.mesSeleccionado.set(clave);
-		this.vista.set('mensual');
-	}
+    protected readonly ultimos = computed<EventoReciente[]>(() =>
+        this.ultimosQuery.data() ?? []
+    );
 
-	protected volverAnual(): void
-	{
-		this.vista.set('anual');
-		this.mesSeleccionado.set(null);
-	}
+    protected readonly ultimosCargando = computed(() =>
+        this.ultimosQuery.isPending()
+    );
 
-	protected alturaPx(total: number, maximo: number): number
-	{
-		return Math.max(total > 0 ? 4 : 2, Math.round((total / maximo) * ALTO_BARRAS_PX));
-	}
+    protected readonly overview = computed(() =>
+        this.overviewQuery.data()
+    );
 
-	protected colorRoutingKey(routingKey: string | null): string
-	{
-		switch (routingKey)
-		{
-			case RK_CREADOS:
-				return 'bg-blue-50 text-blue-700';
-			case RK_ACEPTADOS:
-				return 'bg-emerald-50 text-emerald-700';
-			case RK_RESERVADOS:
-				return 'bg-teal-50 text-teal-700';
-			case RK_FALLIDOS_STOCK:
-				return 'bg-red-50 text-red-700';
-			case RK_CANCELADOS:
-				return 'bg-amber-50 text-amber-700';
-			case RK_DLQ:
-				return 'bg-rose-50 text-rose-700';
-			default:
-				return 'bg-[#eef2f7] text-[#4b5563]';
-		}
-	}
+    protected readonly alertas = computed<AlertaStock[]>(() =>
+        this.alertasQuery.data() ?? []
+    );
 
-	protected idCorto(id: string | null): string
-	{
-		if (id === null)
-			return '—';
+    protected readonly alertasCargando = computed(() =>
+        this.alertasQuery.isPending()
+    );
 
-		return id.length > 8 ? `${id.slice(0, 8)}…` : id;
-	}
+    protected seleccionarMes(clave: string): void
+    {
+        this.mesSeleccionado.set(clave);
+        this.vista.set('mensual');
+    }
 
-	protected etiquetaSeveridad(alerta: ProductoAlertaStockResponse): string
-	{
-		return alerta.stockDisponible <= 0 ? 'Sin stock' : 'Stock bajo';
-	}
+    protected volverAnual(): void
+    {
+        this.vista.set('anual');
+        this.mesSeleccionado.set(null);
+    }
 
-	protected colorSeveridad(alerta: ProductoAlertaStockResponse): string
-	{
-		return alerta.stockDisponible <= 0
-			? 'bg-red-50 text-red-700'
-			: 'bg-amber-50 text-amber-700';
-	}
+    protected alturaPx(total: number, maximo: number): number
+    {
+        return Math.max(
+            total > 0 ? 4 : 2,
+            Math.round((total / maximo) * ALTO_BARRAS_PX)
+        );
+    }
 
-	private pedidosDeMes(clave: string): number
-	{
-		return this.puntos()
-			.filter((punto) => punto.fecha.startsWith(clave) && punto.routingKey === RK_CREADOS)
-			.reduce((acc, punto) => acc + punto.total, 0);
-	}
+    protected colorRoutingKey(routingKey: string | null): string
+    {
+        switch (routingKey)
+        {
+            case RK_CREADOS:
+                return 'bg-blue-50 text-blue-700';
 
-	private totalesMes(clave: string): Map<string, number>
-	{
-		const mapa = new Map<string, number>();
+            case RK_ACEPTADOS:
+                return 'bg-emerald-50 text-emerald-700';
 
-		for (const punto of this.puntos())
-		{
-			if (punto.fecha.startsWith(clave))
-				mapa.set(punto.routingKey, (mapa.get(punto.routingKey) ?? 0) + punto.total);
-		}
+            case RK_RESERVADOS:
+                return 'bg-teal-50 text-teal-700';
 
-		return mapa;
-	}
+            case RK_FALLIDOS_STOCK:
+                return 'bg-red-50 text-red-700';
 
-	private kpi(etiqueta: string, valor: number, anterior: number, detalle: string): KpiMes
-	{
-		const delta = anterior > 0 ? ((valor - anterior) / anterior) * 100 : null;
+            case RK_CANCELADOS:
+                return 'bg-amber-50 text-amber-700';
 
-		return { etiqueta, valor: valor.toLocaleString('es-CL'), delta, detalle };
-	}
+            case RK_DLQ:
+                return 'bg-rose-50 text-rose-700';
+
+            default:
+                return 'bg-[#eef2f7] text-[#4b5563]';
+        }
+    }
+
+    protected idCorto(id: string | null): string
+    {
+        if (id === null)
+            return '—';
+
+        return id.length > 8 ? `${id.slice(0, 8)}…` : id;
+    }
+
+    protected etiquetaSeveridad(alerta: AlertaStock): string
+    {
+        return alerta.stockDisponible <= 0 ? 'Sin stock' : 'Stock bajo';
+    }
+
+    protected colorSeveridad(alerta: AlertaStock): string
+    {
+        return alerta.stockDisponible <= 0
+            ? 'bg-red-50 text-red-700'
+            : 'bg-amber-50 text-amber-700';
+    }
+
+    private pedidosDeMes(clave: string): number
+    {
+        return this.puntos()
+            .filter((punto) =>
+                punto.fecha.startsWith(clave) &&
+                punto.routingKey === RK_CREADOS
+            )
+            .reduce((acc, punto) => acc + punto.total, 0);
+    }
+
+    private totalesMes(clave: string): Map<string, number>
+    {
+        const mapa = new Map<string, number>();
+
+        for (const punto of this.puntos())
+        {
+            if (punto.fecha.startsWith(clave))
+            {
+                mapa.set(
+                    punto.routingKey,
+                    (mapa.get(punto.routingKey) ?? 0) + punto.total
+                );
+            }
+        }
+
+        return mapa;
+    }
+
+    private kpi(
+        etiqueta: string,
+        valor: number,
+        anterior: number,
+        detalle: string
+    ): KpiMes
+    {
+        const delta = anterior > 0
+            ? ((valor - anterior) / anterior) * 100
+            : null;
+
+        return {
+            etiqueta,
+            valor: valor.toLocaleString('es-CL'),
+            delta,
+            detalle,
+        };
+    }
 }

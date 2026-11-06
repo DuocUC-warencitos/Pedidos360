@@ -5,6 +5,6 @@ public record MovimientoDiaResponse(
     String tipo,
     long unidades,
     long ingresos,
-    long operaciones
-) {
+    long operaciones) 
+{
 }
