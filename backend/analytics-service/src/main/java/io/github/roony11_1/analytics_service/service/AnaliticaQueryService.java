@@ -37,18 +37,20 @@ import io.github.roony11_1.analytics_service.streams.MovimientoProductoDia;
 import io.github.roony11_1.analytics_service.streams.StoreNames;
 
 @Service
-public class AnaliticaQueryService {
-
+public class AnaliticaQueryService 
+{
     private static final ZoneOffset ZONA = ZoneOffset.UTC;
     private static final String CONFIRMADO = "STOCK_CONFIRMADO";
 
     private final StreamsBuilderFactoryBean streamsFactory;
 
-    public AnaliticaQueryService(StreamsBuilderFactoryBean streamsFactory) {
+    public AnaliticaQueryService(StreamsBuilderFactoryBean streamsFactory) 
+    {
         this.streamsFactory = streamsFactory;
     }
 
-    public ResumenAnaliticaResponse resumen() {
+    public ResumenAnaliticaResponse resumen() 
+    {
         List<InventarioProducto> inventario = leerInventario();
         List<MovimientoProductoDia> movimientos = leerMovimientos();
 
@@ -77,26 +79,30 @@ public class AnaliticaQueryService {
         );
     }
 
-    public List<AlertaStockResponse> alertas() {
+    public List<AlertaStockResponse> alertas() 
+    {
         return alertasDe(leerInventario());
     }
 
     public List<TopProductoResponse> top(
         LocalDate desde,
         LocalDate hasta,
-        int limit
-    ) {
+        int limit) 
+    {
         LocalDate inicio = desde != null ? desde : LocalDate.now(ZONA).minusMonths(11).withDayOfMonth(1);
         LocalDate fin = hasta != null ? hasta : LocalDate.now(ZONA);
 
         Map<UUID, TopAcumulado> acumulados = new LinkedHashMap<>();
 
-        for (MovimientoProductoDia movimiento : leerMovimientos()) {
-            if (!CONFIRMADO.equals(movimiento.tipo())) {
+        for (MovimientoProductoDia movimiento : leerMovimientos())
+        {
+            if (!CONFIRMADO.equals(movimiento.tipo())) 
+            {
                 continue;
             }
 
-            if (!enRango(movimiento.fecha(), inicio, fin)) {
+            if (!enRango(movimiento.fecha(), inicio, fin)) 
+            {
                 continue;
             }
 
@@ -108,11 +114,13 @@ public class AnaliticaQueryService {
             acumulado.unidades += movimiento.unidades();
             acumulado.ingresos += movimiento.ingresos();
 
-            if (acumulado.nombre == null) {
+            if (acumulado.nombre == null) 
+            {
                 acumulado.nombre = movimiento.nombre();
             }
 
-            if (acumulado.sku == null) {
+            if (acumulado.sku == null) 
+            {
                 acumulado.sku = movimiento.sku();
             }
         }
@@ -139,8 +147,8 @@ public class AnaliticaQueryService {
 
     public List<MovimientoDiaResponse> movimientos(
         LocalDate desde,
-        LocalDate hasta
-    ) {
+        LocalDate hasta) 
+    {
         LocalDate inicio = desde != null ? desde : LocalDate.now(ZONA).minusMonths(11).withDayOfMonth(1);
         LocalDate fin = hasta != null ? hasta : LocalDate.now(ZONA);
 
@@ -185,21 +193,24 @@ public class AnaliticaQueryService {
     public List<AuditoriaItemResponse> auditoria(
         LocalDate desde,
         LocalDate hasta,
-        int limit
-    ) {
+        int limit) 
+    {
         LocalDate inicio = desde != null ? desde : LocalDate.now(ZONA).minusDays(30);
         LocalDate fin = hasta != null ? hasta : LocalDate.now(ZONA);
 
         Instant from = inicio.atStartOfDay(ZONA).toInstant();
         Instant to = fin.plusDays(1).atStartOfDay(ZONA).toInstant();
 
-        List<AuditoriaItem> items = conStore(() -> {
+        List<AuditoriaItem> items = conStore(() -> 
+        {
             ReadOnlyWindowStore<String, AuditoriaItem> store = auditoriaStore();
             List<AuditoriaItem> encontrados = new ArrayList<>();
 
             try (KeyValueIterator<Windowed<String>, AuditoriaItem> iterator =
-                     store.fetchAll(from, to)) {
-                while (iterator.hasNext()) {
+                     store.fetchAll(from, to)) 
+            {
+                while (iterator.hasNext()) 
+                {
                     encontrados.add(iterator.next().value);
                 }
             }
@@ -217,7 +228,8 @@ public class AnaliticaQueryService {
             .toList();
     }
 
-    public EstadoStreamsResponse estado() {
+    public EstadoStreamsResponse estado() 
+    {
         List<InventarioProducto> inventario = leerInventario();
         List<MovimientoProductoDia> movimientos = leerMovimientos();
         List<AuditoriaItemResponse> eventos = auditoria(
@@ -242,8 +254,8 @@ public class AnaliticaQueryService {
     }
 
     private List<AlertaStockResponse> alertasDe(
-        List<InventarioProducto> inventario
-    ) {
+        List<InventarioProducto> inventario) 
+    {
         return inventario.stream()
             .filter(InventarioProducto::activo)
             .filter(this::esAlerta)
@@ -264,13 +276,15 @@ public class AnaliticaQueryService {
             .toList();
     }
 
-    private boolean esAlerta(InventarioProducto producto) {
+    private boolean esAlerta(InventarioProducto producto) 
+    {
         return producto.stockDisponible() <= 0
             || (producto.stockMinimo() != null
                 && producto.stockDisponible() < producto.stockMinimo());
     }
 
-    private List<InventarioProducto> leerInventario() {
+    private List<InventarioProducto> leerInventario() 
+    {
         return conStore(() -> {
             ReadOnlyKeyValueStore<String, InventarioProducto> store =
                 inventarioStore();
@@ -286,7 +300,8 @@ public class AnaliticaQueryService {
         });
     }
 
-    private List<MovimientoProductoDia> leerMovimientos() {
+    private List<MovimientoProductoDia> leerMovimientos() 
+    {
         return conStore(() -> {
             ReadOnlyKeyValueStore<String, MovimientoProductoDia> store =
                 movimientosStore();
@@ -306,13 +321,14 @@ public class AnaliticaQueryService {
     private boolean enRango(
         String fecha,
         LocalDate desde,
-        LocalDate hasta
-    ) {
+        LocalDate hasta) 
+    {
         return fecha.compareTo(desde.toString()) >= 0
             && fecha.compareTo(hasta.toString()) <= 0;
     }
 
-    private ReadOnlyKeyValueStore<String, InventarioProducto> inventarioStore() {
+    private ReadOnlyKeyValueStore<String, InventarioProducto> inventarioStore() 
+    {
         return streams().store(
             StoreQueryParameters.fromNameAndType(
                 StoreNames.INVENTARIO,
@@ -321,7 +337,8 @@ public class AnaliticaQueryService {
         );
     }
 
-    private ReadOnlyKeyValueStore<String, MovimientoProductoDia> movimientosStore() {
+    private ReadOnlyKeyValueStore<String, MovimientoProductoDia> movimientosStore() 
+    {
         return streams().store(
             StoreQueryParameters.fromNameAndType(
                 StoreNames.MOVIMIENTOS,
@@ -330,7 +347,8 @@ public class AnaliticaQueryService {
         );
     }
 
-    private ReadOnlyWindowStore<String, AuditoriaItem> auditoriaStore() {
+    private ReadOnlyWindowStore<String, AuditoriaItem> auditoriaStore() 
+    {
         return streams().store(
             StoreQueryParameters.fromNameAndType(
                 StoreNames.AUDITORIA,
@@ -339,10 +357,12 @@ public class AnaliticaQueryService {
         );
     }
 
-    private KafkaStreams streams() {
+    private KafkaStreams streams() 
+    {
         KafkaStreams streams = streamsFactory.getKafkaStreams();
 
-        if (streams == null) {
+        if (streams == null) 
+        {
             throw new ResponseStatusException(
                 HttpStatus.SERVICE_UNAVAILABLE,
                 "Kafka Streams todavía no está listo"
@@ -352,7 +372,8 @@ public class AnaliticaQueryService {
         return streams;
     }
 
-    private <T> T conStore(Supplier<T> supplier) {
+    private <T> T conStore(Supplier<T> supplier) 
+    {
         try {
             return supplier.get();
         } catch (InvalidStateStoreException ex) {
@@ -364,7 +385,8 @@ public class AnaliticaQueryService {
         }
     }
 
-    private AuditoriaItemResponse toResponse(AuditoriaItem item) {
+    private AuditoriaItemResponse toResponse(AuditoriaItem item) 
+    {
         return new AuditoriaItemResponse(
             item.eventoId(),
             item.tipo(),
@@ -384,7 +406,8 @@ public class AnaliticaQueryService {
         );
     }
 
-    private static final class TopAcumulado {
+    private static final class TopAcumulado 
+    {
         private long unidades;
         private long ingresos;
         private String nombre;
