@@ -1,5 +1,6 @@
 package io.github.roony11_1.producto_service.service;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -68,29 +69,29 @@ public class ProductoAdminService
     {
         return productoRepository.findById(id);
     }
-    @Transactional 
-    public Producto crear(Producto producto) {
+
+    @Transactional
+    public Producto crear(Producto producto, String correlationId) {
 
         String usuarioId = getUserId();
 
-        Producto guardado = productoRepository.save(producto);
+        Producto guardado = productoRepository.saveAndFlush(producto);
 
-        ProductoAuditoriaEvent evento = new ProductoAuditoriaEvent(
-            UUID.randomUUID(),
-            guardado.getId(),
+        ProductoAuditoriaEvent evento = construirEvento(
             "PRODUCTO_CREADO",
-            Instant.now(),
-            usuarioId,
             null,
-            ProductoEvento.desde(guardado)
+            guardado,
+            usuarioId,
+            correlationId
         );
 
         kafkaEventPublisher.publicarAuditoria(evento);
 
         return guardado;
     }
+
     @Transactional
-    public Optional<Producto> actualizar(UUID id, Producto producto) {
+    public Optional<Producto> actualizar(UUID id, Producto producto, String correlationId) {
 
         return productoRepository.findById(id)
             .map(existente -> {
@@ -110,16 +111,14 @@ public class ProductoAdminService
                 existente.setStockMinimo(producto.getStockMinimo());
                 existente.setActivo(producto.isActivo());
 
-                Producto actualizado = productoRepository.save(existente);
+                Producto actualizado = productoRepository.saveAndFlush(existente);
 
-                ProductoAuditoriaEvent evento = new ProductoAuditoriaEvent(
-                    UUID.randomUUID(),
-                    actualizado.getId(),
+                ProductoAuditoriaEvent evento = construirEvento(
                     "PRODUCTO_ACTUALIZADO",
-                    Instant.now(),
-                    usuarioId,
                     estadoAnterior,
-                    ProductoEvento.desde(actualizado)
+                    actualizado,
+                    usuarioId,
+                    correlationId
                 );
 
                 kafkaEventPublisher.publicarAuditoria(evento);
@@ -127,25 +126,21 @@ public class ProductoAdminService
                 return actualizado;
             });
     }
+
     @Transactional
-     public boolean eliminar(UUID id) {
+    public boolean eliminar(UUID id, String correlationId) {
 
         return productoRepository.findById(id)
             .map(producto -> {
 
                 String usuarioId = getUserId();
 
-                ProductoEvento estadoAnterior =
-                    ProductoEvento.desde(producto);
-
-                ProductoAuditoriaEvent evento = new ProductoAuditoriaEvent(
-                    UUID.randomUUID(),
-                    producto.getId(),
+                ProductoAuditoriaEvent evento = construirEvento(
                     "PRODUCTO_ELIMINADO",
-                    Instant.now(),
+                    ProductoEvento.desde(producto),
+                    null,
                     usuarioId,
-                    estadoAnterior,
-                    null
+                    correlationId
                 );
 
                 productoRepository.delete(producto);
@@ -156,6 +151,35 @@ public class ProductoAdminService
             })
             .orElse(false);
     }
+
+    private ProductoAuditoriaEvent construirEvento(
+        String tipo,
+        ProductoEvento antes,
+        Producto productoDespues,
+        String usuarioId,
+        String correlationId
+    ) {
+        ProductoEvento despues =
+            productoDespues != null ? ProductoEvento.desde(productoDespues) : null;
+
+        UUID productoId = despues != null ? despues.id() : antes.id();
+        Long version = despues != null ? despues.version() : antes.version();
+        String baseId = productoId + ":" + version + ":" + tipo;
+
+        return new ProductoAuditoriaEvent(
+            UUID.nameUUIDFromBytes(baseId.getBytes(StandardCharsets.UTF_8)),
+            ProductoAuditoriaEvent.SCHEMA_VERSION,
+            tipo,
+            productoId,
+            Instant.now(),
+            usuarioId,
+            correlationId,
+            version,
+            antes,
+            despues
+        );
+    }
+
     private String getUserId() {
 
         var authentication =
@@ -172,4 +196,3 @@ public class ProductoAdminService
         return jwt.getSubject();
     }
 }
-

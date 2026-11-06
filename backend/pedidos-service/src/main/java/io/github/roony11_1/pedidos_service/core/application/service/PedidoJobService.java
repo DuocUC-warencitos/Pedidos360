@@ -67,7 +67,7 @@ public class PedidoJobService implements ProcesarPedidoJobUseCase
             if (userId == null)
                 userId = pedido.getUserId();
 
-            productoClient.reservar(job.getIdempotencyKey(), new ProductoClient.ReservaStockRequest(
+            productoClient.reservar(job.getIdempotencyKey(), pedido.getId().toString(), new ProductoClient.ReservaStockRequest(
                 pedido.getId(),
                 pedido.getProductos().stream()
                     .map(pp -> new ProductoClient.ReservaStockRequest.Item(

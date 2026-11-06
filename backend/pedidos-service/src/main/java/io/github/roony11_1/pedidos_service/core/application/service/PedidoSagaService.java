@@ -150,7 +150,7 @@ public class PedidoSagaService
             
             try
             {
-                productoClientResiliente.liberar(liberarReq);
+                productoClientResiliente.liberar(pedidoId.toString(), liberarReq);
                 log.info("Stock liberado para pedidoId={} estado={} items={}", pedidoId, pedido.getEstadoPedido(), liberarReq.items().size());
             }
             catch (Exception ex)

@@ -5,10 +5,15 @@ import java.util.UUID;
 
 public record ProductoAuditoriaEvent(
     UUID eventoId,
+    int schemaVersion,
+    String tipo,
     UUID productoId,
-    String accion,
-    Instant fechaHora,
+    Instant ocurridoEn,
     String usuarioId,
-    ProductoEvento estadoAnterior,
-    ProductoEvento estadoActual
-) {}
+    String correlationId,
+    Long version,
+    ProductoEvento antes,
+    ProductoEvento despues
+) {
+    public static final int SCHEMA_VERSION = 1;
+}

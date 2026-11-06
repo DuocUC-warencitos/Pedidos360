@@ -12,13 +12,20 @@ import org.springframework.web.bind.annotation.RequestHeader;
 public interface ProductoClient 
 {
     @PostMapping("/api/v1/productos/stock/reservar")
-    ReservaStockResponse reservar(@RequestHeader("Idempotency-Key") String idempotencyKey, @RequestBody ReservaStockRequest request);
+    ReservaStockResponse reservar(
+        @RequestHeader("Idempotency-Key") String idempotencyKey,
+        @RequestHeader("X-Correlation-Id") String correlationId,
+        @RequestBody ReservaStockRequest request);
 
     @PostMapping("/api/v1/productos/stock/liberar")
-    void liberar(@RequestBody LiberarStockRequest request);
+    void liberar(
+        @RequestHeader("X-Correlation-Id") String correlationId,
+        @RequestBody LiberarStockRequest request);
 
     @PostMapping("/api/v1/productos/stock/confirmar")
-    void confirmar(@RequestBody ConfirmarStockRequest request);
+    void confirmar(
+        @RequestHeader("X-Correlation-Id") String correlationId,
+        @RequestBody ConfirmarStockRequest request);
 
     @PostMapping("/api/v1/productos/detalles")
     List<ProductoSnapshotResponse> obtenerDetalles(@RequestBody List<UUID> productoIds);

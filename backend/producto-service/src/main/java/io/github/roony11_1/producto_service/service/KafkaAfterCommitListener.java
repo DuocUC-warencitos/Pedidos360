@@ -7,7 +7,7 @@ import org.springframework.transaction.event.TransactionalEventListener;
 
 import io.github.roony11_1.producto_service.config.KafkaTopicConfig;
 import io.github.roony11_1.producto_service.dto.ProductoAuditoriaEvent;
-import io.github.roony11_1.producto_service.dto.ProductoStockEvent;
+import io.github.roony11_1.producto_service.dto.StockOperacionEvento;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,28 +24,34 @@ public class KafkaAfterCommitListener {
         String key = evento.productoId().toString();
 
         kafkaTemplate.send(
-            KafkaTopicConfig.TOPIC_AUDITORIA,
+            KafkaTopicConfig.TOPIC_PRODUCTOS,
             key,
             evento
         );
         kafkaTemplate.send(
-            KafkaTopicConfig.TOPIC_REPORTERIA,
+            KafkaTopicConfig.TOPIC_AUDITORIA,
             key,
             evento
         );
 
         log.info(
-            "Evento de auditoría enviado a Kafka. eventoId={} productoId={} accion={}",
+            "Evento de producto enviado a Kafka. eventoId={} productoId={} tipo={}",
             evento.eventoId(),
             evento.productoId(),
-            evento.accion()
+            evento.tipo()
         );
     }
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
-    public void procesarStock(ProductoStockEvent evento) {
+    public void procesarStock(StockOperacionEvento evento) {
 
-        String key = evento.productoId().toString();
+        String key = evento.pedidoId().toString();
+
+        kafkaTemplate.send(
+            KafkaTopicConfig.TOPIC_STOCK,
+            key,
+            evento
+        );
 
         kafkaTemplate.send(
             KafkaTopicConfig.TOPIC_AUDITORIA,
@@ -53,17 +59,12 @@ public class KafkaAfterCommitListener {
             evento
         );
 
-        kafkaTemplate.send(
-            KafkaTopicConfig.TOPIC_REPORTERIA,
-            key,
-            evento
-        );
-
         log.info(
-            "Evento de stock enviado a Kafka. eventoId={} productoId={} estado={}",
+            "Evento de stock enviado a Kafka. eventoId={} pedidoId={} tipo={} items={}",
             evento.eventoId(),
-            evento.productoId(),
-            evento.estadoReserva()
+            evento.pedidoId(),
+            evento.tipo(),
+            evento.items().size()
         );
     }
 }

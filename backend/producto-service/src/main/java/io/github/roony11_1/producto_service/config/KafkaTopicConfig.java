@@ -9,26 +9,37 @@ import org.springframework.kafka.config.TopicBuilder;
 @Configuration
 public class KafkaTopicConfig {
 
-    public static final String TOPIC_AUDITORIA =
-        "pedidos360.productos.auditoria";
+    public static final String TOPIC_PRODUCTOS =
+        "productos360.eventos.productos";
 
-    public static final String TOPIC_REPORTERIA =
-        "pedidos360.eventos.reporteria";
+    public static final String TOPIC_STOCK =
+        "productos360.eventos.stock";
+
+    public static final String TOPIC_AUDITORIA =
+        "productos360.eventos.auditoria";
 
     @Value("${app.kafka.replication-factor:1}")
     private int replicationFactor;
 
     @Bean
-    public NewTopic productosAuditoriaTopic() {
-        return TopicBuilder.name(TOPIC_AUDITORIA)
+    public NewTopic productosTopic() {
+        return TopicBuilder.name(TOPIC_PRODUCTOS)
             .partitions(3)
             .replicas(replicationFactor)
             .build();
     }
 
     @Bean
-    public NewTopic eventosReporteriaTopic() {
-        return TopicBuilder.name(TOPIC_REPORTERIA)
+    public NewTopic stockTopic() {
+        return TopicBuilder.name(TOPIC_STOCK)
+            .partitions(3)
+            .replicas(replicationFactor)
+            .build();
+    }
+
+    @Bean
+    public NewTopic auditoriaTopic() {
+        return TopicBuilder.name(TOPIC_AUDITORIA)
             .partitions(3)
             .replicas(replicationFactor)
             .build();

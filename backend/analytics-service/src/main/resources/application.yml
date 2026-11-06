@@ -1,16 +1,40 @@
 server:
     port: ${SERVER_PORT:8080}
+    shutdown: graceful
 
-    spring:
-        application:
-            name: analytics-service
-        security:
-            oauth2:
-                resourceserver:
-                    jwt:
-                        issuer-uri: ${JWT_ISSUER_URI:}
-        jackson:
-            default-property-inclusion: non_null
+spring:
+    application:
+        name: analytics-service
+    security:
+        oauth2:
+            resourceserver:
+                jwt:
+                    issuer-uri: ${JWT_ISSUER_URI:}
+    jackson:
+        default-property-inclusion: non_null
+
+    kafka:
+        bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+        producer:
+            key-serializer: org.apache.kafka.common.serialization.StringSerializer
+            value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+        streams:
+            application-id: analytics-service
+            bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+            state-dir: ${KAFKA_STREAMS_STATE_DIR:/tmp/kafka-streams}
+            auto-startup: true
+            properties:
+                processing.guarantee: at_least_once
+                auto.offset.reset: earliest
+                commit.interval.ms: 1000
+                num.stream.threads: 1
+                default.key.serde: org.apache.kafka.common.serialization.Serdes$StringSerde
+
+management:
+    endpoints:
+        web:
+            exposure:
+                include: health,info
 
 app:
     security:

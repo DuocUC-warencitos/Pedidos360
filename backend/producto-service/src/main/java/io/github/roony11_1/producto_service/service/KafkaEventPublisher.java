@@ -4,7 +4,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 
 import io.github.roony11_1.producto_service.dto.ProductoAuditoriaEvent;
-import io.github.roony11_1.producto_service.dto.ProductoStockEvent;
+import io.github.roony11_1.producto_service.dto.StockOperacionEvento;
 import lombok.RequiredArgsConstructor;
 
 @Component
@@ -17,7 +17,7 @@ public class KafkaEventPublisher {
         applicationEventPublisher.publishEvent(evento);
     }
 
-    public void publicarStock(ProductoStockEvent evento) {
+    public void publicarStock(StockOperacionEvento evento) {
         applicationEventPublisher.publishEvent(evento);
     }
 }

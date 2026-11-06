@@ -21,11 +21,11 @@ public class ProductoClientResiliente
 
     @CircuitBreaker(name = "productoService", fallbackMethod = "reservarFallback")
     @Retry(name = "productoService")
-    public ReservaStockResponse reservar(String idempotencyKey, ReservaStockRequest req)
+    public ReservaStockResponse reservar(String idempotencyKey, String correlationId, ReservaStockRequest req)
     {
         try
         {
-            return productoClient.reservar(idempotencyKey, req);
+            return productoClient.reservar(idempotencyKey, correlationId, req);
         }
         catch (FeignException ex)
         {
@@ -37,11 +37,11 @@ public class ProductoClientResiliente
 
     @CircuitBreaker(name = "productoService", fallbackMethod = "liberarFallback")
     @Retry(name = "productoService")
-    public void liberar(ProductoClient.LiberarStockRequest req)
+    public void liberar(String correlationId, ProductoClient.LiberarStockRequest req)
     {
         try
         {
-            productoClient.liberar(req);
+            productoClient.liberar(correlationId, req);
         }
         catch (FeignException ex)
         {
@@ -53,11 +53,11 @@ public class ProductoClientResiliente
 
     @CircuitBreaker(name = "productoService", fallbackMethod = "confirmarFallback")
     @Retry(name = "productoService")
-    public void confirmar(ProductoClient.ConfirmarStockRequest req)
+    public void confirmar(String correlationId, ProductoClient.ConfirmarStockRequest req)
     {
         try
         {
-            productoClient.confirmar(req);
+            productoClient.confirmar(correlationId, req);
         }
         catch (FeignException ex)
         {
@@ -81,17 +81,17 @@ public class ProductoClientResiliente
 
     // --- fallbacks ---
 
-    private ReservaStockResponse reservarFallback(String key, ReservaStockRequest req, Throwable t) 
+    private ReservaStockResponse reservarFallback(String key, String correlationId, ReservaStockRequest req, Throwable t) 
     {
         throw new ProductoServiceUnavailableException("producto-service no disponible al reservar stock: " + t.getMessage(), t);
     }
 
-    private void liberarFallback(ProductoClient.LiberarStockRequest req, Throwable t) 
+    private void liberarFallback(String correlationId, ProductoClient.LiberarStockRequest req, Throwable t) 
     {
         throw new ProductoServiceUnavailableException("producto-service no disponible al liberar stock: " + t.getMessage(), t);
     }
 
-    private void confirmarFallback(ProductoClient.ConfirmarStockRequest req, Throwable t)
+    private void confirmarFallback(String correlationId, ProductoClient.ConfirmarStockRequest req, Throwable t)
     {
         throw new ProductoServiceUnavailableException("producto-service no disponible al confirmar stock: " + t.getMessage(), t);
     }

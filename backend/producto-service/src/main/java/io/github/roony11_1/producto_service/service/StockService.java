@@ -1,5 +1,6 @@
 package io.github.roony11_1.producto_service.service;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,9 +11,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import io.github.roony11_1.producto_service.dto.ConfirmarStockRequest;
 import io.github.roony11_1.producto_service.dto.LiberarStockRequest;
-import io.github.roony11_1.producto_service.dto.ProductoStockEvent;
 import io.github.roony11_1.producto_service.dto.ReservaStockRequest;
 import io.github.roony11_1.producto_service.dto.ReservaStockResponse;
+import io.github.roony11_1.producto_service.dto.StockItemEvento;
+import io.github.roony11_1.producto_service.dto.StockOperacionEvento;
 import io.github.roony11_1.error.core.exceptions.NotFoundException;
 import io.github.roony11_1.producto_service.exception.StockInsuficienteException;
 import io.github.roony11_1.producto_service.model.EstadoReserva;
@@ -34,6 +36,7 @@ public class StockService {
     @Transactional
     public ReservaStockResponse reservar(
         String idempotencyKey,
+        String correlationId,
         ReservaStockRequest request
     ) {
 
@@ -44,7 +47,7 @@ public class StockService {
             return toResponse(previa.get(), true);
         }
 
-        List<ProductoStockEvent> eventos = new ArrayList<>();
+        List<StockItemEvento> items = new ArrayList<>();
 
         for (var producto : request.items()) {
 
@@ -61,15 +64,22 @@ public class StockService {
                 );
             }
 
+            int disponibleAntes = p.getStockDisponible();
+            int reservadoAntes = p.getStockReservado();
+
             p.reservarStock(producto.cantidad());
 
-            eventos.add(new ProductoStockEvent(
-                UUID.randomUUID(),
-                EstadoReserva.RESERVADO,
+            items.add(new StockItemEvento(
                 p.getId(),
+                p.getNombre(),
+                p.getSku(),
+                p.getCategoria(),
+                p.getPrecio(),
+                producto.cantidad(),
+                disponibleAntes,
                 p.getStockDisponible(),
-                p.getStockReservado(),
-                Instant.now()
+                reservadoAntes,
+                p.getStockReservado()
             ));
         }
 
@@ -81,13 +91,19 @@ public class StockService {
 
         reserva = reservaStockRepository.save(reserva);
 
-        eventos.forEach(kafkaEventPublisher::publicarStock);
+        kafkaEventPublisher.publicarStock(construirEvento(
+            "STOCK_RESERVADO",
+            request.pedidoId(),
+            idempotencyKey,
+            correlationId,
+            items
+        ));
 
         return toResponse(reserva, false);
     }
 
     @Transactional
-    public void liberar(LiberarStockRequest request) {
+    public void liberar(String correlationId, LiberarStockRequest request) {
 
         var reservaOpt =
             reservaStockRepository.findByPedidoId(request.pedidoId());
@@ -119,7 +135,7 @@ public class StockService {
             return;
         }
 
-        List<ProductoStockEvent> eventos = new ArrayList<>();
+        List<StockItemEvento> items = new ArrayList<>();
 
         for (var item : request.items()) {
 
@@ -128,22 +144,35 @@ public class StockService {
                     new NotFoundException("Producto", item.productoId())
                 );
 
+            int disponibleAntes = p.getStockDisponible();
+            int reservadoAntes = p.getStockReservado();
+
             p.liberarStock(item.cantidad());
 
-            eventos.add(new ProductoStockEvent(
-                UUID.randomUUID(),
-                EstadoReserva.LIBERADO,
+            items.add(new StockItemEvento(
                 p.getId(),
+                p.getNombre(),
+                p.getSku(),
+                p.getCategoria(),
+                p.getPrecio(),
+                item.cantidad(),
+                disponibleAntes,
                 p.getStockDisponible(),
-                p.getStockReservado(),
-                Instant.now()
+                reservadoAntes,
+                p.getStockReservado()
             ));
         }
 
         reserva.setEstado(EstadoReserva.LIBERADO);
         reservaStockRepository.save(reserva);
 
-        eventos.forEach(kafkaEventPublisher::publicarStock);
+        kafkaEventPublisher.publicarStock(construirEvento(
+            "STOCK_LIBERADO",
+            request.pedidoId(),
+            reserva.getIdempotencyKey(),
+            correlationId,
+            items
+        ));
 
         log.info(
             "Stock liberado pedidoId={} items={}",
@@ -153,7 +182,7 @@ public class StockService {
     }
 
     @Transactional
-    public void confirmar(ConfirmarStockRequest request) {
+    public void confirmar(String correlationId, ConfirmarStockRequest request) {
 
         var reservaOpt =
             reservaStockRepository.findByPedidoId(request.pedidoId());
@@ -185,7 +214,7 @@ public class StockService {
             return;
         }
 
-        List<ProductoStockEvent> eventos = new ArrayList<>();
+        List<StockItemEvento> items = new ArrayList<>();
 
         for (var item : request.items()) {
 
@@ -194,28 +223,72 @@ public class StockService {
                     new NotFoundException("Producto", item.productoId())
                 );
 
+            int disponibleAntes = p.getStockDisponible();
+            int reservadoAntes = p.getStockReservado();
+
             p.confirmarStock(item.cantidad());
 
-            eventos.add(new ProductoStockEvent(
-                UUID.randomUUID(),
-                EstadoReserva.CONFIRMADO,
+            items.add(new StockItemEvento(
                 p.getId(),
+                p.getNombre(),
+                p.getSku(),
+                p.getCategoria(),
+                p.getPrecio(),
+                item.cantidad(),
+                disponibleAntes,
                 p.getStockDisponible(),
-                p.getStockReservado(),
-                Instant.now()
+                reservadoAntes,
+                p.getStockReservado()
             ));
         }
 
         reserva.setEstado(EstadoReserva.CONFIRMADO);
         reservaStockRepository.save(reserva);
 
-        eventos.forEach(kafkaEventPublisher::publicarStock);
+        kafkaEventPublisher.publicarStock(construirEvento(
+            "STOCK_CONFIRMADO",
+            request.pedidoId(),
+            reserva.getIdempotencyKey(),
+            correlationId,
+            items
+        ));
 
         log.info(
             "Stock confirmado pedidoId={} items={}",
             request.pedidoId(),
             request.items().size()
         );
+    }
+
+    private StockOperacionEvento construirEvento(
+        String tipo,
+        UUID pedidoId,
+        String idempotencyKey,
+        String correlationId,
+        List<StockItemEvento> items
+    ) {
+        String operacionId = pedidoId + ":" + tipo + ":" + idempotencyKey;
+
+        return new StockOperacionEvento(
+            UUID.nameUUIDFromBytes(operacionId.getBytes(StandardCharsets.UTF_8)),
+            StockOperacionEvento.SCHEMA_VERSION,
+            tipo,
+            operacionId,
+            pedidoId,
+            idempotencyKey,
+            correlacion(correlationId, pedidoId),
+            Instant.now(),
+            StockOperacionEvento.ORIGEN,
+            List.copyOf(items)
+        );
+    }
+
+    private String correlacion(String correlationId, UUID pedidoId) {
+        if (correlationId != null && !correlationId.isBlank()) {
+            return correlationId;
+        }
+
+        return pedidoId.toString();
     }
 
     private ReservaStockResponse toResponse(

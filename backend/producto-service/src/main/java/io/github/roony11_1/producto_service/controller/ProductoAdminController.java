@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -76,17 +77,22 @@ public class ProductoAdminController
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
-    public ResponseEntity<ProductoResponse> crear(@Valid @RequestBody ProductoRequest request)
+    public ResponseEntity<ProductoResponse> crear(
+        @RequestHeader(value = "X-Correlation-Id", required = false) String correlationId,
+        @Valid @RequestBody ProductoRequest request)
     {
         Producto producto = mappers.requestToProducto.apply(request);
-        Producto guardado = productoAdminService.crear(producto);
+        Producto guardado = productoAdminService.crear(producto, correlationId);
         ProductoResponse response = mappers.productoToResponse.apply(guardado);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'OPERADOR')")
-    public ResponseEntity<ProductoResponse> actualizar(@PathVariable UUID id, @jakarta.validation.Valid @RequestBody ProductoRequest request)
+    public ResponseEntity<ProductoResponse> actualizar(
+        @PathVariable UUID id,
+        @RequestHeader(value = "X-Correlation-Id", required = false) String correlationId,
+        @jakarta.validation.Valid @RequestBody ProductoRequest request)
     {
         Producto producto = mappers.requestToProducto.apply(request);
 
@@ -99,7 +105,7 @@ public class ProductoAdminController
             );
         }
 
-        return productoAdminService.actualizar(id, producto)
+        return productoAdminService.actualizar(id, producto, correlationId)
             .map(mappers.productoToResponse::apply)
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
@@ -107,9 +113,11 @@ public class ProductoAdminController
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> eliminar(@PathVariable UUID id)
+    public ResponseEntity<Void> eliminar(
+        @PathVariable UUID id,
+        @RequestHeader(value = "X-Correlation-Id", required = false) String correlationId)
     {
-        boolean eliminado = productoAdminService.eliminar(id);
+        boolean eliminado = productoAdminService.eliminar(id, correlationId);
         if (!eliminado)
             return ResponseEntity.notFound().build();
         

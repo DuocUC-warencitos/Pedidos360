@@ -166,7 +166,7 @@ public class PedidoService
 
                 try 
                 {
-                    productoClientResiliente.liberar(liberarReq);
+                    productoClientResiliente.liberar(pedido.getId().toString(), liberarReq);
                     log.info("Stock liberado deleteAll pedidoId={} estado={} items={}", pedido.getId(), pedido.getEstadoPedido(), liberarReq.items().size());
                 } 
                 catch (Exception ex) 
@@ -196,7 +196,7 @@ public class PedidoService
                     .toList()
             );
 
-            productoClientResiliente.confirmar(confirmarReq);
+            productoClientResiliente.confirmar(pedido.getId().toString(), confirmarReq);
             log.info("Stock confirmado pedidoId={} al avanzar a {} items={}", pedido.getId(), siguiente, confirmarReq.items().size());
         }
 
