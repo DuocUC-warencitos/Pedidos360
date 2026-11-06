@@ -10,6 +10,6 @@ public record MovimientoProductoDia(
     String tipo,
     long unidades,
     long ingresos,
-    long operaciones
-) {
+    long operaciones) 
+{
 }

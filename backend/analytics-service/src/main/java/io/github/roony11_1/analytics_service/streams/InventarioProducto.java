@@ -14,6 +14,6 @@ public record InventarioProducto(
     Integer stockMinimo,
     boolean activo,
     Instant actualizadoEn,
-    Long version
-) {
+    Long version) 
+{
 }

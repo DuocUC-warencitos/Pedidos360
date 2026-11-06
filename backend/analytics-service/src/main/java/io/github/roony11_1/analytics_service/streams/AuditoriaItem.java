@@ -18,6 +18,6 @@ public record AuditoriaItem(
     Integer stockReservadoDespues,
     Instant ocurridoEn,
     String correlationId,
-    String usuarioId
-) {
+    String usuarioId) 
+{
 }

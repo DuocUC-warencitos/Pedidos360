@@ -11,8 +11,8 @@ import org.apache.kafka.streams.state.WindowStore;
 import io.github.roony11_1.analytics_service.dto.StockItemEvento;
 import io.github.roony11_1.analytics_service.dto.StockItemProcesable;
 
-public class StockItemProcessor implements Processor<String, StockItemProcesable, Void, Void> {
-
+public class StockItemProcessor implements Processor<String, StockItemProcesable, Void, Void> 
+{
     private final String inventarioStoreName;
     private final String dedupStoreName;
     private final String movimientosStoreName;
@@ -27,8 +27,8 @@ public class StockItemProcessor implements Processor<String, StockItemProcesable
         String inventarioStoreName,
         String dedupStoreName,
         String movimientosStoreName,
-        String auditoriaStoreName
-    ) {
+        String auditoriaStoreName) 
+    {
         this.inventarioStoreName = inventarioStoreName;
         this.dedupStoreName = dedupStoreName;
         this.movimientosStoreName = movimientosStoreName;
@@ -36,7 +36,8 @@ public class StockItemProcessor implements Processor<String, StockItemProcesable
     }
 
     @Override
-    public void init(ProcessorContext<Void, Void> context) {
+    public void init(ProcessorContext<Void, Void> context) 
+    {
         this.inventario = context.getStateStore(inventarioStoreName);
         this.dedup = context.getStateStore(dedupStoreName);
         this.movimientos = context.getStateStore(movimientosStoreName);
@@ -44,10 +45,12 @@ public class StockItemProcessor implements Processor<String, StockItemProcesable
     }
 
     @Override
-    public void process(Record<String, StockItemProcesable> record) {
+    public void process(Record<String, StockItemProcesable> record) 
+    {
         StockItemProcesable procesable = record.value();
 
-        if (procesable == null || procesable.item() == null) {
+        if (procesable == null || procesable.item() == null) 
+        {
             return;
         }
 
@@ -55,7 +58,8 @@ public class StockItemProcessor implements Processor<String, StockItemProcesable
         String productoKey = item.productoId().toString();
         String dedupKey = procesable.operacionId() + "|" + productoKey;
 
-        if (dedup.get(dedupKey) != null) {
+        if (dedup.get(dedupKey) != null) 
+        {
             return;
         }
 
@@ -69,8 +73,8 @@ public class StockItemProcessor implements Processor<String, StockItemProcesable
     private void actualizarInventario(
         StockItemProcesable procesable,
         StockItemEvento item,
-        String productoKey
-    ) {
+        String productoKey) 
+    {
         InventarioProducto existente = inventario.get(productoKey);
 
         inventario.put(
@@ -94,8 +98,8 @@ public class StockItemProcessor implements Processor<String, StockItemProcesable
     private void actualizarMovimiento(
         StockItemProcesable procesable,
         StockItemEvento item,
-        String productoKey
-    ) {
+        String productoKey) 
+    {
         String fecha = procesable.ocurridoEn()
             .atZone(ZoneOffset.UTC)
             .toLocalDate()
@@ -136,8 +140,8 @@ public class StockItemProcessor implements Processor<String, StockItemProcesable
     private void registrarAuditoria(
         StockItemProcesable procesable,
         StockItemEvento item,
-        String productoKey
-    ) {
+        String productoKey) 
+    {
         AuditoriaItem auditoriaItem = new AuditoriaItem(
             procesable.eventoId(),
             procesable.tipo(),
@@ -163,15 +167,18 @@ public class StockItemProcessor implements Processor<String, StockItemProcesable
         );
     }
 
-    private String nombre(InventarioProducto existente) {
+    private String nombre(InventarioProducto existente) 
+    {
         return existente != null ? existente.nombre() : null;
     }
 
-    private String sku(InventarioProducto existente) {
+    private String sku(InventarioProducto existente) 
+    {
         return existente != null ? existente.sku() : null;
     }
 
-    private String categoria(InventarioProducto existente) {
+    private String categoria(InventarioProducto existente) 
+    {
         return existente != null ? existente.categoria() : null;
     }
 }

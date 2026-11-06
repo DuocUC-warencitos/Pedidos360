@@ -9,8 +9,8 @@ import org.apache.kafka.streams.state.WindowStore;
 import io.github.roony11_1.analytics_service.dto.ProductoAuditoriaEvent;
 import io.github.roony11_1.analytics_service.dto.ProductoEvento;
 
-public class ProductoProcessor implements Processor<String, ProductoAuditoriaEvent, Void, Void> {
-
+public class ProductoProcessor implements Processor<String, ProductoAuditoriaEvent, Void, Void> 
+{
     private final String inventarioStoreName;
     private final String dedupStoreName;
     private final String auditoriaStoreName;
@@ -22,32 +22,36 @@ public class ProductoProcessor implements Processor<String, ProductoAuditoriaEve
     public ProductoProcessor(
         String inventarioStoreName,
         String dedupStoreName,
-        String auditoriaStoreName
-    ) {
+        String auditoriaStoreName) 
+    {
         this.inventarioStoreName = inventarioStoreName;
         this.dedupStoreName = dedupStoreName;
         this.auditoriaStoreName = auditoriaStoreName;
     }
 
     @Override
-    public void init(ProcessorContext<Void, Void> context) {
+    public void init(ProcessorContext<Void, Void> context) 
+    {
         this.inventario = context.getStateStore(inventarioStoreName);
         this.dedup = context.getStateStore(dedupStoreName);
         this.auditoria = context.getStateStore(auditoriaStoreName);
     }
 
     @Override
-    public void process(Record<String, ProductoAuditoriaEvent> record) {
+    public void process(Record<String, ProductoAuditoriaEvent> record) 
+    {
         ProductoAuditoriaEvent evento = record.value();
 
-        if (evento == null || evento.productoId() == null) {
+        if (evento == null || evento.productoId() == null) 
+        {
             return;
         }
 
         String productoKey = evento.productoId().toString();
         String dedupKey = productoKey + "|" + evento.version() + "|" + evento.tipo();
 
-        if (dedup.get(dedupKey) != null) {
+        if (dedup.get(dedupKey) != null) 
+        {
             return;
         }
 
@@ -59,12 +63,14 @@ public class ProductoProcessor implements Processor<String, ProductoAuditoriaEve
 
     private void actualizarInventario(
         ProductoAuditoriaEvent evento,
-        String productoKey
-    ) {
+        String productoKey) 
+    {
         InventarioProducto existente = inventario.get(productoKey);
 
-        if (evento.despues() != null) {
-            if (esEventoViejo(evento, existente)) {
+        if (evento.despues() != null) 
+        {
+            if (esEventoViejo(evento, existente)) 
+            {
                 return;
             }
 
@@ -116,15 +122,17 @@ public class ProductoProcessor implements Processor<String, ProductoAuditoriaEve
 
     private boolean esEventoViejo(
         ProductoAuditoriaEvent evento,
-        InventarioProducto existente
-    ) {
-        if (existente == null) {
+        InventarioProducto existente) 
+    {
+        if (existente == null) 
+        {
             return false;
         }
 
         if (existente.version() != null
             && evento.version() != null
-            && evento.version() <= existente.version()) {
+            && evento.version() <= existente.version()) 
+        {
             return true;
         }
 
@@ -135,13 +143,14 @@ public class ProductoProcessor implements Processor<String, ProductoAuditoriaEve
 
     private void registrarAuditoria(
         ProductoAuditoriaEvent evento,
-        String productoKey
-    ) {
+        String productoKey) 
+    {
         ProductoEvento antes = evento.antes();
         ProductoEvento despues = evento.despues();
         ProductoEvento referencia = despues != null ? despues : antes;
 
-        if (referencia == null) {
+        if (referencia == null) 
+        {
             return;
         }
 
