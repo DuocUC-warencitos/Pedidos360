@@ -1,10 +1,13 @@
-
 import { CurrencyPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { Component, computed, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import {
     useAlertasAnaliticasQuery,
+    useAuditoriaQuery,
+    useEstadoStreamsQuery,
+    useMovimientosQuery,
+    useResumenAnaliticasQuery,
     useTopProductosQuery,
 } from '../data/analiticas.queries';
 import {
@@ -13,7 +16,6 @@ import {
     useUltimosEventosQuery,
 } from '../data/dashboard.queries';
 import {
-    AlertaStock,
     DesgloseTipo,
     DiaAgrupado,
     EventoReciente,
@@ -57,7 +59,7 @@ function claveDeMes(fecha: Date): string
 @Component({
     selector: 'app-dashboard-page',
     standalone: true,
-    imports: [DatePipe, DecimalPipe, CurrencyPipe, RouterLink],
+    imports: [DatePipe, DecimalPipe, CurrencyPipe],
     templateUrl: './dashboard-page.html',
 })
 export class DashboardPage
@@ -89,17 +91,25 @@ export class DashboardPage
         };
     });
 
-    // RabbitMQ
+    // RabbitMQ: se mantienen las fuentes actuales de estas secciones.
     private readonly diariasQuery = useMetricasDiariasQuery(MESES_VENTANA);
     private readonly ultimosQuery = useUltimosEventosQuery(LIMITE_ULTIMOS);
     private readonly overviewQuery = useRabbitOverviewQuery();
 
-    // Analytics Service
+    // Analytics: consultas del servicio de analíticas.
+    private readonly resumenAnaliticasQuery = useResumenAnaliticasQuery();
+    private readonly alertasAnaliticasQuery = useAlertasAnaliticasQuery();
     private readonly rankingQuery = useTopProductosQuery(
         () => this.periodoRanking()
     );
-
-    private readonly alertasQuery = useAlertasAnaliticasQuery();
+    private readonly movimientosQuery = useMovimientosQuery(
+        () => this.periodoRanking()
+    );
+    private readonly auditoriaQuery = useAuditoriaQuery(
+        () => this.periodoRanking(),
+        LIMITE_ULTIMOS
+    );
+    private readonly estadoStreamsQuery = useEstadoStreamsQuery();
 
     protected readonly puntos = computed(() =>
         this.diariasQuery.data() ?? []
@@ -235,56 +245,57 @@ export class DashboardPage
             : 0;
 
         return [
-            this.kpi(
-                'Pedidos creados',
-                creados,
-                anterior.get(RK_CREADOS) ?? 0,
-                'Jobs encolados'
-            ),
-            this.kpi(
-                'Pedidos aceptados',
-                aceptados,
-                anterior.get(RK_ACEPTADOS) ?? 0,
-                'Listos para entrega'
-            ),
+            this.kpi('Pedidos creados', creados, anterior.get(RK_CREADOS) ?? 0, 'Jobs encolados'),
+            this.kpi('Pedidos aceptados', aceptados, anterior.get(RK_ACEPTADOS) ?? 0, 'Listos para entrega'),
             {
                 etiqueta: 'Tasa de aceptación',
                 valor: `${tasa.toLocaleString('es-CL', { maximumFractionDigits: 1 })}%`,
                 delta: null,
                 detalle: 'Aceptados / creados del mes',
             },
-            this.kpi(
-                'Reservas de stock',
-                actual.get(RK_RESERVADOS) ?? 0,
-                anterior.get(RK_RESERVADOS) ?? 0,
-                'Stock confirmado'
-            ),
-            this.kpi(
-                'Fallos de stock',
-                actual.get(RK_FALLIDOS_STOCK) ?? 0,
-                anterior.get(RK_FALLIDOS_STOCK) ?? 0,
-                'Sin stock disponible'
-            ),
-            this.kpi(
-                'Cancelaciones',
-                actual.get(RK_CANCELADOS) ?? 0,
-                anterior.get(RK_CANCELADOS) ?? 0,
-                'Con compensación'
-            ),
-            this.kpi(
-                'Fallos transitorios',
-                actual.get(RK_DLQ) ?? 0,
-                anterior.get(RK_DLQ) ?? 0,
-                'Enviados a DLQ'
-            ),
-            this.kpi(
-                'Total eventos',
-                totalActual,
-                totalAnterior,
-                'Todos los tipos'
-            ),
+            this.kpi('Reservas de stock', actual.get(RK_RESERVADOS) ?? 0, anterior.get(RK_RESERVADOS) ?? 0, 'Stock confirmado'),
+            this.kpi('Fallos de stock', actual.get(RK_FALLIDOS_STOCK) ?? 0, anterior.get(RK_FALLIDOS_STOCK) ?? 0, 'Sin stock disponible'),
+            this.kpi('Cancelaciones', actual.get(RK_CANCELADOS) ?? 0, anterior.get(RK_CANCELADOS) ?? 0, 'Con compensación'),
+            this.kpi('Fallos transitorios', actual.get(RK_DLQ) ?? 0, anterior.get(RK_DLQ) ?? 0, 'Enviados a DLQ'),
+            this.kpi('Total eventos', totalActual, totalAnterior, 'Todos los tipos'),
         ];
     });
+
+    protected readonly resumenAnaliticas = computed(() =>
+        this.resumenAnaliticasQuery.data() ?? null
+    );
+
+    protected readonly alertasAnaliticas = computed(() =>
+        this.alertasAnaliticasQuery.data() ?? []
+    );
+
+    protected readonly alertasAnaliticasCargando = computed(() =>
+        this.alertasAnaliticasQuery.isPending()
+    );
+
+    protected readonly movimientos = computed(() =>
+        this.movimientosQuery.data() ?? []
+    );
+
+    protected readonly movimientosCargando = computed(() =>
+        this.movimientosQuery.isPending()
+    );
+
+    protected readonly auditoria = computed(() =>
+        this.auditoriaQuery.data() ?? []
+    );
+
+    protected readonly auditoriaCargando = computed(() =>
+        this.auditoriaQuery.isPending()
+    );
+
+    protected readonly estadoStreams = computed(() =>
+        this.estadoStreamsQuery.data() ?? null
+    );
+
+    protected readonly estadoStreamsCargando = computed(() =>
+        this.estadoStreamsQuery.isPending()
+    );
 
     protected readonly ranking = computed<TopProducto[]>(() =>
         this.rankingQuery.data() ?? []
@@ -293,6 +304,30 @@ export class DashboardPage
     protected readonly rankingCargando = computed(() =>
         this.rankingQuery.isPending()
     );
+
+    protected readonly productoMasVendido = computed<TopProducto | null>(() =>
+    {
+        const productos = this.ranking();
+
+        if (productos.length === 0)
+            return null;
+
+        return productos.reduce((mayor, actual) =>
+            actual.unidades > mayor.unidades ? actual : mayor
+        );
+    });
+
+    protected readonly productoMayorIngreso = computed<TopProducto | null>(() =>
+    {
+        const productos = this.ranking();
+
+        if (productos.length === 0)
+            return null;
+
+        return productos.reduce((mayor, actual) =>
+            actual.ingresos > mayor.ingresos ? actual : mayor
+        );
+    });
 
     protected readonly ultimos = computed<EventoReciente[]>(() =>
         this.ultimosQuery.data() ?? []
@@ -304,14 +339,6 @@ export class DashboardPage
 
     protected readonly overview = computed(() =>
         this.overviewQuery.data()
-    );
-
-    protected readonly alertas = computed<AlertaStock[]>(() =>
-        this.alertasQuery.data() ?? []
-    );
-
-    protected readonly alertasCargando = computed(() =>
-        this.alertasQuery.isPending()
     );
 
     protected seleccionarMes(clave: string): void
@@ -367,18 +394,6 @@ export class DashboardPage
             return '—';
 
         return id.length > 8 ? `${id.slice(0, 8)}…` : id;
-    }
-
-    protected etiquetaSeveridad(alerta: AlertaStock): string
-    {
-        return alerta.stockDisponible <= 0 ? 'Sin stock' : 'Stock bajo';
-    }
-
-    protected colorSeveridad(alerta: AlertaStock): string
-    {
-        return alerta.stockDisponible <= 0
-            ? 'bg-red-50 text-red-700'
-            : 'bg-amber-50 text-amber-700';
     }
 
     private pedidosDeMes(clave: string): number

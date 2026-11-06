@@ -3,9 +3,11 @@
 		<span class="text-xs font-bold uppercase tracking-[0.18em] text-muted"
 			>Pedidos360 / Administración</span
 		>
+
 		<h1 class="mb-0 mt-3 text-3xl font-bold tracking-tight text-[#1f2937] max-[600px]:text-2xl">
 			Dashboard
 		</h1>
+
 		<p class="mb-0 mt-2 text-sm leading-6 text-muted">
 			Métricas de los eventos del flujo de pedidos: KPIs del mes, actividad anual con detalle
 			diario, ranking de productos y actividad reciente. Se actualiza automáticamente cada 10
@@ -18,9 +20,11 @@
 			<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]"
 				>01 · Resumen</span
 			>
+
 			<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
 				KPIs del mes actual
 			</h2>
+
 			<p class="mb-0 mt-1 text-sm text-muted">
 				Cada indicador se compara con el mes anterior.
 			</p>
@@ -30,9 +34,11 @@
 			@for (kpi of kpis(); track kpi.etiqueta) {
 				<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
 					<p class="m-0 text-sm font-medium text-muted">{{ kpi.etiqueta }}</p>
+
 					<p class="mb-0 mt-3 text-3xl font-bold tracking-tight text-[#1f2937]">
 						{{ kpi.valor }}
 					</p>
+
 					<p class="mb-0 mt-2 flex flex-wrap items-center gap-2 text-xs text-muted">
 						@if (kpi.delta !== null) {
 							<span
@@ -45,6 +51,7 @@
 							>
 								{{ kpi.delta >= 0 ? '▲' : '▼' }} {{ kpi.delta | number: '1.0-0' }}%
 							</span>
+
 							vs mes anterior
 						} @else {
 							{{ kpi.detalle }}
@@ -53,122 +60,138 @@
 				</article>
 			}
 		</div>
+
+		@if (resumenAnaliticas(); as resumen) {
+			<div class="mb-4 mt-6">
+				<h3 class="mb-0 text-base font-bold text-[#1f2937]">Resumen de inventario</h3>
+				<p class="mb-0 mt-1 text-sm text-muted">
+					Indicadores consolidados desde Analytics.
+				</p>
+			</div>
+			<div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+				<article class="rounded-2xl border border-border bg-white p-4">
+					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
+						Productos
+					</p>
+					<p class="mb-0 mt-2 text-2xl font-bold">{{ resumen.total | number }}</p>
+				</article>
+				<article class="rounded-2xl border border-border bg-white p-4">
+					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">Activos</p>
+					<p class="mb-0 mt-2 text-2xl font-bold">{{ resumen.activos | number }}</p>
+				</article>
+				<article class="rounded-2xl border border-border bg-white p-4">
+					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
+						Stock disponible
+					</p>
+					<p class="mb-0 mt-2 text-2xl font-bold">{{ resumen.stockTotal | number }}</p>
+				</article>
+				<article class="rounded-2xl border border-border bg-white p-4">
+					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
+						Stock reservado
+					</p>
+					<p class="mb-0 mt-2 text-2xl font-bold">
+						{{ resumen.stockReservadoTotal | number }}
+					</p>
+				</article>
+				<article class="rounded-2xl border border-border bg-white p-4">
+					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
+						Alertas de stock
+					</p>
+					<p class="mb-0 mt-2 text-2xl font-bold">{{ resumen.alertas | number }}</p>
+				</article>
+				<article class="rounded-2xl border border-border bg-white p-4">
+					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
+						Unidades confirmadas
+					</p>
+					<p class="mb-0 mt-2 text-2xl font-bold">
+						{{ resumen.unidadesConfirmadasMes | number }}
+					</p>
+				</article>
+				<article class="rounded-2xl border border-border bg-white p-4 sm:col-span-2">
+					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
+						Ingresos confirmados
+					</p>
+					<p class="mb-0 mt-2 text-2xl font-bold text-emerald-700">
+						{{
+							resumen.ingresosConfirmadosMes
+								| currency: 'CLP' : 'symbol-narrow' : '1.0-0' : 'es-CL'
+						}}
+					</p>
+				</article>
+			</div>
+		}
 	</section>
 
 	<section class="mb-10 border-t border-border pt-8">
-		<div class="mb-4 flex flex-wrap items-end justify-between gap-3">
-			<div>
-				<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]"
-					>02 · Alertas</span
-				>
-				<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
-					Alertas de stock
-				</h2>
-				<p class="mb-0 mt-1 text-sm text-muted">
-					Productos activos sin stock o por debajo de su mínimo configurado.
-				</p>
-			</div>
-
-			<div class="flex flex-wrap items-center gap-3">
-				<span
-					class="rounded-full px-3 py-1.5 text-xs font-bold"
-					[class]="
-						alertas().length > 0
-							? 'bg-red-50 text-red-700'
-							: 'bg-emerald-50 text-emerald-700'
-					"
-				>
-					{{ alertas().length }} {{ alertas().length === 1 ? 'alerta' : 'alertas' }}
-				</span>
-
-				<a
-					routerLink="/admin/productos"
-					class="rounded-lg border border-border px-4 py-3 text-sm font-semibold text-[#1f2937] no-underline transition hover:bg-surface-secondary"
-				>
-					Gestionar productos
-				</a>
-			</div>
+		<div class="mb-4">
+			<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]"
+				>02 · Alertas</span
+			>
+			<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
+				Alertas de stock
+			</h2>
+			<p class="mb-0 mt-1 text-sm text-muted">
+				Productos cuyo stock disponible está en el mínimo o por debajo.
+			</p>
 		</div>
-
 		<div class="overflow-x-auto rounded-2xl border border-border bg-white shadow-sm">
-			<table class="w-full min-w-[640px] border-collapse text-left">
+			<table class="w-full min-w-[600px] border-collapse text-left">
 				<thead class="bg-surface-secondary">
 					<tr class="border-b border-border">
-						<th
-							scope="col"
-							class="px-5 py-4 text-xs font-bold uppercase tracking-wider text-muted"
-						>
+						<th class="px-5 py-4 text-xs font-bold uppercase tracking-wider text-muted">
 							Producto
 						</th>
 						<th
-							scope="col"
-							class="px-5 py-4 text-xs font-bold uppercase tracking-wider text-muted"
-						>
-							SKU
-						</th>
-						<th
-							scope="col"
-							class="px-5 py-4 text-xs font-bold uppercase tracking-wider text-muted"
-						>
-							Estado
-						</th>
-						<th
-							scope="col"
 							class="px-5 py-4 text-right text-xs font-bold uppercase tracking-wider text-muted"
 						>
-							Disponible
+							Stock disponible
 						</th>
 						<th
-							scope="col"
 							class="px-5 py-4 text-right text-xs font-bold uppercase tracking-wider text-muted"
 						>
-							Mínimo
+							Stock mínimo
+						</th>
+						<th
+							class="px-5 py-4 text-right text-xs font-bold uppercase tracking-wider text-muted"
+						>
+							Diferencia
 						</th>
 					</tr>
 				</thead>
 				<tbody class="divide-y divide-border">
-					@for (alerta of alertas(); track alerta.id) {
-						<tr class="transition hover:bg-surface-secondary/60">
+					@for (alerta of alertasAnaliticas(); track alerta.id) {
+						<tr class="hover:bg-surface-secondary/60">
 							<td class="px-5 py-3">
-								<span class="text-sm font-semibold text-[#1f2937]">{{
-									alerta.nombre
-								}}</span>
+								<div class="text-sm font-semibold text-[#1f2937]">
+									{{ alerta.nombre }}
+								</div>
+								<div class="font-mono text-xs text-muted">{{ alerta.sku }}</div>
 							</td>
-							<td class="px-5 py-3 font-mono text-xs text-muted">
-								{{ alerta.sku ?? '—' }}
+							<td class="px-5 py-3 text-right text-sm font-bold text-red-700">
+								{{ alerta.stockDisponible | number }}
 							</td>
-							<td class="px-5 py-3">
-								<span
-									class="inline-flex items-center rounded-full px-3 py-1.5 text-xs font-semibold"
-									[class]="colorSeveridad(alerta)"
-								>
-									{{ etiquetaSeveridad(alerta) }}
-								</span>
+							<td class="px-5 py-3 text-right text-sm">
+								{{ alerta.stockMinimo | number }}
 							</td>
-							<td
-								class="px-5 py-3 text-right text-sm font-bold"
-								[class]="
-									alerta.stockDisponible <= 0 ? 'text-red-700' : 'text-[#1f2937]'
-								"
-							>
-								{{ alerta.stockDisponible }}
-							</td>
-							<td class="px-5 py-3 text-right text-sm text-muted">
-								{{ alerta.stockMinimo ?? '—' }}
+							<td class="px-5 py-3 text-right text-sm">
+								{{
+									alerta.stockDisponible != null && alerta.stockMinimo != null
+										? (alerta.stockDisponible - alerta.stockMinimo | number)
+										: '—'
+								}}
 							</td>
 						</tr>
 					}
-
-					@if (alertasCargando()) {
+					@if (alertasAnaliticasCargando()) {
 						<tr>
-							<td colspan="5" class="px-5 py-10 text-center text-sm text-muted">
+							<td colspan="4" class="px-5 py-10 text-center text-sm text-muted">
 								Cargando alertas…
 							</td>
 						</tr>
-					} @else if (alertas().length === 0) {
+					} @else if (alertasAnaliticas().length === 0) {
 						<tr>
-							<td colspan="5" class="px-5 py-10 text-center text-sm text-muted">
-								✓ Todo el stock sobre el mínimo configurado.
+							<td colspan="4" class="px-5 py-10 text-center text-sm text-muted">
+								No hay alertas de stock.
 							</td>
 						</tr>
 					}
@@ -183,6 +206,7 @@
 				<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]"
 					>03 · Actividad</span
 				>
+
 				<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
 					@if (vista() === 'anual') {
 						Pedidos por mes
@@ -190,6 +214,7 @@
 						Detalle diario · {{ tituloMesSeleccionado() }}
 					}
 				</h2>
+
 				<p class="mb-0 mt-1 text-sm text-muted">
 					@if (vista() === 'anual') {
 						Pedidos creados en los últimos 12 meses. Haz clic en un mes para ver el
@@ -226,10 +251,12 @@
 								class="text-[10px] font-semibold text-muted group-hover:text-[#1f2937]"
 								>{{ mes.total }}</span
 							>
+
 							<span
 								class="w-full max-w-[46px] rounded-t-md bg-[#4055ba]/75 transition group-hover:bg-[#4055ba]"
 								[style.height.px]="alturaPx(mes.total, maxMes())"
 							></span>
+
 							<span class="text-[11px] font-semibold text-muted">{{
 								mes.etiqueta
 							}}</span>
@@ -249,6 +276,7 @@
 								class="w-full max-w-[24px] rounded-t-sm bg-teal-600/70 transition group-hover:bg-teal-600"
 								[style.height.px]="alturaPx(dia.total, maxDia())"
 							></span>
+
 							<span class="text-[9px] text-muted">{{ dia.etiqueta }}</span>
 						</span>
 					}
@@ -265,12 +293,14 @@
 							>
 								Tipo de evento
 							</th>
+
 							<th
 								scope="col"
 								class="px-5 py-4 text-right text-xs font-bold uppercase tracking-wider text-muted"
 							>
 								Eventos
 							</th>
+
 							<th
 								scope="col"
 								class="px-5 py-4 text-right text-xs font-bold uppercase tracking-wider text-muted"
@@ -279,6 +309,7 @@
 							</th>
 						</tr>
 					</thead>
+
 					<tbody class="divide-y divide-border">
 						@for (fila of desgloseMes(); track fila.routingKey) {
 							<tr class="transition hover:bg-surface-secondary/60">
@@ -290,11 +321,13 @@
 										{{ fila.routingKey }}
 									</span>
 								</td>
+
 								<td
 									class="px-5 py-3 text-right text-sm font-semibold text-[#1f2937]"
 								>
 									{{ fila.total | number }}
 								</td>
+
 								<td class="px-5 py-3 text-right text-sm text-muted">
 									{{ fila.porcentaje | number: '1.0-1' }}%
 								</td>
@@ -328,6 +361,52 @@
 				} @else {
 					Unidades e ingresos de {{ tituloMesSeleccionado() }}.
 				}
+			</p>
+		</div>
+
+		<div class="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+			<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+				<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
+					Más unidades vendidas
+				</p>
+				@if (productoMasVendido(); as producto) {
+					<p class="mb-0 mt-3 text-lg font-bold text-[#1f2937]">{{ producto.nombre }}</p>
+					<p class="mb-0 mt-1 font-mono text-xs text-muted">{{ producto.sku }}</p>
+					<p class="mb-0 mt-4 text-2xl font-bold text-[#4055ba]">
+						{{ producto.unidades | number }} unidades
+					</p>
+				} @else {
+					<p class="mb-0 mt-4 text-sm text-muted">
+						Sin ventas registradas en el periodo.
+					</p>
+				}
+			</article>
+
+			<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+				<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
+					Mayor ingreso del ranking
+				</p>
+				@if (productoMayorIngreso(); as producto) {
+					<p class="mb-0 mt-3 text-lg font-bold text-[#1f2937]">{{ producto.nombre }}</p>
+					<p class="mb-0 mt-1 font-mono text-xs text-muted">{{ producto.sku }}</p>
+					<p class="mb-0 mt-4 text-2xl font-bold text-emerald-700">
+						{{
+							producto.ingresos
+								| currency: 'CLP' : 'symbol-narrow' : '1.0-0' : 'es-CL'
+						}}
+					</p>
+				} @else {
+					<p class="mb-0 mt-4 text-sm text-muted">
+						Sin ingresos registrados en el periodo.
+					</p>
+				}
+			</article>
+		</div>
+
+		<div class="mb-3">
+			<h3 class="mb-0 text-base font-bold text-[#1f2937]">Ranking de productos</h3>
+			<p class="mb-0 mt-1 text-sm text-muted">
+				Las mini-secciones se calculan sobre los productos devueltos por Analytics.
 			</p>
 		</div>
 
@@ -418,11 +497,248 @@
 	<section class="mb-10 border-t border-border pt-8">
 		<div class="mb-4">
 			<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]"
-				>05 · Actividad reciente</span
+				>05 · Movimientos</span
 			>
+			<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
+				Movimientos de inventario
+			</h2>
+			<p class="mb-0 mt-1 text-sm text-muted">
+				Unidades, ingresos y operaciones agrupadas por día.
+			</p>
+		</div>
+
+		<div class="overflow-x-auto rounded-2xl border border-border bg-white shadow-sm">
+			<table class="w-full min-w-[650px] border-collapse text-left">
+				<thead class="bg-surface-secondary">
+					<tr class="border-b border-border">
+						<th class="px-5 py-4 text-xs font-bold uppercase tracking-wider text-muted">
+							Fecha
+						</th>
+						<th class="px-5 py-4 text-xs font-bold uppercase tracking-wider text-muted">
+							Tipo
+						</th>
+						<th
+							class="px-5 py-4 text-right text-xs font-bold uppercase tracking-wider text-muted"
+						>
+							Unidades
+						</th>
+						<th
+							class="px-5 py-4 text-right text-xs font-bold uppercase tracking-wider text-muted"
+						>
+							Ingresos
+						</th>
+						<th
+							class="px-5 py-4 text-right text-xs font-bold uppercase tracking-wider text-muted"
+						>
+							Operaciones
+						</th>
+					</tr>
+				</thead>
+				<tbody class="divide-y divide-border">
+					@for (movimiento of movimientos(); track $index) {
+						<tr class="hover:bg-surface-secondary/60">
+							<td class="px-5 py-3 text-sm text-[#1f2937]">
+								{{ movimiento.fecha | date: 'dd/MM/yyyy' }}
+							</td>
+							<td class="px-5 py-3 text-sm font-semibold text-[#1f2937]">
+								{{ movimiento.tipo }}
+							</td>
+							<td class="px-5 py-3 text-right text-sm">
+								{{ movimiento.unidades | number }}
+							</td>
+							<td class="px-5 py-3 text-right text-sm">
+								{{
+									movimiento.ingresos
+										| currency: 'CLP' : 'symbol-narrow' : '1.0-0' : 'es-CL'
+								}}
+							</td>
+							<td class="px-5 py-3 text-right text-sm">
+								{{ movimiento.operaciones | number }}
+							</td>
+						</tr>
+					}
+					@if (movimientosCargando()) {
+						<tr>
+							<td colspan="5" class="px-5 py-10 text-center text-sm text-muted">
+								Cargando movimientos…
+							</td>
+						</tr>
+					} @else if (movimientos().length === 0) {
+						<tr>
+							<td colspan="5" class="px-5 py-10 text-center text-sm text-muted">
+								No hay movimientos para el periodo seleccionado.
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</section>
+
+	<section class="mb-10 border-t border-border pt-8">
+		<div class="mb-4">
+			<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]"
+				>06 · Auditoría</span
+			>
+			<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
+				Trazabilidad de operaciones
+			</h2>
+			<p class="mb-0 mt-1 text-sm text-muted">
+				Últimos registros de auditoría del servicio Analytics.
+			</p>
+		</div>
+
+		<div class="overflow-x-auto rounded-2xl border border-border bg-white shadow-sm">
+			<table class="w-full min-w-[1100px] border-collapse text-left">
+				<thead class="bg-surface-secondary">
+					<tr class="border-b border-border">
+						<th class="px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted">
+							Fecha
+						</th>
+						<th class="px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted">
+							Evento
+						</th>
+						<th class="px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted">
+							Producto
+						</th>
+						<th
+							class="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-muted"
+						>
+							Cantidad
+						</th>
+						<th
+							class="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-muted"
+						>
+							Stock disp.
+						</th>
+						<th
+							class="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-muted"
+						>
+							Reservado
+						</th>
+						<th class="px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted">
+							Pedido / Operación
+						</th>
+						<th class="px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted">
+							Usuario
+						</th>
+						<th class="px-4 py-3 text-xs font-bold uppercase tracking-wider text-muted">
+							Correlation ID
+						</th>
+					</tr>
+				</thead>
+				<tbody class="divide-y divide-border">
+					@for (item of auditoria(); track item.eventoId) {
+						<tr class="hover:bg-surface-secondary/60">
+							<td class="whitespace-nowrap px-4 py-3 text-xs text-muted">
+								{{ item.ocurridoEn | date: 'dd/MM/yyyy HH:mm:ss' }}
+							</td>
+							<td class="px-4 py-3 text-sm font-semibold text-[#1f2937]">
+								{{ item.tipo }}
+							</td>
+							<td class="px-4 py-3">
+								<div class="text-sm font-semibold">{{ item.nombre }}</div>
+								<div class="font-mono text-xs text-muted">{{ item.sku }}</div>
+							</td>
+							<td class="px-4 py-3 text-right text-sm">
+								{{ item.cantidad | number }}
+							</td>
+							<td class="px-4 py-3 text-right text-xs">
+								{{ item.stockDisponibleAntes | number }} →
+								{{ item.stockDisponibleDespues | number }}
+							</td>
+							<td class="px-4 py-3 text-right text-xs">
+								{{ item.stockReservadoAntes | number }} →
+								{{ item.stockReservadoDespues | number }}
+							</td>
+							<td class="px-4 py-3 text-xs">
+								<div>{{ idCorto(item.pedidoId) }}</div>
+								<div class="text-muted">{{ idCorto(item.operacionId) }}</div>
+							</td>
+							<td class="px-4 py-3 text-xs">{{ idCorto(item.usuarioId) }}</td>
+							<td class="px-4 py-3 font-mono text-xs">
+								{{ idCorto(item.correlationId) }}
+							</td>
+						</tr>
+					}
+					@if (auditoriaCargando()) {
+						<tr>
+							<td colspan="9" class="px-5 py-10 text-center text-sm text-muted">
+								Cargando auditoría…
+							</td>
+						</tr>
+					} @else if (auditoria().length === 0) {
+						<tr>
+							<td colspan="9" class="px-5 py-10 text-center text-sm text-muted">
+								No hay registros de auditoría para el periodo.
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</section>
+
+	<section class="mb-10 border-t border-border pt-8">
+		<div class="mb-4">
+			<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]"
+				>07 · Estado Analytics</span
+			>
+			<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
+				Estado de Kafka Streams
+			</h2>
+			<p class="mb-0 mt-1 text-sm text-muted">
+				Estado de los stores y contadores expuestos por el servicio.
+			</p>
+		</div>
+		@if (estadoStreams(); as estado) {
+			<div class="grid grid-cols-2 gap-4 md:grid-cols-5">
+				<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">Estado</p>
+					<p class="mb-0 mt-3 text-xl font-bold text-[#1f2937]">{{ estado.estado }}</p>
+				</article>
+				<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">Stores</p>
+					<p class="mb-0 mt-3 text-2xl font-bold">{{ estado.stores }}</p>
+				</article>
+				<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
+						Productos
+					</p>
+					<p class="mb-0 mt-3 text-2xl font-bold">{{ estado.productos | number }}</p>
+				</article>
+				<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
+						Movimientos
+					</p>
+					<p class="mb-0 mt-3 text-2xl font-bold">{{ estado.movimientos | number }}</p>
+				</article>
+				<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">Eventos</p>
+					<p class="mb-0 mt-3 text-2xl font-bold">{{ estado.eventos | number }}</p>
+				</article>
+			</div>
+		} @else if (estadoStreamsCargando()) {
+			<p class="rounded-2xl border border-border bg-white p-6 text-sm text-muted">
+				Consultando estado de Kafka Streams…
+			</p>
+		} @else {
+			<p class="rounded-2xl border border-border bg-white p-6 text-sm text-muted">
+				No se pudo obtener el estado de Analytics.
+			</p>
+		}
+	</section>
+
+	<section class="mb-10 border-t border-border pt-8">
+		<div class="mb-4">
+			<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]"
+				>08 · Actividad reciente</span
+			>
+
 			<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
 				Últimos eventos auditados
 			</h2>
+
 			<p class="mb-0 mt-1 text-sm text-muted">
 				Detalle crudo de los eventos recibidos por la cola de auditoría.
 			</p>
@@ -438,18 +754,21 @@
 						>
 							Fecha
 						</th>
+
 						<th
 							scope="col"
 							class="px-5 py-4 text-xs font-bold uppercase tracking-wider text-muted"
 						>
 							Tipo
 						</th>
+
 						<th
 							scope="col"
 							class="px-5 py-4 text-xs font-bold uppercase tracking-wider text-muted"
 						>
 							Pedido
 						</th>
+
 						<th
 							scope="col"
 							class="px-5 py-4 text-xs font-bold uppercase tracking-wider text-muted"
@@ -458,12 +777,14 @@
 						</th>
 					</tr>
 				</thead>
+
 				<tbody class="divide-y divide-border">
 					@for (evento of ultimos(); track $index) {
 						<tr class="transition hover:bg-surface-secondary/60">
 							<td class="px-5 py-3 text-sm text-muted">
 								{{ evento.recibidoAt | date: 'dd/MM/yyyy HH:mm:ss' }}
 							</td>
+
 							<td class="px-5 py-3">
 								<span
 									class="inline-flex items-center rounded-full px-3 py-1.5 font-mono text-xs font-semibold"
@@ -472,9 +793,11 @@
 									{{ evento.routingKey }}
 								</span>
 							</td>
+
 							<td class="px-5 py-3 font-mono text-xs text-[#1f2937]">
 								{{ evento.pedidoId ?? '—' }}
 							</td>
+
 							<td class="px-5 py-3 font-mono text-xs text-muted">
 								{{ evento.correlationId ?? '—' }}
 							</td>
@@ -502,47 +825,60 @@
 	<section class="border-t border-border pt-8">
 		<div class="mb-4">
 			<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]"
-				>06 · Operación</span
+				>09 · Operación</span
 			>
+
 			<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
 				Estado RabbitMQ
 			</h2>
+
 			<p class="mb-0 mt-1 text-sm text-muted">Totales del broker según la Management API.</p>
 		</div>
 
 		<div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
 			<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
 				<p class="m-0 text-sm font-medium text-muted">Mensajes</p>
+
 				<p class="mb-0 mt-3 text-2xl font-bold tracking-tight text-[#1f2937]">
 					{{ overview()?.queueTotals?.messages ?? 0 }}
 				</p>
 			</article>
+
 			<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
 				<p class="m-0 text-sm font-medium text-muted">Listos</p>
+
 				<p class="mb-0 mt-3 text-2xl font-bold tracking-tight text-[#1f2937]">
 					{{ overview()?.queueTotals?.messagesReady ?? 0 }}
 				</p>
 			</article>
+
 			<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
 				<p class="m-0 text-sm font-medium text-muted">Sin ack</p>
+
 				<p class="mb-0 mt-3 text-2xl font-bold tracking-tight text-[#1f2937]">
 					{{ overview()?.queueTotals?.messagesUnacknowledged ?? 0 }}
 				</p>
 			</article>
+
 			<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
 				<p class="m-0 text-sm font-medium text-muted">Consumidores</p>
+
 				<p class="mb-0 mt-3 text-2xl font-bold tracking-tight text-[#1f2937]">
 					{{ overview()?.objectTotals?.consumers ?? 0 }}
 				</p>
 			</article>
+
 			<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
 				<p class="m-0 text-sm font-medium text-muted">Colas</p>
+
 				<p class="mb-0 mt-3 text-2xl font-bold tracking-tight text-[#1f2937]">
 					{{ overview()?.objectTotals?.queues ?? 0 }}
 				</p>
 			</article>
+
 			<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
 				<p class="m-0 text-sm font-medium text-muted">Exchanges</p>
+
 				<p class="mb-0 mt-3 text-2xl font-bold tracking-tight text-[#1f2937]">
 					{{ overview()?.objectTotals?.exchanges ?? 0 }}
 				</p>
