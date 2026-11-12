@@ -1,48 +1,115 @@
 <section class="mx-auto my-10 w-full max-w-6xl px-6 max-[600px]:px-4">
-	<header class="mb-10">
-		<span class="text-xs font-bold uppercase tracking-[0.18em] text-muted"
-			>Pedidos360 / Administración</span
-		>
+	<header class="mb-8 flex flex-wrap items-end justify-between gap-5">
+		<div class="max-w-3xl">
+			<span class="text-xs font-bold uppercase tracking-[0.18em] text-muted">
+				Pedidos360 / Administración
+			</span>
 
-		<h1 class="mb-0 mt-3 text-3xl font-bold tracking-tight text-[#1f2937] max-[600px]:text-2xl">
-			Dashboard
-		</h1>
+			<h1 class="mb-0 mt-3 text-3xl font-bold tracking-tight text-[#1f2937] max-[600px]:text-2xl">
+				Dashboard
+			</h1>
 
-		<p class="mb-0 mt-2 text-sm leading-6 text-muted">
-			Métricas de los eventos del flujo de pedidos: KPIs del mes, actividad anual con detalle
-			diario, ranking de productos y actividad reciente. Se actualiza automáticamente cada 10
-			segundos.
-		</p>
-	</header>
-
-	<section class="mb-10">
-		<div class="mb-4">
-			<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]"
-				>01 · Resumen</span
-			>
-
-			<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
-				KPIs del mes actual
-			</h2>
-
-			<p class="mb-0 mt-1 text-sm text-muted">
-				Cada indicador se compara con el mes anterior.
+			<p class="mb-0 mt-2 text-sm leading-6 text-muted">
+				Métricas de los eventos del flujo de pedidos: KPIs del mes, actividad anual con detalle
+				diario, ranking de productos y estado de la mensajería en tiempo real.
 			</p>
 		</div>
 
-		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-			@for (kpi of kpis(); track kpi.etiqueta) {
-				<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
-					<p class="m-0 text-sm font-medium text-muted">{{ kpi.etiqueta }}</p>
+		<div class="flex flex-col items-start gap-2 sm:items-end">
+			<span
+				class="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-800"
+			>
+				<span class="relative flex h-2 w-2" aria-hidden="true">
+					<span
+						class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"
+					></span>
+					<span class="relative inline-flex h-2 w-2 rounded-full bg-emerald-500"></span>
+				</span>
+				Datos en vivo
+			</span>
 
-					<p class="mb-0 mt-3 text-3xl font-bold tracking-tight text-[#1f2937]">
+			<span class="text-xs text-muted">Actualización automática cada 10 segundos</span>
+		</div>
+	</header>
+
+	<nav class="mb-10 flex flex-wrap gap-2" aria-label="Secciones del dashboard">
+		<a
+			href="#resumen"
+			class="rounded-full border border-border bg-white px-3.5 py-1.5 text-xs font-semibold text-muted no-underline transition hover:border-[#c7ced8] hover:text-[#1f2937]"
+			>Resumen</a
+		>
+		<a
+			href="#actividad"
+			class="rounded-full border border-border bg-white px-3.5 py-1.5 text-xs font-semibold text-muted no-underline transition hover:border-[#c7ced8] hover:text-[#1f2937]"
+			>Actividad</a
+		>
+		<a
+			href="#productos"
+			class="rounded-full border border-border bg-white px-3.5 py-1.5 text-xs font-semibold text-muted no-underline transition hover:border-[#c7ced8] hover:text-[#1f2937]"
+			>Productos</a
+		>
+		<a
+			href="#streams"
+			class="rounded-full border border-border bg-white px-3.5 py-1.5 text-xs font-semibold text-muted no-underline transition hover:border-[#c7ced8] hover:text-[#1f2937]"
+			>Kafka Streams</a
+		>
+		<a
+			href="#operacion"
+			class="rounded-full border border-border bg-white px-3.5 py-1.5 text-xs font-semibold text-muted no-underline transition hover:border-[#c7ced8] hover:text-[#1f2937]"
+			>RabbitMQ</a
+		>
+	</nav>
+
+	<section id="resumen" class="mb-10 scroll-mt-24">
+		<div class="mb-4 flex flex-wrap items-start justify-between gap-3">
+			<div class="flex items-start gap-3">
+				<span
+					class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#eef1ff] text-xs font-bold text-[#4055ba]"
+					aria-hidden="true"
+					>01</span
+				>
+
+				<div>
+					<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]">
+						Resumen
+					</span>
+
+					<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
+						KPIs del mes actual
+					</h2>
+
+					<p class="mb-0 mt-1 text-sm text-muted">
+						Cada indicador se compara con el mes anterior.
+					</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+			@for (kpi of kpis(); track kpi.etiqueta; let indice = $index) {
+				<article
+					class="rounded-2xl border border-border bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+				>
+					<div class="flex items-start justify-between gap-3">
+						<p class="m-0 text-sm font-medium text-muted">{{ kpi.etiqueta }}</p>
+
+						<span
+							class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-base font-bold"
+							[class]="kpiTono(indice)"
+							aria-hidden="true"
+						>
+							{{ kpiIcono(indice) }}
+						</span>
+					</div>
+
+					<p class="mb-0 mt-4 text-3xl font-bold tracking-tight text-[#1f2937]">
 						{{ kpi.valor }}
 					</p>
 
 					<p class="mb-0 mt-2 flex flex-wrap items-center gap-2 text-xs text-muted">
 						@if (kpi.delta !== null) {
 							<span
-								class="rounded-full px-2 py-0.5 font-bold"
+								class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-bold"
 								[class]="
 									kpi.delta >= 0
 										? 'bg-emerald-50 text-emerald-700'
@@ -52,9 +119,9 @@
 								{{ kpi.delta >= 0 ? '▲' : '▼' }} {{ kpi.delta | number: '1.0-0' }}%
 							</span>
 
-							vs mes anterior
+							<span>vs mes anterior</span>
 						} @else {
-							{{ kpi.detalle }}
+							<span>{{ kpi.detalle }}</span>
 						}
 					</p>
 				</article>
@@ -62,78 +129,173 @@
 		</div>
 
 		@if (resumenAnaliticas(); as resumen) {
-			<div class="mb-4 mt-6">
-				<h3 class="mb-0 text-base font-bold text-[#1f2937]">Resumen de inventario</h3>
-				<p class="mb-0 mt-1 text-sm text-muted">
-					Indicadores consolidados desde Analytics.
-				</p>
+			<div class="mb-4 mt-6 flex flex-wrap items-end justify-between gap-2">
+				<div>
+					<h3 class="mb-0 text-base font-bold text-[#1f2937]">Resumen de inventario</h3>
+					<p class="mb-0 mt-1 text-sm text-muted">
+						Indicadores consolidados desde Analytics.
+					</p>
+				</div>
+
+				<span
+					class="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1 text-xs font-semibold text-muted"
+				>
+					<span class="h-1.5 w-1.5 rounded-full bg-[#4055ba]" aria-hidden="true"></span>
+					Vista acumulada
+				</span>
 			</div>
+
 			<div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
-				<article class="rounded-2xl border border-border bg-white p-4">
-					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
-						Productos
-					</p>
-					<p class="mb-0 mt-2 text-2xl font-bold">{{ resumen.total | number }}</p>
+				<article class="rounded-2xl border border-border bg-white p-4 shadow-sm">
+					<div class="flex items-center justify-between gap-2">
+						<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
+							Productos
+						</p>
+						<span
+							class="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-sm text-[#1f2937]"
+							aria-hidden="true"
+							>▤</span
+						>
+					</div>
+					<p class="mb-0 mt-3 text-2xl font-bold">{{ resumen.total | number }}</p>
 				</article>
-				<article class="rounded-2xl border border-border bg-white p-4">
-					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">Activos</p>
-					<p class="mb-0 mt-2 text-2xl font-bold">{{ resumen.activos | number }}</p>
+
+				<article class="rounded-2xl border border-border bg-white p-4 shadow-sm">
+					<div class="flex items-center justify-between gap-2">
+						<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">Activos</p>
+						<span
+							class="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 text-sm text-emerald-700"
+							aria-hidden="true"
+							>●</span
+						>
+					</div>
+					<p class="mb-0 mt-3 text-2xl font-bold">{{ resumen.activos | number }}</p>
 				</article>
-				<article class="rounded-2xl border border-border bg-white p-4">
-					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
-						Stock disponible
-					</p>
-					<p class="mb-0 mt-2 text-2xl font-bold">{{ resumen.stockTotal | number }}</p>
+
+				<article class="rounded-2xl border border-border bg-white p-4 shadow-sm">
+					<div class="flex items-center justify-between gap-2">
+						<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
+							Stock disponible
+						</p>
+						<span
+							class="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-50 text-sm text-blue-700"
+							aria-hidden="true"
+							>▦</span
+						>
+					</div>
+					<p class="mb-0 mt-3 text-2xl font-bold">{{ resumen.stockTotal | number }}</p>
 				</article>
-				<article class="rounded-2xl border border-border bg-white p-4">
-					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
-						Stock reservado
-					</p>
-					<p class="mb-0 mt-2 text-2xl font-bold">
+
+				<article class="rounded-2xl border border-border bg-white p-4 shadow-sm">
+					<div class="flex items-center justify-between gap-2">
+						<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
+							Stock reservado
+						</p>
+						<span
+							class="flex h-7 w-7 items-center justify-center rounded-lg bg-teal-50 text-sm text-teal-700"
+							aria-hidden="true"
+							>◧</span
+						>
+					</div>
+					<p class="mb-0 mt-3 text-2xl font-bold">
 						{{ resumen.stockReservadoTotal | number }}
 					</p>
 				</article>
-				<article class="rounded-2xl border border-border bg-white p-4">
-					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
-						Alertas de stock
-					</p>
-					<p class="mb-0 mt-2 text-2xl font-bold">{{ resumen.alertas | number }}</p>
+
+				<article class="rounded-2xl border border-border bg-white p-4 shadow-sm">
+					<div class="flex items-center justify-between gap-2">
+						<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
+							Alertas de stock
+						</p>
+						<span
+							class="flex h-7 w-7 items-center justify-center rounded-lg bg-red-50 text-sm font-bold text-red-700"
+							aria-hidden="true"
+							>!</span
+						>
+					</div>
+					<p class="mb-0 mt-3 text-2xl font-bold">{{ resumen.alertas | number }}</p>
 				</article>
-				<article class="rounded-2xl border border-border bg-white p-4">
-					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
-						Unidades confirmadas
-					</p>
-					<p class="mb-0 mt-2 text-2xl font-bold">
+
+				<article class="rounded-2xl border border-border bg-white p-4 shadow-sm">
+					<div class="flex items-center justify-between gap-2">
+						<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
+							Unidades confirmadas
+						</p>
+						<span
+							class="flex h-7 w-7 items-center justify-center rounded-lg bg-emerald-50 text-sm text-emerald-700"
+							aria-hidden="true"
+							>⇧</span
+						>
+					</div>
+					<p class="mb-0 mt-3 text-2xl font-bold">
 						{{ resumen.unidadesConfirmadasMes | number }}
 					</p>
 				</article>
-				<article class="rounded-2xl border border-border bg-white p-4 sm:col-span-2">
-					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
-						Ingresos confirmados
-					</p>
-					<p class="mb-0 mt-2 text-2xl font-bold text-emerald-700">
+
+				<article
+					class="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4 shadow-sm sm:col-span-2"
+				>
+					<div class="flex items-center justify-between gap-2">
+						<p class="m-0 text-xs font-bold uppercase tracking-wider text-emerald-800">
+							Ingresos confirmados
+						</p>
+						<span
+							class="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-sm font-bold text-emerald-700"
+							aria-hidden="true"
+							>$</span
+						>
+					</div>
+					<p class="mb-0 mt-3 text-2xl font-bold text-emerald-800">
 						{{
 							resumen.ingresosConfirmadosMes
 								| currency: 'CLP' : 'symbol-narrow' : '1.0-0' : 'es-CL'
 						}}
+					</p>
+					<p class="mb-0 mt-1 text-xs text-emerald-800/70">
+						Del mes en curso, según Analytics.
 					</p>
 				</article>
 			</div>
 		}
 	</section>
 
-	<section class="mb-10 border-t border-border pt-8">
-		<div class="mb-4">
-			<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]"
-				>02 · Alertas</span
-			>
-			<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
-				Alertas de stock
-			</h2>
-			<p class="mb-0 mt-1 text-sm text-muted">
-				Productos cuyo stock disponible está en el mínimo o por debajo.
-			</p>
+	<section id="alertas" class="mb-10 scroll-mt-24 border-t border-border pt-8">
+		<div class="mb-4 flex flex-wrap items-start justify-between gap-3">
+			<div class="flex items-start gap-3">
+				<span
+					class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#eef1ff] text-xs font-bold text-[#4055ba]"
+					aria-hidden="true"
+					>02</span
+				>
+
+				<div>
+					<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]">
+						Alertas
+					</span>
+					<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
+						Alertas de stock
+					</h2>
+					<p class="mb-0 mt-1 text-sm text-muted">
+						Productos cuyo stock disponible está en el mínimo o por debajo.
+					</p>
+				</div>
+			</div>
+
+			@if (!alertasAnaliticasCargando()) {
+				<span
+					class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-bold"
+					[class]="
+						alertasAnaliticas().length > 0
+							? 'border-red-200 bg-red-50 text-red-700'
+							: 'border-emerald-200 bg-emerald-50 text-emerald-700'
+					"
+				>
+					{{ alertasAnaliticas().length | number }}
+					{{ alertasAnaliticas().length === 1 ? 'alerta' : 'alertas' }}
+				</span>
+			}
 		</div>
+
 		<div class="overflow-x-auto rounded-2xl border border-border bg-white shadow-sm">
 			<table class="w-full min-w-[600px] border-collapse text-left">
 				<thead class="bg-surface-secondary">
@@ -158,40 +320,64 @@
 						</th>
 					</tr>
 				</thead>
+
 				<tbody class="divide-y divide-border">
 					@for (alerta of alertasAnaliticas(); track alerta.id) {
-						<tr class="hover:bg-surface-secondary/60">
+						<tr class="transition hover:bg-surface-secondary/60">
 							<td class="px-5 py-3">
 								<div class="text-sm font-semibold text-[#1f2937]">
 									{{ alerta.nombre }}
 								</div>
 								<div class="font-mono text-xs text-muted">{{ alerta.sku }}</div>
 							</td>
-							<td class="px-5 py-3 text-right text-sm font-bold text-red-700">
-								{{ alerta.stockDisponible | number }}
+
+							<td class="px-5 py-3 text-right">
+								<span
+									class="inline-flex min-w-9 justify-center rounded-full bg-red-50 px-2.5 py-1 text-sm font-bold text-red-700"
+								>
+									{{ alerta.stockDisponible | number }}
+								</span>
 							</td>
-							<td class="px-5 py-3 text-right text-sm">
+
+							<td class="px-5 py-3 text-right text-sm text-muted">
 								{{ alerta.stockMinimo | number }}
 							</td>
-							<td class="px-5 py-3 text-right text-sm">
-								{{
-									alerta.stockDisponible != null && alerta.stockMinimo != null
-										? (alerta.stockDisponible - alerta.stockMinimo | number)
-										: '—'
-								}}
+
+							<td class="px-5 py-3 text-right">
+								@if (alerta.stockDisponible != null && alerta.stockMinimo != null) {
+									<span
+										class="inline-flex min-w-9 justify-center rounded-full bg-amber-50 px-2.5 py-1 text-sm font-semibold text-amber-800"
+									>
+										{{ alerta.stockDisponible - alerta.stockMinimo | number }}
+									</span>
+								} @else {
+									<span class="text-sm text-muted">—</span>
+								}
 							</td>
 						</tr>
 					}
+
 					@if (alertasAnaliticasCargando()) {
 						<tr>
-							<td colspan="4" class="px-5 py-10 text-center text-sm text-muted">
+							<td colspan="4" class="px-5 py-12 text-center text-sm text-muted">
 								Cargando alertas…
 							</td>
 						</tr>
 					} @else if (alertasAnaliticas().length === 0) {
 						<tr>
-							<td colspan="4" class="px-5 py-10 text-center text-sm text-muted">
-								No hay alertas de stock.
+							<td colspan="4" class="px-5 py-12 text-center">
+								<div
+									class="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-emerald-50 text-lg text-emerald-700"
+									aria-hidden="true"
+								>
+									✓
+								</div>
+								<p class="mb-0 mt-3 text-sm font-semibold text-[#1f2937]">
+									Sin alertas de stock
+								</p>
+								<p class="mb-0 mt-1 text-xs text-muted">
+									Todos los productos están por sobre el mínimo configurado.
+								</p>
 							</td>
 						</tr>
 					}
@@ -200,80 +386,124 @@
 		</div>
 	</section>
 
-	<section class="mb-10 border-t border-border pt-8">
-		<div class="mb-4 flex flex-wrap items-end justify-between gap-3">
-			<div>
-				<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]"
-					>03 · Actividad</span
+	<section id="actividad" class="mb-10 scroll-mt-24 border-t border-border pt-8">
+		<div class="mb-4 flex flex-wrap items-start justify-between gap-3">
+			<div class="flex items-start gap-3">
+				<span
+					class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#eef1ff] text-xs font-bold text-[#4055ba]"
+					aria-hidden="true"
+					>03</span
 				>
 
-				<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
-					@if (vista() === 'anual') {
-						Pedidos por mes
-					} @else {
-						Detalle diario · {{ tituloMesSeleccionado() }}
-					}
-				</h2>
+				<div>
+					<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]">
+						Actividad
+					</span>
 
-				<p class="mb-0 mt-1 text-sm text-muted">
-					@if (vista() === 'anual') {
-						Pedidos creados en los últimos 12 meses. Haz clic en un mes para ver el
-						detalle diario.
-					} @else {
-						{{ totalMesSeleccionado() | number }} pedidos creados en el mes · el
-						desglose inferior lista los eventos auditados.
-					}
-				</p>
+					<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
+						@if (vista() === 'anual') {
+							Pedidos por mes
+						} @else {
+							Detalle diario · {{ tituloMesSeleccionado() }}
+						}
+					</h2>
+
+					<p class="mb-0 mt-1 text-sm text-muted">
+						@if (vista() === 'anual') {
+							Pedidos creados en los últimos 12 meses. Haz clic en un mes para ver el
+							detalle diario.
+						} @else {
+							{{ totalMesSeleccionado() | number }} pedidos creados en el mes · el
+							desglose inferior lista los eventos auditados.
+						}
+					</p>
+				</div>
 			</div>
 
 			@if (vista() === 'mensual') {
 				<button
 					type="button"
 					(click)="volverAnual()"
-					class="rounded-lg border border-border px-4 py-3 text-sm font-semibold text-[#1f2937] transition hover:bg-surface-secondary"
+					class="rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-semibold text-[#1f2937] transition hover:bg-surface-secondary"
 				>
-					Volver a la vista anual
+					← Volver a la vista anual
 				</button>
+			} @else {
+				<span
+					class="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1.5 text-xs font-semibold text-muted"
+				>
+					<span class="font-bold text-[#1f2937]">{{ totalAnual() | number }}</span>
+					pedidos en 12 meses
+				</span>
 			}
 		</div>
 
 		@if (vista() === 'anual') {
 			<div class="rounded-2xl border border-border bg-white p-5 shadow-sm">
-				<div class="flex h-48 items-stretch gap-2 overflow-x-auto">
+				<div class="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
+					<div>
+						<h3 class="mb-0 text-sm font-bold text-[#1f2937]">Pedidos creados por mes</h3>
+						<p class="mb-0 mt-1 text-xs text-muted">
+							Selecciona una barra para abrir el detalle diario.
+						</p>
+					</div>
+
+					<span
+						class="rounded-full bg-surface-secondary px-3 py-1 text-xs font-semibold text-muted"
+					>
+						Últimos 12 meses
+					</span>
+				</div>
+
+				<div class="mt-5 flex h-48 items-stretch gap-2 overflow-x-auto">
 					@for (mes of mesesAgrupados(); track mes.clave) {
 						<button
 							type="button"
 							(click)="seleccionarMes(mes.clave)"
 							[attr.title]="mes.etiqueta + ': ' + mes.total + ' pedidos'"
-							class="group flex h-full min-w-[44px] flex-1 cursor-pointer flex-col items-center justify-end gap-1 rounded-lg px-1 pb-1 transition hover:bg-surface-secondary"
+							class="group flex h-full min-w-[44px] flex-1 flex-col items-center justify-end gap-1 rounded-lg px-1 pb-1 transition hover:bg-surface-secondary"
 						>
 							<span
 								class="text-[10px] font-semibold text-muted group-hover:text-[#1f2937]"
-								>{{ mes.total }}</span
 							>
+								{{ mes.total }}
+							</span>
 
 							<span
-								class="w-full max-w-[46px] rounded-t-md bg-[#4055ba]/75 transition group-hover:bg-[#4055ba]"
+								class="w-full max-w-[46px] rounded-t-md bg-gradient-to-t from-[#4055ba] to-[#7f8fe0] transition group-hover:from-[#33459c] group-hover:to-[#6a7bd8]"
 								[style.height.px]="alturaPx(mes.total, maxMes())"
 							></span>
 
-							<span class="text-[11px] font-semibold text-muted">{{
-								mes.etiqueta
-							}}</span>
+							<span class="text-[11px] font-semibold text-muted">
+								{{ mes.etiqueta }}
+							</span>
 						</button>
 					}
 				</div>
 			</div>
 		} @else {
 			<div class="rounded-2xl border border-border bg-white p-5 shadow-sm">
-				<div class="flex h-40 items-stretch gap-1 overflow-x-auto">
+				<div class="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
+					<div>
+						<h3 class="mb-0 text-sm font-bold text-[#1f2937]">Pedidos por día</h3>
+						<p class="mb-0 mt-1 text-xs text-muted">{{ tituloMesSeleccionado() }}</p>
+					</div>
+
+					<span
+						class="rounded-full bg-teal-50 px-3 py-1 text-xs font-semibold text-teal-800"
+					>
+						{{ totalMesSeleccionado() | number }} pedidos
+					</span>
+				</div>
+
+				<div class="mt-5 flex h-40 items-stretch gap-1 overflow-x-auto">
 					@for (dia of diasDelMes(); track dia.fecha) {
 						<span
 							class="group flex h-full min-w-[12px] flex-1 flex-col items-center justify-end gap-1 rounded-sm transition hover:bg-surface-secondary"
 							[attr.title]="dia.fecha + ': ' + dia.total + ' pedidos'"
 						>
 							<span
-								class="w-full max-w-[24px] rounded-t-sm bg-teal-600/70 transition group-hover:bg-teal-600"
+								class="w-full max-w-[24px] rounded-t-sm bg-gradient-to-t from-teal-600 to-teal-400 transition group-hover:from-teal-700 group-hover:to-teal-500"
 								[style.height.px]="alturaPx(dia.total, maxDia())"
 							></span>
 
@@ -328,15 +558,28 @@
 									{{ fila.total | number }}
 								</td>
 
-								<td class="px-5 py-3 text-right text-sm text-muted">
-									{{ fila.porcentaje | number: '1.0-1' }}%
+								<td class="px-5 py-3">
+									<div class="flex items-center justify-end gap-2">
+										<span class="text-sm text-muted">
+											{{ fila.porcentaje | number: '1.0-1' }}%
+										</span>
+										<span
+											class="h-1.5 w-16 overflow-hidden rounded-full bg-surface-secondary"
+											aria-hidden="true"
+										>
+											<span
+												class="block h-full rounded-full bg-[#4055ba]"
+												[style.width.%]="fila.porcentaje"
+											></span>
+										</span>
+									</div>
 								</td>
 							</tr>
 						}
 
 						@if (desgloseMes().length === 0) {
 							<tr>
-								<td colspan="3" class="px-5 py-10 text-center text-sm text-muted">
+								<td colspan="3" class="px-5 py-12 text-center text-sm text-muted">
 									Sin eventos registrados en este mes.
 								</td>
 							</tr>
@@ -347,67 +590,147 @@
 		}
 	</section>
 
-	<section class="mb-10 border-t border-border pt-8">
-		<div class="mb-4">
-			<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]">
-				04 · Productos
-			</span>
+	<section id="productos" class="mb-10 scroll-mt-24 border-t border-border pt-8">
+		<div class="mb-4 flex flex-wrap items-start justify-between gap-3">
+			<div class="flex items-start gap-3">
+				<span
+					class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#eef1ff] text-xs font-bold text-[#4055ba]"
+					aria-hidden="true"
+					>04</span
+				>
 
-			<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">Top productos</h2>
+				<div>
+					<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]">
+						Productos
+					</span>
 
-			<p class="mb-0 mt-1 text-sm text-muted">
-				@if (vista() === 'anual') {
-					Unidades e ingresos de los últimos 12 meses.
-				} @else {
-					Unidades e ingresos de {{ tituloMesSeleccionado() }}.
-				}
-			</p>
+					<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
+						Top productos
+					</h2>
+
+					<p class="mb-0 mt-1 text-sm text-muted">
+						@if (vista() === 'anual') {
+							Unidades e ingresos de los últimos 12 meses.
+						} @else {
+							Unidades e ingresos de {{ tituloMesSeleccionado() }}.
+						}
+					</p>
+				</div>
+			</div>
+
+			@if (!rankingCargando()) {
+				<span
+					class="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1.5 text-xs font-semibold text-muted"
+				>
+					<span class="font-bold text-[#1f2937]">{{ ranking().length | number }}</span>
+					{{ ranking().length === 1 ? 'producto' : 'productos' }}
+				</span>
+			}
 		</div>
 
 		<div class="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
-			<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
-				<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
-					Más unidades vendidas
-				</p>
+			<article
+				class="group relative overflow-hidden rounded-2xl border border-border bg-white p-5 shadow-sm transition hover:shadow-md"
+			>
+				<span
+					class="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-[#eef1ff]"
+					aria-hidden="true"
+				></span>
+
+				<div class="relative flex items-start justify-between gap-3">
+					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
+						Más unidades vendidas
+					</p>
+
+					<span
+						class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#eef1ff] text-base text-[#4055ba]"
+						aria-hidden="true"
+						>▲</span
+					>
+				</div>
+
 				@if (productoMasVendido(); as producto) {
-					<p class="mb-0 mt-3 text-lg font-bold text-[#1f2937]">{{ producto.nombre }}</p>
-					<p class="mb-0 mt-1 font-mono text-xs text-muted">{{ producto.sku }}</p>
-					<p class="mb-0 mt-4 text-2xl font-bold text-[#4055ba]">
-						{{ producto.unidades | number }} unidades
+					<p class="relative mb-0 mt-3 text-lg font-bold text-[#1f2937]">
+						{{ producto.nombre }}
+					</p>
+					<p class="relative mb-0 mt-1 font-mono text-xs text-muted">{{ producto.sku }}</p>
+
+					<div class="relative mt-4 flex flex-wrap items-end gap-2">
+						<span class="text-3xl font-bold tracking-tight text-[#4055ba]">
+							{{ producto.unidades | number }}
+						</span>
+						<span class="pb-1 text-sm text-muted">unidades</span>
+					</div>
+
+					<p class="relative mb-0 mt-1 text-xs text-muted">
+						Ingresos:
+						<span class="font-semibold text-[#1f2937]">
+							{{
+								producto.ingresos
+									| currency: 'CLP' : 'symbol-narrow' : '1.0-0' : 'es-CL'
+							}}
+						</span>
 					</p>
 				} @else {
-					<p class="mb-0 mt-4 text-sm text-muted">
+					<p class="relative mb-0 mt-4 text-sm text-muted">
 						Sin ventas registradas en el periodo.
 					</p>
 				}
 			</article>
 
-			<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
-				<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
-					Mayor ingreso del ranking
-				</p>
+			<article
+				class="group relative overflow-hidden rounded-2xl border border-border bg-white p-5 shadow-sm transition hover:shadow-md"
+			>
+				<span
+					class="pointer-events-none absolute -right-6 -top-6 h-24 w-24 rounded-full bg-emerald-50"
+					aria-hidden="true"
+				></span>
+
+				<div class="relative flex items-start justify-between gap-3">
+					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
+						Mayor ingreso del ranking
+					</p>
+
+					<span
+						class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-base font-bold text-emerald-700"
+						aria-hidden="true"
+						>$</span
+					>
+				</div>
+
 				@if (productoMayorIngreso(); as producto) {
-					<p class="mb-0 mt-3 text-lg font-bold text-[#1f2937]">{{ producto.nombre }}</p>
-					<p class="mb-0 mt-1 font-mono text-xs text-muted">{{ producto.sku }}</p>
-					<p class="mb-0 mt-4 text-2xl font-bold text-emerald-700">
-						{{
-							producto.ingresos
-								| currency: 'CLP' : 'symbol-narrow' : '1.0-0' : 'es-CL'
-						}}
+					<p class="relative mb-0 mt-3 text-lg font-bold text-[#1f2937]">
+						{{ producto.nombre }}
+					</p>
+					<p class="relative mb-0 mt-1 font-mono text-xs text-muted">{{ producto.sku }}</p>
+
+					<div class="relative mt-4 flex flex-wrap items-end gap-2">
+						<span class="text-3xl font-bold tracking-tight text-emerald-700">
+							{{
+								producto.ingresos
+									| currency: 'CLP' : 'symbol-narrow' : '1.0-0' : 'es-CL'
+							}}
+						</span>
+					</div>
+
+					<p class="relative mb-0 mt-1 text-xs text-muted">
+						{{ producto.unidades | number }} unidades vendidas
 					</p>
 				} @else {
-					<p class="mb-0 mt-4 text-sm text-muted">
+					<p class="relative mb-0 mt-4 text-sm text-muted">
 						Sin ingresos registrados en el periodo.
 					</p>
 				}
 			</article>
 		</div>
 
-		<div class="mb-3">
-			<h3 class="mb-0 text-base font-bold text-[#1f2937]">Ranking de productos</h3>
-			<p class="mb-0 mt-1 text-sm text-muted">
-				Las mini-secciones se calculan sobre los productos devueltos por Analytics.
-			</p>
+		<div class="mb-3 flex flex-wrap items-end justify-between gap-2">
+			<div>
+				<h3 class="mb-0 text-base font-bold text-[#1f2937]">Ranking de productos</h3>
+				<p class="mb-0 mt-1 text-sm text-muted">
+					Ordenado por unidades vendidas en el periodo seleccionado.
+				</p>
+			</div>
 		</div>
 
 		<div class="overflow-x-auto rounded-2xl border border-border bg-white shadow-sm">
@@ -447,24 +770,47 @@
 				<tbody class="divide-y divide-border">
 					@for (fila of ranking(); track fila.productoId; let posicion = $index) {
 						<tr class="transition hover:bg-surface-secondary/60">
-							<td class="px-5 py-3 text-sm font-bold text-muted">
-								{{ posicion + 1 }}
+							<td class="px-5 py-3">
+								<span
+									class="inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold"
+									[class]="
+										posicion === 0
+											? 'bg-amber-100 text-amber-800'
+											: posicion === 1
+												? 'bg-slate-200 text-slate-700'
+												: posicion === 2
+													? 'bg-orange-100 text-orange-800'
+													: 'bg-surface-secondary text-muted'
+									"
+								>
+									{{ posicion + 1 }}
+								</span>
 							</td>
 
 							<td class="px-5 py-3">
-								<div class="flex flex-col">
+								<div class="flex min-w-[180px] flex-col gap-1.5">
 									<span class="text-sm font-semibold text-[#1f2937]">
 										{{ fila.nombre }}
 									</span>
 
-									<span class="font-mono text-xs text-muted">
-										{{ fila.sku }}
+									<span class="font-mono text-xs text-muted">{{ fila.sku }}</span>
+
+									<span
+										class="mt-1 h-1.5 w-full max-w-[220px] overflow-hidden rounded-full bg-surface-secondary"
+										aria-hidden="true"
+									>
+										<span
+											class="block h-full rounded-full bg-[#4055ba]"
+											[style.width.%]="porcentajeRanking(fila.unidades)"
+										></span>
 									</span>
 								</div>
 							</td>
 
-							<td class="px-5 py-3 text-right text-sm font-semibold text-[#1f2937]">
-								{{ fila.unidades | number }}
+							<td class="px-5 py-3 text-right">
+								<span class="text-sm font-bold text-[#1f2937]">
+									{{ fila.unidades | number }}
+								</span>
 							</td>
 
 							<td class="px-5 py-3 text-right text-sm font-semibold text-[#1f2937]">
@@ -478,14 +824,25 @@
 
 					@if (rankingCargando()) {
 						<tr>
-							<td colspan="4" class="px-5 py-10 text-center text-sm text-muted">
+							<td colspan="4" class="px-5 py-12 text-center text-sm text-muted">
 								Cargando ranking…
 							</td>
 						</tr>
 					} @else if (ranking().length === 0) {
 						<tr>
-							<td colspan="4" class="px-5 py-10 text-center text-sm text-muted">
-								Aún no hay productos vendidos en el periodo.
+							<td colspan="4" class="px-5 py-12 text-center">
+								<div
+									class="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#f1f3f5] text-lg text-muted"
+									aria-hidden="true"
+								>
+									▤
+								</div>
+								<p class="mb-0 mt-3 text-sm font-semibold text-[#1f2937]">
+									Aún no hay productos vendidos
+								</p>
+								<p class="mb-0 mt-1 text-xs text-muted">
+									El ranking aparecerá cuando se registren ventas en el periodo.
+								</p>
 							</td>
 						</tr>
 					}
@@ -494,17 +851,55 @@
 		</div>
 	</section>
 
-	<section class="mb-10 border-t border-border pt-8">
-		<div class="mb-4">
-			<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]"
-				>05 · Movimientos</span
-			>
-			<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
-				Movimientos de inventario
-			</h2>
-			<p class="mb-0 mt-1 text-sm text-muted">
-				Unidades, ingresos y operaciones agrupadas por día.
-			</p>
+	<section id="movimientos" class="mb-10 scroll-mt-24 border-t border-border pt-8">
+		<div class="mb-4 flex flex-wrap items-start justify-between gap-3">
+			<div class="flex items-start gap-3">
+				<span
+					class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#eef1ff] text-xs font-bold text-[#4055ba]"
+					aria-hidden="true"
+					>05</span
+				>
+
+				<div>
+					<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]">
+						Movimientos
+					</span>
+					<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
+						Movimientos de inventario
+					</h2>
+					<p class="mb-0 mt-1 text-sm text-muted">
+						Unidades, ingresos y operaciones agrupadas por día.
+					</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="mb-4 grid grid-cols-1 gap-4 sm:grid-cols-3">
+			<article class="rounded-2xl border border-border bg-white p-4 shadow-sm">
+				<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">Unidades</p>
+				<p class="mb-0 mt-2 text-2xl font-bold text-[#1f2937]">
+					{{ totalesMovimientos().unidades | number }}
+				</p>
+			</article>
+
+			<article class="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4 shadow-sm">
+				<p class="m-0 text-xs font-bold uppercase tracking-wider text-emerald-800">
+					Ingresos
+				</p>
+				<p class="mb-0 mt-2 text-2xl font-bold text-emerald-800">
+					{{
+						totalesMovimientos().ingresos
+							| currency: 'CLP' : 'symbol-narrow' : '1.0-0' : 'es-CL'
+					}}
+				</p>
+			</article>
+
+			<article class="rounded-2xl border border-border bg-white p-4 shadow-sm">
+				<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">Operaciones</p>
+				<p class="mb-0 mt-2 text-2xl font-bold text-[#1f2937]">
+					{{ totalesMovimientos().operaciones | number }}
+				</p>
+			</article>
 		</div>
 
 		<div class="overflow-x-auto rounded-2xl border border-border bg-white shadow-sm">
@@ -534,38 +929,49 @@
 						</th>
 					</tr>
 				</thead>
+
 				<tbody class="divide-y divide-border">
 					@for (movimiento of movimientos(); track $index) {
-						<tr class="hover:bg-surface-secondary/60">
+						<tr class="transition hover:bg-surface-secondary/60">
 							<td class="px-5 py-3 text-sm text-[#1f2937]">
 								{{ movimiento.fecha | date: 'dd/MM/yyyy' }}
 							</td>
-							<td class="px-5 py-3 text-sm font-semibold text-[#1f2937]">
-								{{ movimiento.tipo }}
+
+							<td class="px-5 py-3">
+								<span
+									class="inline-flex items-center rounded-full px-2.5 py-1 text-[11px] font-bold tracking-wide"
+									[class]="tonoMovimiento(movimiento.tipo)"
+								>
+									{{ movimiento.tipo }}
+								</span>
 							</td>
-							<td class="px-5 py-3 text-right text-sm">
+
+							<td class="px-5 py-3 text-right text-sm font-semibold text-[#1f2937]">
 								{{ movimiento.unidades | number }}
 							</td>
-							<td class="px-5 py-3 text-right text-sm">
+
+							<td class="px-5 py-3 text-right text-sm text-[#1f2937]">
 								{{
 									movimiento.ingresos
 										| currency: 'CLP' : 'symbol-narrow' : '1.0-0' : 'es-CL'
 								}}
 							</td>
-							<td class="px-5 py-3 text-right text-sm">
+
+							<td class="px-5 py-3 text-right text-sm text-muted">
 								{{ movimiento.operaciones | number }}
 							</td>
 						</tr>
 					}
+
 					@if (movimientosCargando()) {
 						<tr>
-							<td colspan="5" class="px-5 py-10 text-center text-sm text-muted">
+							<td colspan="5" class="px-5 py-12 text-center text-sm text-muted">
 								Cargando movimientos…
 							</td>
 						</tr>
 					} @else if (movimientos().length === 0) {
 						<tr>
-							<td colspan="5" class="px-5 py-10 text-center text-sm text-muted">
+							<td colspan="5" class="px-5 py-12 text-center text-sm text-muted">
 								No hay movimientos para el periodo seleccionado.
 							</td>
 						</tr>
@@ -575,17 +981,27 @@
 		</div>
 	</section>
 
-	<section class="mb-10 border-t border-border pt-8">
-		<div class="mb-4">
-			<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]"
-				>06 · Auditoría</span
-			>
-			<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
-				Trazabilidad de operaciones
-			</h2>
-			<p class="mb-0 mt-1 text-sm text-muted">
-				Últimos registros de auditoría del servicio Analytics.
-			</p>
+	<section id="auditoria" class="mb-10 scroll-mt-24 border-t border-border pt-8">
+		<div class="mb-4 flex flex-wrap items-start justify-between gap-3">
+			<div class="flex items-start gap-3">
+				<span
+					class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#eef1ff] text-xs font-bold text-[#4055ba]"
+					aria-hidden="true"
+					>06</span
+				>
+
+				<div>
+					<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]">
+						Auditoría
+					</span>
+					<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
+						Trazabilidad de operaciones
+					</h2>
+					<p class="mb-0 mt-1 text-sm text-muted">
+						Últimos registros de auditoría del servicio Analytics.
+					</p>
+				</div>
+			</div>
 		</div>
 
 		<div class="overflow-x-auto rounded-2xl border border-border bg-white shadow-sm">
@@ -627,49 +1043,65 @@
 						</th>
 					</tr>
 				</thead>
+
 				<tbody class="divide-y divide-border">
 					@for (item of auditoria(); track item.eventoId) {
-						<tr class="hover:bg-surface-secondary/60">
+						<tr class="transition hover:bg-surface-secondary/60">
 							<td class="whitespace-nowrap px-4 py-3 text-xs text-muted">
 								{{ item.ocurridoEn | date: 'dd/MM/yyyy HH:mm:ss' }}
 							</td>
-							<td class="px-4 py-3 text-sm font-semibold text-[#1f2937]">
-								{{ item.tipo }}
+
+							<td class="px-4 py-3">
+								<span
+									class="inline-flex items-center rounded-full bg-[#eef2f7] px-2.5 py-1 text-[11px] font-bold tracking-wide text-[#4b5563]"
+								>
+									{{ item.tipo }}
+								</span>
 							</td>
+
 							<td class="px-4 py-3">
 								<div class="text-sm font-semibold">{{ item.nombre }}</div>
 								<div class="font-mono text-xs text-muted">{{ item.sku }}</div>
 							</td>
-							<td class="px-4 py-3 text-right text-sm">
+
+							<td class="px-4 py-3 text-right text-sm font-semibold text-[#1f2937]">
 								{{ item.cantidad | number }}
 							</td>
-							<td class="px-4 py-3 text-right text-xs">
-								{{ item.stockDisponibleAntes | number }} →
+
+							<td class="whitespace-nowrap px-4 py-3 text-right font-mono text-xs">
+								{{ item.stockDisponibleAntes | number }}
+								<span class="text-muted">→</span>
 								{{ item.stockDisponibleDespues | number }}
 							</td>
-							<td class="px-4 py-3 text-right text-xs">
-								{{ item.stockReservadoAntes | number }} →
+
+							<td class="whitespace-nowrap px-4 py-3 text-right font-mono text-xs">
+								{{ item.stockReservadoAntes | number }}
+								<span class="text-muted">→</span>
 								{{ item.stockReservadoDespues | number }}
 							</td>
+
 							<td class="px-4 py-3 text-xs">
-								<div>{{ idCorto(item.pedidoId) }}</div>
-								<div class="text-muted">{{ idCorto(item.operacionId) }}</div>
+								<div class="font-mono">{{ idCorto(item.pedidoId) }}</div>
+								<div class="font-mono text-muted">{{ idCorto(item.operacionId) }}</div>
 							</td>
-							<td class="px-4 py-3 text-xs">{{ idCorto(item.usuarioId) }}</td>
-							<td class="px-4 py-3 font-mono text-xs">
+
+							<td class="px-4 py-3 font-mono text-xs">{{ idCorto(item.usuarioId) }}</td>
+
+							<td class="px-4 py-3 font-mono text-xs text-muted">
 								{{ idCorto(item.correlationId) }}
 							</td>
 						</tr>
 					}
+
 					@if (auditoriaCargando()) {
 						<tr>
-							<td colspan="9" class="px-5 py-10 text-center text-sm text-muted">
+							<td colspan="9" class="px-5 py-12 text-center text-sm text-muted">
 								Cargando auditoría…
 							</td>
 						</tr>
 					} @else if (auditoria().length === 0) {
 						<tr>
-							<td colspan="9" class="px-5 py-10 text-center text-sm text-muted">
+							<td colspan="9" class="px-5 py-12 text-center text-sm text-muted">
 								No hay registros de auditoría para el periodo.
 							</td>
 						</tr>
@@ -679,69 +1111,226 @@
 		</div>
 	</section>
 
-	<section class="mb-10 border-t border-border pt-8">
-		<div class="mb-4">
-			<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]"
-				>07 · Estado Analytics</span
-			>
-			<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
-				Estado de Kafka Streams
-			</h2>
-			<p class="mb-0 mt-1 text-sm text-muted">
-				Estado de los stores y contadores expuestos por el servicio.
-			</p>
+	<section id="streams" class="mb-10 scroll-mt-24 border-t border-border pt-8">
+		<div class="mb-4 flex flex-wrap items-start justify-between gap-3">
+			<div class="flex items-start gap-3">
+				<span
+					class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#eef1ff] text-xs font-bold text-[#4055ba]"
+					aria-hidden="true"
+					>07</span
+				>
+
+				<div>
+					<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]">
+						Estado Analytics
+					</span>
+					<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
+						Kafka Streams
+					</h2>
+					<p class="mb-0 mt-1 text-sm text-muted">
+						Estado del motor de streaming, sus state stores y los contadores que expone
+						el servicio de Analytics.
+					</p>
+				</div>
+			</div>
+
+			@if (estadoStreams(); as estado) {
+				<span
+					class="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold"
+					[class]="estadoStreamsTono()"
+				>
+					<span class="h-2 w-2 rounded-full bg-current" aria-hidden="true"></span>
+					{{ estadoStreamsEtiqueta() }}
+					<span class="font-mono text-[10px] opacity-70">{{ estado.estado }}</span>
+				</span>
+			}
 		</div>
+
 		@if (estadoStreams(); as estado) {
-			<div class="grid grid-cols-2 gap-4 md:grid-cols-5">
-				<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
-					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">Estado</p>
-					<p class="mb-0 mt-3 text-xl font-bold text-[#1f2937]">{{ estado.estado }}</p>
-				</article>
-				<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
-					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">Stores</p>
-					<p class="mb-0 mt-3 text-2xl font-bold">{{ estado.stores }}</p>
-				</article>
-				<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
-					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
-						Productos
+			<div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+				<article
+					class="relative overflow-hidden rounded-2xl border p-5 shadow-sm lg:col-span-1"
+					[class]="estadoStreamsTono()"
+				>
+					<span
+						class="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full bg-white/50"
+						aria-hidden="true"
+					></span>
+
+					<p class="relative m-0 text-xs font-bold uppercase tracking-wider opacity-80">
+						Estado del motor
 					</p>
-					<p class="mb-0 mt-3 text-2xl font-bold">{{ estado.productos | number }}</p>
-				</article>
-				<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
-					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
-						Movimientos
+
+					<div class="relative mt-4 flex items-center gap-3">
+						<span class="relative flex h-3 w-3" aria-hidden="true">
+							<span
+								class="absolute inline-flex h-full w-full animate-ping rounded-full bg-current opacity-40"
+							></span>
+							<span class="relative inline-flex h-3 w-3 rounded-full bg-current"></span>
+						</span>
+
+						<p class="m-0 text-2xl font-bold">{{ estadoStreamsEtiqueta() }}</p>
+					</div>
+
+					<p class="relative mb-0 mt-2 font-mono text-xs opacity-80">
+						{{ estado.estado }}
 					</p>
-					<p class="mb-0 mt-3 text-2xl font-bold">{{ estado.movimientos | number }}</p>
+
+					<div class="relative mt-5 flex flex-wrap gap-2 text-[11px] font-semibold">
+						<span class="inline-flex items-center gap-1.5 rounded-full bg-white/70 px-2.5 py-1">
+							<span class="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true"></span>
+							{{ estado.stores.length | number }}
+							{{ estado.stores.length === 1 ? 'store' : 'stores' }}
+						</span>
+						<span class="inline-flex items-center gap-1.5 rounded-full bg-white/70 px-2.5 py-1">
+							<span class="h-1.5 w-1.5 rounded-full bg-current" aria-hidden="true"></span>
+							{{ estado.eventos | number }} eventos
+						</span>
+					</div>
 				</article>
-				<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
-					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">Eventos</p>
-					<p class="mb-0 mt-3 text-2xl font-bold">{{ estado.eventos | number }}</p>
-				</article>
+
+				<div class="grid grid-cols-2 gap-4 lg:col-span-2 lg:grid-cols-2">
+					<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+						<div class="flex items-start justify-between gap-3">
+							<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
+								Productos
+							</p>
+							<span
+								class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-sm text-blue-700"
+								aria-hidden="true"
+								>▤</span
+							>
+						</div>
+						<p class="mb-0 mt-3 text-2xl font-bold text-[#1f2937]">
+							{{ estado.productos | number }}
+						</p>
+						<p class="mb-0 mt-1 text-xs text-muted">En el state store</p>
+					</article>
+
+					<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+						<div class="flex items-start justify-between gap-3">
+							<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
+								Movimientos
+							</p>
+							<span
+								class="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-50 text-sm text-teal-700"
+								aria-hidden="true"
+								>⇄</span
+							>
+						</div>
+						<p class="mb-0 mt-3 text-2xl font-bold text-[#1f2937]">
+							{{ estado.movimientos | number }}
+						</p>
+						<p class="mb-0 mt-1 text-xs text-muted">Registros procesados</p>
+					</article>
+
+					<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+						<div class="flex items-start justify-between gap-3">
+							<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
+								Eventos
+							</p>
+							<span
+								class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#eef1ff] text-sm text-[#4055ba]"
+								aria-hidden="true"
+								>✉</span
+							>
+						</div>
+						<p class="mb-0 mt-3 text-2xl font-bold text-[#1f2937]">
+							{{ estado.eventos | number }}
+						</p>
+						<p class="mb-0 mt-1 text-xs text-muted">Procesados por el motor</p>
+					</article>
+
+					<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
+						<div class="flex items-start justify-between gap-3">
+							<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
+								State stores
+							</p>
+							<span
+								class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-sm text-[#1f2937]"
+								aria-hidden="true"
+								>◫</span
+							>
+						</div>
+						<p class="mb-0 mt-3 text-2xl font-bold text-[#1f2937]">
+							{{ estado.stores.length | number }}
+						</p>
+						<p class="mb-0 mt-1 text-xs text-muted">Consultables vía API</p>
+					</article>
+				</div>
+			</div>
+
+			<div class="mt-4 rounded-2xl border border-border bg-white p-5 shadow-sm">
+				<div class="flex flex-wrap items-center justify-between gap-2">
+					<p class="m-0 text-xs font-bold uppercase tracking-wider text-muted">
+						State stores activos
+					</p>
+
+					<span class="text-xs text-muted">
+						{{ estado.stores.length | number }}
+						{{ estado.stores.length === 1 ? 'store registrado' : 'stores registrados' }}
+					</span>
+				</div>
+
+				<div class="mt-3 flex flex-wrap gap-2">
+					@for (store of estado.stores; track store) {
+						<span
+							class="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface-secondary px-3 py-1.5 font-mono text-xs text-[#1f2937]"
+						>
+							<span class="h-1.5 w-1.5 rounded-full bg-[#4055ba]" aria-hidden="true"></span>
+							{{ store }}
+						</span>
+					}
+
+					@if (estado.stores.length === 0) {
+						<span class="text-sm text-muted">Sin stores expuestos por el servicio.</span>
+					}
+				</div>
 			</div>
 		} @else if (estadoStreamsCargando()) {
-			<p class="rounded-2xl border border-border bg-white p-6 text-sm text-muted">
+			<div class="rounded-2xl border border-border bg-white p-6 text-sm text-muted shadow-sm">
 				Consultando estado de Kafka Streams…
-			</p>
+			</div>
 		} @else {
-			<p class="rounded-2xl border border-border bg-white p-6 text-sm text-muted">
-				No se pudo obtener el estado de Analytics.
-			</p>
+			<div class="rounded-2xl border border-red-200 bg-red-50/60 p-6 shadow-sm">
+				<p class="m-0 text-sm font-bold text-red-800">No se pudo obtener el estado de Analytics</p>
+				<p class="mb-0 mt-1 text-xs text-red-800/80">
+					Revisa que el servicio de Analytics y Kafka Streams estén disponibles.
+				</p>
+			</div>
 		}
 	</section>
 
-	<section class="mb-10 border-t border-border pt-8">
-		<div class="mb-4">
-			<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]"
-				>08 · Actividad reciente</span
-			>
+	<section id="eventos" class="mb-10 scroll-mt-24 border-t border-border pt-8">
+		<div class="mb-4 flex flex-wrap items-start justify-between gap-3">
+			<div class="flex items-start gap-3">
+				<span
+					class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#eef1ff] text-xs font-bold text-[#4055ba]"
+					aria-hidden="true"
+					>08</span
+				>
 
-			<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
-				Últimos eventos auditados
-			</h2>
+				<div>
+					<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]">
+						Actividad reciente
+					</span>
+					<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
+						Últimos eventos auditados
+					</h2>
+					<p class="mb-0 mt-1 text-sm text-muted">
+						Detalle crudo de los eventos recibidos por la cola de auditoría.
+					</p>
+				</div>
+			</div>
 
-			<p class="mb-0 mt-1 text-sm text-muted">
-				Detalle crudo de los eventos recibidos por la cola de auditoría.
-			</p>
+			@if (!ultimosCargando()) {
+				<span
+					class="inline-flex items-center gap-1.5 rounded-full border border-border bg-white px-3 py-1.5 text-xs font-semibold text-muted"
+				>
+					<span class="font-bold text-[#1f2937]">{{ ultimos().length | number }}</span>
+					eventos
+				</span>
+			}
 		</div>
 
 		<div class="overflow-x-auto rounded-2xl border border-border bg-white shadow-sm">
@@ -781,7 +1370,7 @@
 				<tbody class="divide-y divide-border">
 					@for (evento of ultimos(); track $index) {
 						<tr class="transition hover:bg-surface-secondary/60">
-							<td class="px-5 py-3 text-sm text-muted">
+							<td class="whitespace-nowrap px-5 py-3 text-sm text-muted">
 								{{ evento.recibidoAt | date: 'dd/MM/yyyy HH:mm:ss' }}
 							</td>
 
@@ -806,14 +1395,25 @@
 
 					@if (ultimosCargando()) {
 						<tr>
-							<td colspan="4" class="px-5 py-10 text-center text-sm text-muted">
+							<td colspan="4" class="px-5 py-12 text-center text-sm text-muted">
 								Cargando eventos…
 							</td>
 						</tr>
 					} @else if (ultimos().length === 0) {
 						<tr>
-							<td colspan="4" class="px-5 py-10 text-center text-sm text-muted">
-								Todavía no hay eventos auditados. Crea un pedido para verlos aquí.
+							<td colspan="4" class="px-5 py-12 text-center">
+								<div
+									class="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-[#f1f3f5] text-lg text-muted"
+									aria-hidden="true"
+								>
+									✉
+								</div>
+								<p class="mb-0 mt-3 text-sm font-semibold text-[#1f2937]">
+									Todavía no hay eventos auditados
+								</p>
+								<p class="mb-0 mt-1 text-xs text-muted">
+									Crea un pedido para verlos aparecer aquí.
+								</p>
 							</td>
 						</tr>
 					}
@@ -822,63 +1422,116 @@
 		</div>
 	</section>
 
-	<section class="border-t border-border pt-8">
-		<div class="mb-4">
-			<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]"
-				>09 · Operación</span
+	<section id="operacion" class="scroll-mt-24 border-t border-border pt-8">
+		<div class="mb-4 flex flex-wrap items-start justify-between gap-3">
+			<div class="flex items-start gap-3">
+				<span
+					class="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#eef1ff] text-xs font-bold text-[#4055ba]"
+					aria-hidden="true"
+					>09</span
+				>
+
+				<div>
+					<span class="text-xs font-bold uppercase tracking-[0.18em] text-[#4055ba]">
+						Operación
+					</span>
+					<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
+						Estado RabbitMQ
+					</h2>
+					<p class="mb-0 mt-1 text-sm text-muted">
+						Totales del broker según la Management API.
+					</p>
+				</div>
+			</div>
+
+			<a
+				routerLink="/admin/rabbitmq"
+				class="rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-semibold text-[#1f2937] no-underline transition hover:bg-surface-secondary"
 			>
-
-			<h2 class="mb-0 mt-1 text-xl font-bold tracking-tight text-[#1f2937]">
-				Estado RabbitMQ
-			</h2>
-
-			<p class="mb-0 mt-1 text-sm text-muted">Totales del broker según la Management API.</p>
+				Administrar RabbitMQ →
+			</a>
 		</div>
 
 		<div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
 			<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
-				<p class="m-0 text-sm font-medium text-muted">Mensajes</p>
-
+				<div class="flex items-center justify-between gap-2">
+					<p class="m-0 text-sm font-medium text-muted">Mensajes</p>
+					<span
+						class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-sm text-blue-700"
+						aria-hidden="true"
+						>✉</span
+					>
+				</div>
 				<p class="mb-0 mt-3 text-2xl font-bold tracking-tight text-[#1f2937]">
 					{{ overview()?.queueTotals?.messages ?? 0 }}
 				</p>
 			</article>
 
 			<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
-				<p class="m-0 text-sm font-medium text-muted">Listos</p>
-
+				<div class="flex items-center justify-between gap-2">
+					<p class="m-0 text-sm font-medium text-muted">Listos</p>
+					<span
+						class="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-sm text-emerald-700"
+						aria-hidden="true"
+						>▶</span
+					>
+				</div>
 				<p class="mb-0 mt-3 text-2xl font-bold tracking-tight text-[#1f2937]">
 					{{ overview()?.queueTotals?.messagesReady ?? 0 }}
 				</p>
 			</article>
 
 			<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
-				<p class="m-0 text-sm font-medium text-muted">Sin ack</p>
-
+				<div class="flex items-center justify-between gap-2">
+					<p class="m-0 text-sm font-medium text-muted">Sin ack</p>
+					<span
+						class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-sm text-amber-700"
+						aria-hidden="true"
+						>◌</span
+					>
+				</div>
 				<p class="mb-0 mt-3 text-2xl font-bold tracking-tight text-[#1f2937]">
 					{{ overview()?.queueTotals?.messagesUnacknowledged ?? 0 }}
 				</p>
 			</article>
 
 			<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
-				<p class="m-0 text-sm font-medium text-muted">Consumidores</p>
-
+				<div class="flex items-center justify-between gap-2">
+					<p class="m-0 text-sm font-medium text-muted">Consumidores</p>
+					<span
+						class="flex h-8 w-8 items-center justify-center rounded-lg bg-teal-50 text-sm text-teal-700"
+						aria-hidden="true"
+						>◉</span
+					>
+				</div>
 				<p class="mb-0 mt-3 text-2xl font-bold tracking-tight text-[#1f2937]">
 					{{ overview()?.objectTotals?.consumers ?? 0 }}
 				</p>
 			</article>
 
 			<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
-				<p class="m-0 text-sm font-medium text-muted">Colas</p>
-
+				<div class="flex items-center justify-between gap-2">
+					<p class="m-0 text-sm font-medium text-muted">Colas</p>
+					<span
+						class="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 text-sm text-[#1f2937]"
+						aria-hidden="true"
+						>▤</span
+					>
+				</div>
 				<p class="mb-0 mt-3 text-2xl font-bold tracking-tight text-[#1f2937]">
 					{{ overview()?.objectTotals?.queues ?? 0 }}
 				</p>
 			</article>
 
 			<article class="rounded-2xl border border-border bg-white p-5 shadow-sm">
-				<p class="m-0 text-sm font-medium text-muted">Exchanges</p>
-
+				<div class="flex items-center justify-between gap-2">
+					<p class="m-0 text-sm font-medium text-muted">Exchanges</p>
+					<span
+						class="flex h-8 w-8 items-center justify-center rounded-lg bg-[#e8f0fe] text-sm text-[#1a56b8]"
+						aria-hidden="true"
+						>⑂</span
+					>
+				</div>
 				<p class="mb-0 mt-3 text-2xl font-bold tracking-tight text-[#1f2937]">
 					{{ overview()?.objectTotals?.exchanges ?? 0 }}
 				</p>

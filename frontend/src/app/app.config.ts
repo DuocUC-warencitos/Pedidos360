@@ -5,7 +5,7 @@ import {
 	withInterceptors,
 	withInterceptorsFromDi
 } from '@angular/common/http';
-import { ApplicationConfig } from '@angular/core';
+import { ApplicationConfig, LOCALE_ID } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import {
   MSAL_GUARD_CONFIG,
@@ -36,6 +36,12 @@ export const appConfig: ApplicationConfig =
 		provideRouter(routes),
 		provideHttpClient(withInterceptorsFromDi(), withInterceptors([errorInterceptor])),
 		provideTanStackQuery(new QueryClient()),
+		// Los datos de este locale se registran en `main.ts` con registerLocaleData().
+		// Se usa "es-CL" como idioma por defecto de toda la aplicación (fechas, números y monedas).
+		{
+			provide: LOCALE_ID,
+			useValue: 'es-CL'
+		},
 		{
 			provide: AUTHENTICATION_PROVIDER,
 			useClass: MsalAuthenticationProvider

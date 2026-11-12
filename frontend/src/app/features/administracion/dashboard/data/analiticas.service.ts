@@ -1,13 +1,15 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 
 import { construirParams } from '@core/api/http-params';
 
+import { normalizarAuditoria } from './analiticas.mapper';
 import { apiAdminAnaliticas } from './dashboard.api';
 import {
 	AlertaStock,
 	AuditoriaItem,
+	AuditoriaItemResponse,
 	EstadoStreamsResponse,
 	MovimientoDia,
 	ResumenAnaliticaResponse,
@@ -39,9 +41,11 @@ export class AnaliticasService {
 	}
 
 	obtenerAuditoria(desde?: string, hasta?: string, limit = 20): Observable<AuditoriaItem[]> {
-		return this.http.get<AuditoriaItem[]>(apiAdminAnaliticas.get.auditoria, {
-			params: construirParams({ desde, hasta, limit }),
-		});
+		return this.http
+			.get<AuditoriaItemResponse[]>(apiAdminAnaliticas.get.auditoria, {
+				params: construirParams({ desde, hasta, limit }),
+			})
+			.pipe(map((items) => items.map(normalizarAuditoria)));
 	}
 
 	obtenerEstado(): Observable<EstadoStreamsResponse> {

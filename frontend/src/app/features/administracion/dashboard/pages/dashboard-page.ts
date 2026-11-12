@@ -42,6 +42,19 @@ const MESES_VENTANA = 12;
 const ALTO_BARRAS_PX = 150;
 const LIMITE_ULTIMOS = 20;
 
+const KPI_ICONOS = ['✚', '✓', '%', '⇄', '✕', '⊘', '⚠', 'Σ'];
+
+const KPI_TONOS = [
+    'bg-blue-50 text-blue-700',
+    'bg-emerald-50 text-emerald-700',
+    'bg-[#eef1ff] text-[#4055ba]',
+    'bg-teal-50 text-teal-700',
+    'bg-red-50 text-red-700',
+    'bg-amber-50 text-amber-700',
+    'bg-rose-50 text-rose-700',
+    'bg-slate-100 text-[#1f2937]',
+];
+
 function aIso(fecha: Date): string
 {
     const anio = fecha.getFullYear();
@@ -59,7 +72,7 @@ function claveDeMes(fecha: Date): string
 @Component({
     selector: 'app-dashboard-page',
     standalone: true,
-    imports: [DatePipe, DecimalPipe, CurrencyPipe],
+    imports: [DatePipe, DecimalPipe, CurrencyPipe, RouterLink],
     templateUrl: './dashboard-page.html',
 })
 export class DashboardPage
@@ -137,6 +150,10 @@ export class DashboardPage
 
     protected readonly maxMes = computed(() =>
         Math.max(1, ...this.mesesAgrupados().map((mes) => mes.total))
+    );
+
+    protected readonly totalAnual = computed(() =>
+        this.mesesAgrupados().reduce((acc, mes) => acc + mes.total, 0)
     );
 
     protected readonly tituloMesSeleccionado = computed(() =>
@@ -281,6 +298,18 @@ export class DashboardPage
         this.movimientosQuery.isPending()
     );
 
+    protected readonly totalesMovimientos = computed(() =>
+    {
+        return this.movimientos().reduce(
+            (acc, movimiento) => ({
+                unidades: acc.unidades + movimiento.unidades,
+                ingresos: acc.ingresos + movimiento.ingresos,
+                operaciones: acc.operaciones + movimiento.operaciones,
+            }),
+            { unidades: 0, ingresos: 0, operaciones: 0 }
+        );
+    });
+
     protected readonly auditoria = computed(() =>
         this.auditoriaQuery.data() ?? []
     );
@@ -303,6 +332,10 @@ export class DashboardPage
 
     protected readonly rankingCargando = computed(() =>
         this.rankingQuery.isPending()
+    );
+
+    protected readonly maxUnidadesRanking = computed(() =>
+        Math.max(1, ...this.ranking().map((producto) => producto.unidades))
     );
 
     protected readonly productoMasVendido = computed<TopProducto | null>(() =>
@@ -388,9 +421,88 @@ export class DashboardPage
         }
     }
 
-    protected idCorto(id: string | null): string
+    protected kpiIcono(indice: number): string
     {
-        if (id === null)
+        return KPI_ICONOS[indice] ?? '•';
+    }
+
+    protected kpiTono(indice: number): string
+    {
+        return KPI_TONOS[indice] ?? 'bg-slate-100 text-[#1f2937]';
+    }
+
+    protected porcentajeRanking(unidades: number): number
+    {
+        return Math.round((unidades / this.maxUnidadesRanking()) * 100);
+    }
+
+    protected tonoMovimiento(tipo: string): string
+    {
+        const normalizado = tipo.toUpperCase();
+
+        if (normalizado.includes('ENTRADA') || normalizado.includes('CONFIRM'))
+            return 'bg-emerald-50 text-emerald-700';
+
+        if (normalizado.includes('SALIDA') || normalizado.includes('RESERV'))
+            return 'bg-blue-50 text-blue-700';
+
+        if (normalizado.includes('AJUSTE'))
+            return 'bg-amber-50 text-amber-700';
+
+        return 'bg-[#eef2f7] text-[#4b5563]';
+    }
+
+    protected estadoStreamsEtiqueta(): string
+    {
+        const estado = this.estadoStreams()?.estado.toUpperCase() ?? '';
+
+        switch (estado)
+        {
+            case 'RUNNING':
+                return 'Operativo';
+
+            case 'REBALANCING':
+                return 'Reequilibrando';
+
+            case 'CREATED':
+                return 'Iniciando';
+
+            case 'PENDING_SHUTDOWN':
+                return 'Deteniéndose';
+
+            case 'NOT_RUNNING':
+                return 'Detenido';
+
+            case 'ERROR':
+                return 'Con errores';
+
+            default:
+                return estado || 'Desconocido';
+        }
+    }
+
+    protected estadoStreamsTono(): string
+    {
+        const estado = this.estadoStreams()?.estado.toUpperCase() ?? '';
+
+        switch (estado)
+        {
+            case 'RUNNING':
+                return 'border-emerald-200 bg-emerald-50/70 text-emerald-900';
+
+            case 'REBALANCING':
+            case 'CREATED':
+            case 'PENDING_SHUTDOWN':
+                return 'border-amber-200 bg-amber-50/70 text-amber-900';
+
+            default:
+                return 'border-red-200 bg-red-50/70 text-red-900';
+        }
+    }
+
+    protected idCorto(id: string | null | undefined): string
+    {
+        if (id == null)
             return '—';
 
         return id.length > 8 ? `${id.slice(0, 8)}…` : id;

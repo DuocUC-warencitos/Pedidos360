@@ -68,22 +68,48 @@ export interface ResumenAnaliticaResponse {
     ingresosConfirmadosMes: number;
 }
 
+/**
+ * Contrato HTTP de auditoría.
+ *
+ * El backend serializa con `spring.jackson.default-property-inclusion: non_null`,
+ * por lo que las propiedades sin valor viajan ausentes (no como `null`). Por eso
+ * las referencias opcionales se declaran opcionales aquí y se normalizan en
+ * `normalizarAuditoria()` antes de entrar al dominio de la aplicación.
+ */
+export interface AuditoriaItemResponse {
+	eventoId: string;
+	tipo: string;
+	productoId: string;
+	nombre?: string | null;
+	sku?: string | null;
+	pedidoId?: string | null;
+	operacionId?: string | null;
+	cantidad: number;
+	stockDisponibleAntes?: number | null;
+	stockDisponibleDespues?: number | null;
+	stockReservadoAntes?: number | null;
+	stockReservadoDespues?: number | null;
+	ocurridoEn: string;
+	correlationId?: string | null;
+	usuarioId?: string | null;
+}
+
 export interface AuditoriaItem {
 	eventoId: string;
 	tipo: string;
 	productoId: string;
-	nombre: string;
-	sku: string;
-	pedidoId: string;
-	operacionId: string;
+	nombre: string | null;
+	sku: string | null;
+	pedidoId: string | null;
+	operacionId: string | null;
 	cantidad: number;
 	stockDisponibleAntes: number | null;
 	stockDisponibleDespues: number | null;
 	stockReservadoAntes: number | null;
 	stockReservadoDespues: number | null;
 	ocurridoEn: string;
-	correlationId: string;
-	usuarioId: string;
+	correlationId: string | null;
+	usuarioId: string | null;
 }
 
 export interface MovimientoDia {
