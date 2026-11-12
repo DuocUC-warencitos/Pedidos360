@@ -7,14 +7,20 @@ import java.util.Map;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
+import org.apache.kafka.streams.errors.MissingSourceTopicException;
+import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler;
+import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler.StreamThreadExceptionResponse;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Named;
 import org.apache.kafka.streams.kstream.Repartitioned;
 import org.apache.kafka.streams.state.Stores;
+import org.springframework.boot.kafka.autoconfigure.KafkaProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.annotation.EnableKafkaStreams;
+import org.springframework.kafka.config.StreamsBuilderFactoryBeanConfigurer;
+import org.springframework.kafka.core.CleanupConfig;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -41,6 +47,47 @@ public class KafkaStreamsConfig {
             .addModule(new JavaTimeModule())
             .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
             .build();
+    }
+
+    /**
+     * Reemplaza al configurer que crea Spring Boot para conservar la misma
+     * configuracion de auto-startup/cleanup y ademas tolerar que los topics de
+     * origen aparezcan un instante despues del arranque del servicio.
+     *
+     * Sin esto, Kafka Streams recibe MissingSourceTopicException, se apaga y
+     * queda en estado ERROR para siempre, por lo que todas las consultas de
+     * analiticas responden HTTP 500.
+     */
+    @Bean
+    public StreamsBuilderFactoryBeanConfigurer analyticsStreamsConfigurer(
+        KafkaProperties kafkaProperties) 
+    {
+        KafkaProperties.Streams streams = kafkaProperties.getStreams();
+        KafkaProperties.Cleanup cleanup = streams.getCleanup();
+        CleanupConfig cleanupConfig = new CleanupConfig(
+            cleanup.isOnStartup(),
+            cleanup.isOnShutdown()
+        );
+
+        return factoryBean -> 
+        {
+            factoryBean.setAutoStartup(streams.isAutoStartup());
+            factoryBean.setCleanupConfig(cleanupConfig);
+            factoryBean.setStreamsUncaughtExceptionHandler(
+                KafkaStreamsConfig::reintentarSiFaltanTopics
+            );
+        };
+    }
+
+    private static StreamThreadExceptionResponse reintentarSiFaltanTopics(
+        Throwable ex) 
+    {
+        if (ex instanceof MissingSourceTopicException) 
+        {
+            return StreamThreadExceptionResponse.REPLACE_THREAD;
+        }
+
+        return StreamThreadExceptionResponse.SHUTDOWN_CLIENT;
     }
 
     @Bean

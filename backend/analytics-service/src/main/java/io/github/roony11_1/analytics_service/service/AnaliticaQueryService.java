@@ -361,11 +361,12 @@ public class AnaliticaQueryService
     {
         KafkaStreams streams = streamsFactory.getKafkaStreams();
 
-        if (streams == null) 
+        if (streams == null || !streams.state().isRunningOrRebalancing()) 
         {
             throw new ResponseStatusException(
                 HttpStatus.SERVICE_UNAVAILABLE,
-                "Kafka Streams todavía no está listo"
+                "Kafka Streams no está disponible (estado: "
+                    + (streams == null ? "CREATED" : streams.state().name()) + ")"
             );
         }
 
@@ -380,6 +381,14 @@ public class AnaliticaQueryService
             throw new ResponseStatusException(
                 HttpStatus.SERVICE_UNAVAILABLE,
                 "Kafka Streams todavía no está listo",
+                ex
+            );
+        } catch (IllegalStateException ex) {
+            // KafkaStreams.store(...) lanza IllegalStateException cuando el
+            // cliente está en ERROR o cerrandose, no solo InvalidStateStoreException.
+            throw new ResponseStatusException(
+                HttpStatus.SERVICE_UNAVAILABLE,
+                "Kafka Streams no está disponible",
                 ex
             );
         }

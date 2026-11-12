@@ -17,6 +17,8 @@ services:
             - "80:80"
         depends_on:
             - pedidos-gateway
+        networks:
+            - pedidos360
 
     pedidos-gateway:
         build:
@@ -34,6 +36,8 @@ services:
             - producto-service
             - pedidos-service
             - rabbit-admin-service
+        networks:
+            - pedidos360
 
     pedidos-service:
         build:
@@ -54,6 +58,8 @@ services:
         depends_on:
             - producto-service
             - rabbitmq
+        networks:
+            - pedidos360
 
     producto-service:
         build:
@@ -69,6 +75,8 @@ services:
             KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
         depends_on:
             - kafka
+        networks:
+            - pedidos360
 
     rabbit-admin-service:
         build:
@@ -88,6 +96,8 @@ services:
             RABBITMQ_MANAGEMENT_URL: ${RABBITMQ_MANAGEMENT_URL}
         depends_on:
             - rabbitmq
+        networks:
+            - pedidos360
 
     analytics-service:
         build:
@@ -99,6 +109,8 @@ services:
             KAFKA_BOOTSTRAP_SERVERS: ${KAFKA_BOOTSTRAP_SERVERS:-kafka:9092}
         depends_on:
             - kafka
+        networks:
+            - pedidos360
 
     rabbitmq:
         image: rabbitmq:3-management
@@ -111,10 +123,12 @@ services:
             RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
         volumes:
             - rabbitmq_data:/var/lib/rabbitmq
+        networks:
+            - pedidos360
 
     kafka:
         image: apache/kafka:4.2.2
-        container_name: query-analytics-kafka
+        container_name: kafka
         environment:
             KAFKA_NODE_ID: 1
             KAFKA_PROCESS_ROLES: broker,controller
@@ -133,19 +147,30 @@ services:
             KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
 
             KAFKA_NUM_PARTITIONS: 3
-            KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+            KAFKA_LOG_DIRS: /var/lib/kafka/data
+        volumes:
+            - kafka_data:/var/lib/kafka/data
+        networks:
+            - pedidos360
 
     kafka-ui:
         image: provectuslabs/kafka-ui:latest
-        container_name: query-analytics-kafka-ui
+        container_name: kafka-ui
         ports:
         - "8081:8080"
         environment:
             DYNAMIC_CONFIG_ENABLED: "true"
-            KAFKA_CLUSTERS_0_NAME: query-analytics
+            KAFKA_CLUSTERS_0_NAME: pedidos360
             KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
         depends_on:
         - kafka
+        networks:
+            - pedidos360
 
 volumes:
   rabbitmq_data:
+  kafka_data:
+
+networks:
+  pedidos360:
+    name: pedidos360

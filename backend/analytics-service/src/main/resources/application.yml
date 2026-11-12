@@ -37,6 +37,8 @@ management:
                 include: health,info
 
 app:
+    kafka:
+        replication-factor: ${KAFKA_REPLICATION_FACTOR:1}
     security:
         cors:
             enabled: ${CORS_ENABLED:true}
