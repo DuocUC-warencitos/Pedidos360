@@ -33,3 +33,14 @@ Se despliega con:
 ```powershell
 .\infra\scripts\deploy-kafka-cluster.ps1
 ```
+
+## Servicios en EC2 (`pedidos-service/`, `producto-service/`, `rabbit-admin/`, `analytics-service/`)
+
+Cada carpeta contiene el `docker-compose.yml` que sube su script de despliegue a
+la EC2 correspondiente (`/opt/pedidos360` o `/opt/analytics-service`). El `.env`
+lo genera el script desde Terraform + `infra/envs/comun.env`; no se versiona.
+
+- [`producto-service/docker-compose.yml`](producto-service/docker-compose.yml)
+- [`pedidos-service/docker-compose.yml`](pedidos-service/docker-compose.yml)
+- [`rabbit-admin/docker-compose.yml`](rabbit-admin/docker-compose.yml)
+- [`analytics-service/docker-compose.yml`](analytics-service/docker-compose.yml)

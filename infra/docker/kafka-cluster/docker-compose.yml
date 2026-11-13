@@ -10,6 +10,9 @@ services:
     restart: unless-stopped
     ports:
       - "9092:9092"
+      # Los controllers de los otros brokers conectan a <ip-privada>:9093.
+      # Sin publicar 9093 en el host, el quorum KRaft nunca se forma.
+      - "9093:9093"
     environment:
       KAFKA_NODE_ID: ${KAFKA_NODE_ID}
       KAFKA_PROCESS_ROLES: broker,controller

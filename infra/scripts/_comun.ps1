@@ -446,3 +446,137 @@ function Ensure-RemoteDisk {
     }
     Write-Host "==> Disco en ${SshTarget}: $out"
 }
+
+function Wait-RemoteSsh {
+    param(
+        [Parameter(Mandatory)][string]$SshTarget,
+        [Parameter(Mandatory)][AllowEmptyCollection()][string[]]$SshOptions,
+        [int]$TimeoutSeconds = 300
+    )
+
+    # terraform apply puede volver antes de que sshd este listo en una EC2 nueva.
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    $attempt = 0
+    while ((Get-Date) -lt $deadline) {
+        $attempt++
+        ssh @SshOptions -o ConnectTimeout=10 -o BatchMode=yes $SshTarget "true" 2>$null
+        if ($LASTEXITCODE -eq 0) {
+            if ($attempt -gt 1) { Write-Host "==> SSH listo en $SshTarget (intento $attempt)" }
+            return
+        }
+        if ($attempt -eq 1) { Write-Host "==> Esperando SSH en $SshTarget..." }
+        Start-Sleep -Seconds 5
+    }
+    throw "SSH no quedo disponible en $SshTarget tras $TimeoutSeconds segundos."
+}
+
+function Invoke-RemoteScript {
+    param(
+        [Parameter(Mandatory)][string]$SshTarget,
+        [Parameter(Mandatory)][AllowEmptyCollection()][string[]]$SshOptions,
+        [Parameter(Mandatory)][AllowEmptyString()][string]$Script
+    )
+
+    # No pipeamos el script a ssh: PowerShell agrega un newline de Windows (CRLF)
+    # al final y bash recibe una linea extra con \r. Lo enviamos en base64 y lo
+    # decodificamos en la EC2, asi no viaja ningun salto de linea problematico.
+    $text = ($Script -replace "`r", "").TrimEnd()
+    $b64 = [Convert]::ToBase64String([System.Text.Encoding]::UTF8.GetBytes($text))
+    ssh @SshOptions $SshTarget "echo '$b64' | base64 -d | bash -s" 2>&1 | ForEach-Object { Write-Host $_ }
+}
+
+function Wait-RemoteDocker {
+    param(
+        [Parameter(Mandatory)][string]$SshTarget,
+        [Parameter(Mandatory)][AllowEmptyCollection()][string[]]$SshOptions,
+        [int]$TimeoutSeconds = 600
+    )
+
+    # Si la EC2 es nueva (o cloud-init fallo), instala/arranca Docker y el plugin
+    # compose. Es idempotente: en una EC2 ya configurada no hace nada.
+    $bootstrap = @'
+set -e
+if ! command -v docker >/dev/null 2>&1; then
+  echo "==> Docker no instalado; instalando..."
+  sudo yum install -y docker git >/dev/null
+fi
+if ! sudo systemctl is-active --quiet docker; then
+  echo "==> Iniciando Docker..."
+  sudo systemctl enable --now docker >/dev/null 2>&1 || true
+fi
+sudo usermod -aG docker ec2-user >/dev/null 2>&1 || true
+if ! docker compose version >/dev/null 2>&1; then
+  echo "==> Instalando docker compose plugin..."
+  sudo mkdir -p /usr/local/lib/docker/cli-plugins
+  sudo curl -SL https://github.com/docker/compose/releases/latest/download/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose
+  sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+fi
+'@
+    [void](Invoke-RemoteScript -SshTarget $SshTarget -SshOptions $SshOptions -Script $bootstrap)
+
+    # Cada intento abre una sesion SSH nueva: si usermod acaba de agregar el grupo
+    # docker, la sesion siguiente ya lo tiene.
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    $attempt = 0
+    while ((Get-Date) -lt $deadline) {
+        $attempt++
+        ssh @SshOptions -o ConnectTimeout=10 $SshTarget "docker info >/dev/null 2>&1 && docker compose version >/dev/null 2>&1" 2>$null
+        if ($LASTEXITCODE -eq 0) {
+            if ($attempt -gt 1) { Write-Host "==> Docker listo en $SshTarget (intento $attempt)" }
+            return
+        }
+        if ($attempt -eq 1) { Write-Host "==> Esperando Docker en $SshTarget..." }
+        Start-Sleep -Seconds 10
+    }
+    throw "Docker no quedo listo en $SshTarget tras $TimeoutSeconds segundos."
+}
+
+function Get-HttpStatus {
+    param(
+        [Parameter(Mandatory)][string]$Url,
+        [string]$Method = "GET",
+        [hashtable]$Headers = @{},
+        [int]$TimeoutSeconds = 15
+    )
+
+    $curl = Get-Command curl.exe -ErrorAction SilentlyContinue
+    if (-not $curl) { throw "curl.exe no encontrado; no se puede verificar $Url." }
+
+    # --ssl-no-revoke: en Windows schannel falla si el servidor de revocacion no responde.
+    $curlArgs = @("-sS", "--ssl-no-revoke", "-o", "NUL", "-w", "%{http_code}", "--max-time", "$TimeoutSeconds", "-X", $Method, $Url)
+    foreach ($key in $Headers.Keys) { $curlArgs += @("-H", "${key}: $($Headers[$key])") }
+
+    $out = & $curl.Source @curlArgs 2>$null
+    $code = 0
+    $raw = (($out | Out-String).Trim())
+    if ($raw -and [int]::TryParse($raw, [ref]$code)) { return $code }
+    return 0
+}
+
+function Wait-HttpStatus {
+    param(
+        [Parameter(Mandatory)][string]$Url,
+        [string]$Name = "",
+        [string]$Method = "GET",
+        [hashtable]$Headers = @{},
+        [int]$TimeoutSeconds = 180,
+        [int[]]$AcceptStatus = @(200, 201, 202, 204, 301, 302, 307, 308, 400, 401, 403, 404)
+    )
+
+    if (-not $Name) { $Name = $Url }
+    $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
+    $attempt = 0
+    $last = 0
+    while ((Get-Date) -lt $deadline) {
+        $attempt++
+        $last = Get-HttpStatus -Url $Url -Method $Method -Headers $Headers
+        if ($AcceptStatus -contains $last) {
+            Write-Host "==> OK    $Name -> HTTP $last"
+            return $true
+        }
+        if ($attempt -eq 1) { Write-Host "==> Esperando $Name ..." }
+        Start-Sleep -Seconds 5
+    }
+    Write-Host "==> FALLA $Name -> HTTP $last"
+    return $false
+}

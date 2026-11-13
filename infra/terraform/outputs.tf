@@ -54,6 +54,15 @@ output "ec2_rabbit_admin_private_ip" {
   value = aws_instance.rabbit_admin.private_ip
 }
 
+output "ec2_analiticas_public_ip" {
+  description = "IP publica de analytics-service (SSH y deploy)"
+  value       = aws_instance.analiticas.public_ip
+}
+
+output "ec2_analiticas_private_ip" {
+  value = aws_instance.analiticas.private_ip
+}
+
 output "apigw_url" {
   description = "URL base del API Gateway (para NG_APP_API_GATEWAY_URL en Vercel)"
   value       = aws_apigatewayv2_stage.prod.invoke_url

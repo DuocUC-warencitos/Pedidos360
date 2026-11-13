@@ -6,12 +6,19 @@
     Sube infra/docker/kafka-cluster/docker-compose.yml + init-topics.sh + un .env
     por broker (node id, IP privada, quorum de controllers y CLUSTER_ID) y levanta
     Kafka UI en el broker indicado (por defecto kafka3).
+
+    Por defecto borra los volumenes de Kafka (docker compose down -v) en los 3
+    brokers antes de levantarlos, para que una re-ejecucion deje siempre un cluster
+    limpio con el quorum formado. Usa -KeepData para conservar los volumenes.
+
     Luego espera el quorum y crea los topicos con 3 particiones, RF 3 y min ISR 2.
     El CLUSTER_ID se genera una sola vez y se guarda en infra/envs/comun.env.
 .EXAMPLE
     .\deploy-kafka-cluster.ps1
 .EXAMPLE
     .\deploy-kafka-cluster.ps1 -UiNode 2
+.EXAMPLE
+    .\deploy-kafka-cluster.ps1 -KeepData
 .EXAMPLE
     .\deploy-kafka-cluster.ps1 -SkipUi -SkipTopicInit
 #>
@@ -23,7 +30,8 @@ param(
     [string]$EnvDeployFile,
     [ValidateRange(1, 3)][int]$UiNode = 3,
     [switch]$SkipUi,
-    [switch]$SkipTopicInit
+    [switch]$SkipTopicInit,
+    [switch]$KeepData
 )
 
 $ErrorActionPreference = "Stop"
@@ -62,17 +70,34 @@ $remoteDir = "/opt/kafka"
 $composePath = Join-Path $PSScriptRoot "..\docker\kafka-cluster\docker-compose.yml"
 $initScriptPath = Join-Path $PSScriptRoot "..\docker\kafka-cluster\init-topics.sh"
 
+$nodes = @()
 for ($i = 0; $i -lt 3; $i++) {
     $nodeId = $i + 1
-    $target = "$SshUser@$($publicIps[$i])"
-    $sshOptions = @("-i", $KeyPath, "-o", "StrictHostKeyChecking=accept-new")
+    $nodes += @{
+        NodeId      = $nodeId
+        PrivateIp   = $privateIps[$i]
+        Target      = "$SshUser@$($publicIps[$i])"
+        SshOptions  = @("-i", $KeyPath, "-o", "StrictHostKeyChecking=accept-new")
+        ProfileArgs = if (-not $SkipUi -and $nodeId -eq $UiNode) { "--profile ui" } else { "" }
+    }
+}
+
+# ---------------------------------------------------------------------------
+# Fase 1: preparar cada broker y borrar el estado previo.
+# Se hace en todos los nodos antes de levantar ninguno para que no se mezcle
+# metadata vieja con el cluster nuevo.
+# ---------------------------------------------------------------------------
+foreach ($node in $nodes) {
+    $nodeId = $node.NodeId
+    $target = $node.Target
+    $sshOptions = $node.SshOptions
 
     Write-Host ""
-    Write-Host "==> Kafka broker $nodeId ($target, $($privateIps[$i]))"
+    Write-Host "==> Kafka broker $nodeId ($target, $($node.PrivateIp))"
 
     $baseLines = @(
         "KAFKA_NODE_ID=$nodeId"
-        "BROKER_PRIVATE_IP=$($privateIps[$i])"
+        "BROKER_PRIVATE_IP=$($node.PrivateIp)"
         "QUORUM_VOTERS=$quorumVoters"
         "KAFKA_CLUSTER_ID=$clusterId"
         "BOOTSTRAP_SERVERS=$bootstrapServers"
@@ -81,7 +106,9 @@ for ($i = 0; $i -lt 3; $i++) {
     )
     $envLines = Merge-EnvLines -BaseLines $baseLines -Overrides $overrides
 
+    Wait-RemoteSsh -SshTarget $target -SshOptions $sshOptions
     Ensure-RemoteDisk -SshTarget $target -SshOptions $sshOptions
+    Wait-RemoteDocker -SshTarget $target -SshOptions $sshOptions
 
     $tmpEnv = Join-Path $env:TEMP "kafka-broker-$nodeId.env"
     Write-EnvFile -Path $tmpEnv -Lines $envLines
@@ -99,40 +126,68 @@ for ($i = 0; $i -lt 3; $i++) {
         scp @sshOptions $tmpEnv "${target}:$remoteDir/.env"
         if ($LASTEXITCODE -ne 0) { throw "Fallo scp de .env a $target." }
 
-        $profileArgs = if (-not $SkipUi -and $nodeId -eq $UiNode) { "--profile ui" } else { "" }
-        Write-Host "==> Levantando Kafka broker $nodeId"
-        ssh @sshOptions $target "cd $remoteDir && docker compose --env-file .env $profileArgs up -d"
-        if ($LASTEXITCODE -ne 0) { throw "docker compose up fallo en el broker $nodeId ($target)." }
+        if (-not $KeepData) {
+            Write-Host "==> Borrando estado previo de Kafka (down -v)"
+            ssh @sshOptions $target "cd $remoteDir && docker compose --env-file .env down -v --remove-orphans >/dev/null 2>&1 || true"
+        }
     }
     finally {
         Remove-Item -LiteralPath $tmpEnv -Force -ErrorAction SilentlyContinue
     }
 }
 
+# ---------------------------------------------------------------------------
+# Fase 2: levantar los 3 brokers con el estado limpio.
+# ---------------------------------------------------------------------------
+foreach ($node in $nodes) {
+    $target = $node.Target
+    $sshOptions = $node.SshOptions
+    $profileArgs = $node.ProfileArgs
+
+    Write-Host "==> Levantando Kafka broker $($node.NodeId)"
+    $remote = @"
+set -e
+cd $remoteDir
+docker compose --env-file .env $profileArgs pull || echo 'Aviso: pull fallo; se usa la imagen local si existe'
+docker compose --env-file .env $profileArgs up -d --remove-orphans
+docker compose --env-file .env $profileArgs ps
+"@
+    Invoke-RemoteScript -SshTarget $target -SshOptions $sshOptions -Script $remote
+    if ($LASTEXITCODE -ne 0) { throw "docker compose up fallo en el broker $($node.NodeId) ($target)." }
+}
+
 if (-not $SkipTopicInit) {
-    $target = "$SshUser@$($publicIps[0])"
-    $sshOptions = @("-i", $KeyPath, "-o", "StrictHostKeyChecking=accept-new")
+    $target = $nodes[0].Target
+    $sshOptions = $nodes[0].SshOptions
 
     Write-Host ""
     Write-Host "==> Esperando quorum KRaft (puede tardar 1-2 minutos)"
     $ready = $false
-    for ($attempt = 1; $attempt -le 30; $attempt++) {
+    for ($attempt = 1; $attempt -le 36; $attempt++) {
         ssh @sshOptions $target "docker exec kafka /opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 >/dev/null 2>&1" 2>$null
         if ($LASTEXITCODE -eq 0) { $ready = $true; break }
-        Write-Host "    intento $attempt/30: cluster aun no responde..."
+        Write-Host "    intento $attempt/36: cluster aun no responde..."
         Start-Sleep -Seconds 10
     }
 
     if (-not $ready) {
-        Write-Host "==> Logs de kafka1:"
-        ssh @sshOptions $target "docker logs --tail 80 kafka" 2>&1 | Write-Host
-        throw "Kafka no quedo listo en 5 minutos. Revisa los logs de kafka1."
+        foreach ($node in $nodes) {
+            $opts = $node.SshOptions
+            Write-Host "==> Logs de kafka$($node.NodeId) ($($node.Target)):"
+            ssh @opts $node.Target "docker logs --tail 100 kafka" 2>&1 | Write-Host
+        }
+        throw "Kafka no quedo listo en 6 minutos. Revisa los logs anteriores."
     }
 
     Write-Host "==> Creando topicos"
     $initOutput = ssh @sshOptions $target "docker exec kafka bash /opt/kafka/init-topics.sh" 2>&1
     $initOutput | Write-Host
     if ($LASTEXITCODE -ne 0) {
+        foreach ($node in $nodes) {
+            $opts = $node.SshOptions
+            Write-Host "==> Logs de kafka$($node.NodeId) ($($node.Target)):"
+            ssh @opts $node.Target "docker logs --tail 100 kafka" 2>&1 | Write-Host
+        }
         throw "Fallo la creacion de topicos. Revisa la salida anterior."
     }
 }

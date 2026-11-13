@@ -6,9 +6,16 @@
     Sube infra/docker/rabbit-cluster/docker-compose.yml + un .env generado desde
     infra/envs/comun.env (o infra/envs/rabbit-cluster/.env para overrides) y
     levanta los contenedores con docker compose.
+
+    Por defecto borra los volumenes de RabbitMQ (docker compose down -v) para que
+    una re-ejecucion deje el cluster limpio y rabbit2 se una de nuevo a rabbit1.
+    Usa -KeepData para conservar los volumenes.
+
     Las IPs se obtienen de terraform output.
 .EXAMPLE
     .\deploy-rabbit-cluster.ps1
+.EXAMPLE
+    .\deploy-rabbit-cluster.ps1 -KeepData
 #>
 [CmdletBinding()]
 param(
@@ -16,7 +23,8 @@ param(
     [string]$HostIp,
     [string]$SshUser = "ec2-user",
     [string]$TerraformExe,
-    [string]$EnvDeployFile
+    [string]$EnvDeployFile,
+    [switch]$KeepData
 )
 
 $ErrorActionPreference = "Stop"
@@ -44,21 +52,43 @@ $remoteDir = "/opt/rabbit-cluster"
 $target = "$SshUser@$HostIp"
 $sshOptions = @("-i", $KeyPath, "-o", "StrictHostKeyChecking=accept-new")
 
+Wait-RemoteSsh -SshTarget $target -SshOptions $sshOptions
 Ensure-RemoteDisk -SshTarget $target -SshOptions $sshOptions
+Wait-RemoteDocker -SshTarget $target -SshOptions $sshOptions
 
 $tmpEnv = Join-Path $env:TEMP "rabbit-cluster.env"
 Write-EnvFile -Path $tmpEnv -Lines $envLines
 
+$wipe = if ($KeepData) { "" } else { "docker compose down -v --remove-orphans >/dev/null 2>&1 || true" }
+
 try {
     Write-Host "==> Preparando $remoteDir en $target"
     ssh @sshOptions $target "sudo mkdir -p $remoteDir && sudo chown -R ec2-user:ec2-user $remoteDir"
+    if ($LASTEXITCODE -ne 0) { throw "No se pudo preparar $remoteDir en $target." }
 
     Write-Host "==> Subiendo docker-compose.yml + .env"
     scp @sshOptions "$PSScriptRoot\..\docker\rabbit-cluster\docker-compose.yml" "${target}:$remoteDir/docker-compose.yml"
+    if ($LASTEXITCODE -ne 0) { throw "Fallo scp de docker-compose.yml a $target." }
     scp @sshOptions $tmpEnv "${target}:$remoteDir/.env"
+    if ($LASTEXITCODE -ne 0) { throw "Fallo scp de .env a $target." }
 
     Write-Host "==> Levantando cluster (rabbit1 + rabbit2)"
-    ssh @sshOptions $target "cd $remoteDir && docker compose up -d && sleep 30 && docker exec rabbit1 rabbitmqctl cluster_status"
+    $remote = @"
+set -e
+cd $remoteDir
+$wipe
+docker compose pull || echo 'Aviso: pull fallo; se usa la imagen local si existe'
+docker compose up -d --remove-orphans
+echo '==> Esperando a que rabbit2 este running en el cluster...'
+for i in `$(seq 1 24); do
+  if docker exec rabbit1 rabbitmqctl eval 'rabbit_nodes:list_running().' 2>/dev/null | grep -q 'rabbit@rabbit2'; then break; fi
+  sleep 5
+done
+docker compose ps
+docker exec rabbit1 rabbitmqctl cluster_status
+"@
+    Invoke-RemoteScript -SshTarget $target -SshOptions $sshOptions -Script $remote
+    if ($LASTEXITCODE -ne 0) { throw "docker compose up fallo en el cluster RabbitMQ ($target)." }
 }
 finally {
     Remove-Item -LiteralPath $tmpEnv -Force -ErrorAction SilentlyContinue

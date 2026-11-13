@@ -64,6 +64,19 @@ function aIso(fecha: Date): string
     return `${anio}-${mes}-${dia}`;
 }
 
+// Analytics guarda y filtra las fechas en UTC. El dashboard calcula los
+// limites en hora local, asi que hay que convertir el dia local a su fecha
+// UTC: a las 23:xx de Chile el dia UTC ya es el siguiente y, si se envia el
+// dia local, el evento reciente queda fuera del rango (auditoria/top vacios).
+function aIsoUtc(fecha: Date): string
+{
+    const anio = fecha.getUTCFullYear();
+    const mes = String(fecha.getUTCMonth() + 1).padStart(2, '0');
+    const dia = String(fecha.getUTCDate()).padStart(2, '0');
+
+    return `${anio}-${mes}-${dia}`;
+}
+
 function claveDeMes(fecha: Date): string
 {
     return aIso(fecha).slice(0, 7);
@@ -89,18 +102,18 @@ export class DashboardPage
         {
             const [anio, mes] = clave.split('-').map(Number);
             const desde = new Date(anio, mes - 1, 1);
-            const hasta = new Date(anio, mes, 0);
+            const hasta = new Date(anio, mes, 0, 23, 59, 59, 999);
 
-            return { desde: aIso(desde), hasta: aIso(hasta) };
+            return { desde: aIsoUtc(desde), hasta: aIsoUtc(hasta) };
         }
 
         return {
-            desde: aIso(new Date(
+            desde: aIsoUtc(new Date(
                 ahora.getFullYear(),
                 ahora.getMonth() - (MESES_VENTANA - 1),
                 1
             )),
-            hasta: aIso(ahora),
+            hasta: aIsoUtc(ahora),
         };
     });
 

@@ -10,11 +10,12 @@ infra/terraform/
 ├── security.tf              # SG pedidos, producto y RDS
 ├── security_rabbit.tf       # SG cluster RabbitMQ y rabbit-admin
 ├── security_kafka.tf        # SG brokers Kafka + Kafka UI
-├── security_analiticas.tf   # SG preparado para analytics-service
+├── security_analiticas.tf   # SG de analytics-service
 ├── rds.tf                   # 2 RDS PostgreSQL 15
 ├── ec2.tf                   # EC2 pedidos + producto
 ├── ec2_rabbit.tf            # EC2 RabbitMQ + rabbit-admin
 ├── ec2_kafka.tf             # 3 EC2 t3.small para Kafka KRaft
+├── ec2_analiticas.tf        # EC2 t3.small para analytics-service
 ├── apigw.tf                 # HTTP API + JWT Authorizer Entra ID
 ├── outputs.tf               # IPs, JDBC, API Gateway y Kafka
 ├── user_data.sh.tmpl        # bootstrap de servicios Spring
@@ -67,7 +68,7 @@ Terraform **no** crea tópicos ni levanta los contenedores. Eso lo hace
 
 1. Genera el `.env` de cada broker con `KAFKA_NODE_ID`, IP privada y quórum.
 2. Sube `infra/docker/kafka-cluster/` y levanta el broker.
-3. Crea los 4 tópicos con 3 particiones, RF 3 y `min.insync.replicas=2`.
+3. Crea los 6 tópicos con 3 particiones, RF 3 y `min.insync.replicas=2`.
 
 Variables nuevas:
 
@@ -88,6 +89,33 @@ terraform output kafka_ui_url              # http://ip-kafka3:8080
 
 > Las 3 EC2 están en la misma AZ: toleran la caída de una instancia/broker, no
 > la de la AZ. En producción se distribuyen en 3 AZ o se usa Amazon MSK.
+
+## Analytics (Kafka Streams)
+
+`ec2_analiticas.tf` crea **1 EC2 `t3.small`** (20 GB gp3) con el SG
+`ec2_analiticas`, Docker instalado por `user_data_docker.sh.tmpl` y el directorio
+`/opt/analytics-service`. Consume `productos360.eventos.productos` y
+`productos360.eventos.stock` desde el cluster Kafka (puerto 9092 permitido por
+`security_kafka.tf`).
+
+Variables:
+
+```hcl
+analiticas_instance_type = "t3.small"
+analiticas_volume_size   = 20
+```
+
+Outputs:
+
+```bash
+terraform output ec2_analiticas_public_ip
+terraform output ec2_analiticas_private_ip
+```
+
+`apigw.tf` expone `ANY /api/v1/admin/analiticas` y
+`ANY /api/v1/admin/analiticas/{proxy+}` con el authorizer JWT; los `OPTIONS`
+quedan sin autorizador para el preflight CORS. El servicio se despliega con
+`infra/scripts/deploy-analytics-service.ps1`.
 
 ## Notas EP1
 

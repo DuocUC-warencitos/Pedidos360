@@ -73,7 +73,9 @@ if (-not ($envLines | Where-Object { $_ -match "^INTERNAL_API_KEY=.+" })) {
 $target = "$SshUser@$HostIp"
 $sshOptions = @("-i", $KeyPath, "-o", "StrictHostKeyChecking=accept-new")
 
+Wait-RemoteSsh -SshTarget $target -SshOptions $sshOptions
 Ensure-RemoteDisk -SshTarget $target -SshOptions $sshOptions
+Wait-RemoteDocker -SshTarget $target -SshOptions $sshOptions
 
 $tmpEnv = Join-Path $env:TEMP "pedidos-service.env"
 Write-EnvFile -Path $tmpEnv -Lines $envLines
@@ -87,7 +89,8 @@ if [ -f docker-compose.prod.yml ]; then
   docker compose --env-file .env -f docker-compose.prod.yml down --remove-orphans || true
   mv docker-compose.prod.yml docker-compose.prod.yml.legacy
 fi
-docker compose --env-file .env -f docker-compose.yml up -d
+docker compose --env-file .env -f docker-compose.yml pull || echo 'Aviso: pull fallo; se usa la imagen local si existe'
+docker compose --env-file .env -f docker-compose.yml up -d --remove-orphans
 sleep 20
 docker compose --env-file .env -f docker-compose.yml ps
 docker logs --tail 30 pedidos-service || true
@@ -106,7 +109,8 @@ try {
     Connect-RemoteGhcr -Deploy $deploy -SshTarget $target -SshOptions $sshOptions
 
     Write-Host "==> Levantando pedidos-service"
-    $remoteScript | ssh @sshOptions $target "bash -s"
+    Invoke-RemoteScript -SshTarget $target -SshOptions $sshOptions -Script $remoteScript
+    if ($LASTEXITCODE -ne 0) { throw "docker compose up fallo en pedidos-service ($target)." }
 }
 finally {
     Remove-Item -LiteralPath $tmpEnv -Force -ErrorAction SilentlyContinue

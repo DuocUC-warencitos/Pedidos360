@@ -30,6 +30,9 @@ create_topic() {
     --add-config "min.insync.replicas=2,retention.ms=$retention_ms"
 }
 
+# Eventos de dominio: productos y stock (consumidos por analytics-service). 30 dias.
+create_topic "productos360.eventos.productos" 2592000000
+create_topic "productos360.eventos.stock" 2592000000
 # Auditoria: 7 dias. Metricas y DLT: 30 dias.
 create_topic "productos360.eventos.auditoria" 604800000
 create_topic "productos360.eventos.metricas" 2592000000

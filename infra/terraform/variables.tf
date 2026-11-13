@@ -73,6 +73,19 @@ variable "kafka_volume_size" {
   default     = 30
 }
 
+# ---------- Analytics ----------
+variable "analiticas_instance_type" {
+  description = "Tipo EC2 de analytics-service (Kafka Streams)"
+  type        = string
+  default     = "t3.small"
+}
+
+variable "analiticas_volume_size" {
+  description = "Tamaño (GB) del volumen raíz de la EC2 de analytics-service"
+  type        = number
+  default     = 20
+}
+
 # ---------- RDS ----------
 variable "rds_instance_class" {
   description = "Clase RDS"

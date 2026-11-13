@@ -1,7 +1,7 @@
 resource "aws_apigatewayv2_api" "main" {
   name          = "${var.project}-api"
   protocol_type = "HTTP"
-  tags = { Name = "${var.project}-api" }
+  tags          = { Name = "${var.project}-api" }
 }
 
 resource "aws_apigatewayv2_authorizer" "jwt" {
@@ -249,6 +249,51 @@ resource "aws_apigatewayv2_route" "admin_productos_sub_options" {
   api_id    = aws_apigatewayv2_api.main.id
   route_key = "OPTIONS /api/v1/admin/productos/{proxy+}"
   target    = "integrations/${aws_apigatewayv2_integration.admin_productos.id}"
+}
+
+# Admin analiticas: /api/v1/admin/analiticas (analytics-service / Kafka Streams)
+resource "aws_apigatewayv2_integration" "admin_analiticas_root" {
+  api_id                 = aws_apigatewayv2_api.main.id
+  integration_type       = "HTTP_PROXY"
+  integration_method     = "ANY"
+  integration_uri        = "http://${aws_instance.analiticas.public_ip}:8080/api/v1/admin/analiticas"
+  payload_format_version = "1.0"
+}
+
+resource "aws_apigatewayv2_integration" "admin_analiticas" {
+  api_id                 = aws_apigatewayv2_api.main.id
+  integration_type       = "HTTP_PROXY"
+  integration_method     = "ANY"
+  integration_uri        = "http://${aws_instance.analiticas.public_ip}:8080/api/v1/admin/analiticas/{proxy}"
+  payload_format_version = "1.0"
+}
+
+resource "aws_apigatewayv2_route" "admin_analiticas_root" {
+  api_id             = aws_apigatewayv2_api.main.id
+  route_key          = "ANY /api/v1/admin/analiticas"
+  target             = "integrations/${aws_apigatewayv2_integration.admin_analiticas_root.id}"
+  authorizer_id      = aws_apigatewayv2_authorizer.jwt.id
+  authorization_type = "JWT"
+}
+
+resource "aws_apigatewayv2_route" "admin_analiticas" {
+  api_id             = aws_apigatewayv2_api.main.id
+  route_key          = "ANY /api/v1/admin/analiticas/{proxy+}"
+  target             = "integrations/${aws_apigatewayv2_integration.admin_analiticas.id}"
+  authorizer_id      = aws_apigatewayv2_authorizer.jwt.id
+  authorization_type = "JWT"
+}
+
+resource "aws_apigatewayv2_route" "admin_analiticas_options" {
+  api_id    = aws_apigatewayv2_api.main.id
+  route_key = "OPTIONS /api/v1/admin/analiticas"
+  target    = "integrations/${aws_apigatewayv2_integration.admin_analiticas_root.id}"
+}
+
+resource "aws_apigatewayv2_route" "admin_analiticas_sub_options" {
+  api_id    = aws_apigatewayv2_api.main.id
+  route_key = "OPTIONS /api/v1/admin/analiticas/{proxy+}"
+  target    = "integrations/${aws_apigatewayv2_integration.admin_analiticas.id}"
 }
 
 # ──────────────────────────────────────────────────────────────

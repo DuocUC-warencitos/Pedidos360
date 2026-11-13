@@ -35,13 +35,16 @@ infra/
 ├── docker/
 │   ├── README.md              <- stack local y compose del cluster Kafka
 │   ├── docker-compose.yml     <- stack local completo (1 broker Kafka, dev)
-│   └── kafka-cluster/         <- cluster Kafka cloud (1 broker por EC2)
-│       ├── README.md
-│       ├── docker-compose.yml
-│       └── init-topics.sh
+│   ├── kafka-cluster/         <- cluster Kafka cloud (1 broker por EC2)
+│   │   ├── README.md
+│   │   ├── docker-compose.yml
+│   │   └── init-topics.sh
+│   └── analytics-service/     <- compose de analytics-service (Kafka Streams)
 ├── envs/
 │   ├── README.md              <- esquema de .env y secretos
 │   ├── comun.env.example      <- secretos compartidos + KAFKA_CLUSTER_ID
+│   ├── analytics-service/
+│   │   └── .env.example       <- overrides opcionales de analytics-service
 │   └── kafka-cluster/
 │       └── .env.example       <- overrides opcionales del cluster Kafka
 ├── scripts/
@@ -51,12 +54,14 @@ infra/
 │   ├── deploy-rabbit-cluster.ps1
 │   ├── deploy-rabbit-admin.ps1
 │   ├── deploy-producto-service.ps1
-│   └── deploy-pedidos-service.ps1
+│   ├── deploy-pedidos-service.ps1
+│   └── deploy-analytics-service.ps1
 └── terraform/
     ├── README.md
     ├── ec2_kafka.tf           <- 3 EC2 t3.small (misma subnet/AZ)
+    ├── ec2_analiticas.tf      <- EC2 de analytics-service (Kafka Streams)
     ├── security_kafka.tf      <- SG de brokers + Kafka UI
-    ├── security_analiticas.tf <- SG preparado para analytics-service
+    ├── security_analiticas.tf <- SG de analytics-service
     └── ...
 ```
 
@@ -128,6 +133,8 @@ instancia/broker, **no** la caída de la AZ. Para producción: 3 EC2 en 3 AZ o M
 
 | Tópico | Particiones | Réplica | `min.insync.replicas` | Retención |
 |---|---:|---:|---:|---|
+| `productos360.eventos.productos` | 3 | 3 | 2 | 30 días |
+| `productos360.eventos.stock` | 3 | 3 | 2 | 30 días |
 | `productos360.eventos.auditoria` | 3 | 3 | 2 | 7 días |
 | `productos360.eventos.metricas` | 3 | 3 | 2 | 30 días |
 | `productos360.eventos.auditoria.dlt` | 3 | 3 | 2 | 30 días |

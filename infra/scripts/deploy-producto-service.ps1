@@ -34,6 +34,7 @@ if (-not $HostIp) { $HostIp = Get-TerraformOutput -Name "ec2_producto_public_ip"
 $dbUrl = Get-TerraformOutput -Name "spring_datasource_url_producto" -Exe $Exe -TerraformDir $TerraformDir
 $dbUser = Get-TerraformOutput -Name "spring_datasource_username_producto" -Exe $Exe -TerraformDir $TerraformDir
 $dbPass = Get-TerraformOutput -Name "spring_datasource_password_producto" -Exe $Exe -TerraformDir $TerraformDir
+$kafkaBootstrap = Get-TerraformOutput -Name "kafka_bootstrap_servers" -Exe $Exe -TerraformDir $TerraformDir
 
 $image = if ($deploy["GHCR_IMAGE_PRODUCTO"]) { $deploy["GHCR_IMAGE_PRODUCTO"] } else { "ghcr.io/duocuc-warencitos/producto-service:latest" }
 
@@ -48,6 +49,11 @@ $baseLines = @(
     "SPRING_DATASOURCE_PASSWORD=$dbPass"
     "JWT_ISSUER_URI=$($deploy['JWT_ISSUER_URI'])"
     "INTERNAL_API_KEY=$($deploy['INTERNAL_API_KEY'])"
+    "KAFKA_BOOTSTRAP_SERVERS=$kafkaBootstrap"
+    # app.kafka.replication-factor: KafkaAdmin crea los topicos con RF 3.
+    # Se envian ambas variantes por compatibilidad con el relaxed binding de Spring.
+    "APP_KAFKA_REPLICATION_FACTOR=3"
+    "APP_KAFKA_REPLICATIONFACTOR=3"
 )
 
 $overrides = Get-ServiceOverrides -ScriptRoot $PSScriptRoot -Service "producto-service"
@@ -63,7 +69,9 @@ if (-not ($envLines | Where-Object { $_ -match "^INTERNAL_API_KEY=.+" })) {
 $target = "$SshUser@$HostIp"
 $sshOptions = @("-i", $KeyPath, "-o", "StrictHostKeyChecking=accept-new")
 
+Wait-RemoteSsh -SshTarget $target -SshOptions $sshOptions
 Ensure-RemoteDisk -SshTarget $target -SshOptions $sshOptions
+Wait-RemoteDocker -SshTarget $target -SshOptions $sshOptions
 
 $tmpEnv = Join-Path $env:TEMP "producto-service.env"
 Write-EnvFile -Path $tmpEnv -Lines $envLines
@@ -77,7 +85,8 @@ if [ -f docker-compose.prod.yml ]; then
   docker compose --env-file .env -f docker-compose.prod.yml down --remove-orphans || true
   mv docker-compose.prod.yml docker-compose.prod.yml.legacy
 fi
-docker compose --env-file .env -f docker-compose.yml up -d
+docker compose --env-file .env -f docker-compose.yml pull || echo 'Aviso: pull fallo; se usa la imagen local si existe'
+docker compose --env-file .env -f docker-compose.yml up -d --remove-orphans
 sleep 20
 docker compose --env-file .env -f docker-compose.yml ps
 docker logs --tail 30 producto-service || true
@@ -96,7 +105,8 @@ try {
     Connect-RemoteGhcr -Deploy $deploy -SshTarget $target -SshOptions $sshOptions
 
     Write-Host "==> Levantando producto-service"
-    $remoteScript | ssh @sshOptions $target "bash -s"
+    Invoke-RemoteScript -SshTarget $target -SshOptions $sshOptions -Script $remoteScript
+    if ($LASTEXITCODE -ne 0) { throw "docker compose up fallo en producto-service ($target)." }
 }
 finally {
     Remove-Item -LiteralPath $tmpEnv -Force -ErrorAction SilentlyContinue

@@ -49,7 +49,7 @@ Copy-Item infra\envs\rabbit-admin\.env.example infra\envs\rabbit-admin\.env
 
 Si los paquetes de `ghcr.io/duocuc-warencitos/*` son privados, define en `comun.env`:
 `GHCR_USERNAME` (tu usuario GitHub) y `GHCR_TOKEN` (PAT clasico con `read:packages`).
-Los deploy scripts de rabbit-admin/producto/pedidos hacen `docker login ghcr.io` en la EC2
+Los deploy scripts de rabbit-admin/producto/pedidos/analytics hacen `docker login ghcr.io` en la EC2
 antes del `docker compose up`. Si los paquetes son publicos, deja ambos vacios.
 
 ## Git
@@ -66,6 +66,7 @@ antes del `docker compose up`. Si los paquetes son publicos, deja ambos vacios.
 | `rabbit-admin/` | rabbit-admin-service | `/opt/rabbit-admin/.env` |
 | `pedidos-service/` | pedidos-service | `/opt/pedidos360/.env` |
 | `producto-service/` | producto-service | `/opt/pedidos360/.env` |
+| `analytics-service/` | analytics-service | `/opt/analytics-service/.env` |
 | `kafka-cluster/` | cluster Kafka (3 brokers) | `/opt/kafka/.env` |
 
 ## Kafka

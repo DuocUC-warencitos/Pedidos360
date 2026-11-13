@@ -79,7 +79,9 @@ $remoteDir = "/opt/rabbit-admin"
 $target = "$SshUser@$HostIp"
 $sshOptions = @("-i", $KeyPath, "-o", "StrictHostKeyChecking=accept-new")
 
+Wait-RemoteSsh -SshTarget $target -SshOptions $sshOptions
 Ensure-RemoteDisk -SshTarget $target -SshOptions $sshOptions
+Wait-RemoteDocker -SshTarget $target -SshOptions $sshOptions
 
 $tmpEnv = Join-Path $env:TEMP "rabbit-admin.env"
 Write-EnvFile -Path $tmpEnv -Lines $envLines
@@ -110,7 +112,17 @@ try {
     }
 
     Write-Host "==> Levantando rabbit-admin-service"
-    ssh @sshOptions $target "cd $remoteDir && docker compose up -d && sleep 30 && docker logs --tail 60 rabbit-admin-service"
+    $remote = @"
+set -e
+cd $remoteDir
+docker compose pull || echo 'Aviso: pull fallo; se usa la imagen local si existe'
+docker compose up -d --remove-orphans
+sleep 30
+docker compose ps
+docker logs --tail 60 rabbit-admin-service || true
+"@
+    Invoke-RemoteScript -SshTarget $target -SshOptions $sshOptions -Script $remote
+    if ($LASTEXITCODE -ne 0) { throw "docker compose up fallo en rabbit-admin-service ($target)." }
 }
 finally {
     Remove-Item -LiteralPath $tmpEnv -Force -ErrorAction SilentlyContinue

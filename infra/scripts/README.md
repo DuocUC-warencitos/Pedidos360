@@ -22,6 +22,7 @@ Scripts PowerShell de despliegue. Todos cargan `_comun.ps1` para leer
 | `deploy-rabbit-admin.ps1` | `rabbit-admin-service` |
 | `deploy-producto-service.ps1` | `producto-service` |
 | `deploy-pedidos-service.ps1` | `pedidos-service` |
+| `deploy-analytics-service.ps1` | `analytics-service` (Kafka Streams) |
 
 ## `deploy-all.ps1`
 
@@ -41,7 +42,21 @@ Parámetros:
 | `-SshUser` | usuario SSH (default `ec2-user`) |
 | `-EnvDeployFile` | `.env` alternativo a `infra/envs/comun.env` |
 
-Orden: Terraform → Kafka → Rabbit → rabbit-admin → producto → pedidos.
+Orden: Terraform → Kafka → Rabbit → rabbit-admin → producto → pedidos → analytics.
+
+## `deploy-analytics-service.ps1`
+
+Despliega `analytics-service` (Kafka Streams) en su propia EC2:
+
+```powershell
+.\infra\scripts\deploy-analytics-service.ps1
+```
+
+El `.env` se genera desde Terraform (`kafka_bootstrap_servers`) y `comun.env`
+(`JWT_ISSUER_URI`, `CORS_ALLOWED_ORIGINS`, `GHCR_IMAGE_ANALYTICS`). Incluye
+`KAFKA_REPLICATION_FACTOR=3`, estado de Streams en `/tmp/kafka-streams` y
+`JAVA_TOOL_OPTIONS=-Xmx768m` (t3.small). Overrides en
+`infra/envs/analytics-service/.env`.
 
 ## `deploy-kafka-cluster.ps1`
 
