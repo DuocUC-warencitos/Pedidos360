@@ -14,7 +14,7 @@ Los scripts de `infra/scripts/` construyen ese `.env` combinando:
 .\infra\scripts\deploy-all.ps1 -AutoApprove
 #   - crea infra/envs/comun.env si no existe (desde comun.env.example)
 #   - genera solo RABBITMQ_PASSWORD, RABBITMQ_ERLANG_COOKIE e INTERNAL_API_KEY si estan vacios
-#   - corre terraform apply y despliega las 4 EC2
+#   - corre terraform apply y despliega las EC2 (Kafka, Rabbit y servicios)
 
 # Opcion B: manual
 Copy-Item infra\envs\comun.env.example infra\envs\comun.env
@@ -66,3 +66,17 @@ antes del `docker compose up`. Si los paquetes son publicos, deja ambos vacios.
 | `rabbit-admin/` | rabbit-admin-service | `/opt/rabbit-admin/.env` |
 | `pedidos-service/` | pedidos-service | `/opt/pedidos360/.env` |
 | `producto-service/` | producto-service | `/opt/pedidos360/.env` |
+| `kafka-cluster/` | cluster Kafka (3 brokers) | `/opt/kafka/.env` |
+
+## Kafka
+
+- `KAFKA_CLUSTER_ID` vive en `comun.env`. Si está vacío, `Initialize-ComunEnv`
+  genera un UUID base64 URL-safe de 22 caracteres (formato KRaft) y lo guarda.
+- No cambies ese valor después del primer arranque: los brokers no levantan si
+  el ID no coincide con el de sus datos.
+- `kafka-cluster/.env` solo contiene overrides opcionales
+  (`KAFKA_HEAP_OPTS`, `UI_PORT`). Copia `kafka-cluster/.env.example` a
+  `.env` si necesitas pisar valores.
+- El `.env` final de cada broker lo genera `deploy-kafka-cluster.ps1` con
+  `KAFKA_NODE_ID`, `BROKER_PRIVATE_IP`, `QUORUM_VOTERS` y
+  `BOOTSTRAP_SERVERS`. No pongas esas claves en los overrides.

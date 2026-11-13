@@ -1,27 +1,32 @@
 #Requires -Version 5.1
 <#
 .SYNOPSIS
-    Levanta TODA la infraestructura Pedidos360: terraform apply + despliegue de las 4 EC2.
+    Levanta TODA la infraestructura Pedidos360: terraform apply + despliegue de las EC2.
 .DESCRIPTION
     1. terraform init (si hace falta) + terraform apply (RDS x2, EC2 pedidos, producto,
-       rabbit cluster y rabbit-admin).
-    2. Despliega por SSH, en orden: cluster RabbitMQ -> rabbit-admin-service ->
-       producto-service -> pedidos-service (sube compose + .env generado).
+       rabbit cluster, rabbit-admin y cluster Kafka de 3 brokers).
+    2. Despliega por SSH, en orden: cluster Kafka -> cluster RabbitMQ ->
+       rabbit-admin-service -> producto-service -> pedidos-service
+       (sube compose + .env generado).
     3. Imprime un resumen con URLs y connection strings (sin passwords).
 
     Secretos: si infra/envs/comun.env no existe se crea desde el ejemplo y se
-    generan automaticamente RABBITMQ_PASSWORD y RABBITMQ_ERLANG_COOKIE.
+    generan automaticamente RABBITMQ_PASSWORD, RABBITMQ_ERLANG_COOKIE,
+    INTERNAL_API_KEY y KAFKA_CLUSTER_ID.
     Editar infra/envs/comun.env para fijar AWS_KEY_PATH y lo demas.
 .EXAMPLE
     .\deploy-all.ps1 -AutoApprove
 .EXAMPLE
     .\deploy-all.ps1 -SkipTerraform
+.EXAMPLE
+    .\deploy-all.ps1 -SkipKafka
 #>
 [CmdletBinding()]
 param(
     [switch]$SkipTerraform,
     [switch]$SkipAwsPrompt,
     [switch]$AutoApprove,
+    [switch]$SkipKafka,
     [string]$TerraformExe,
     [string]$KeyPath,
     [string]$SshUser = "ec2-user",
@@ -62,19 +67,25 @@ if (-not $SkipTerraform) {
 $scriptArgs = @{ EnvDeployFile = $comun.Path; TerraformExe = $Exe; SshUser = $SshUser }
 if ($KeyPath) { $scriptArgs["KeyPath"] = $KeyPath }
 
-Write-Host "==> [1/4] Cluster RabbitMQ (rabbit1 + rabbit2)"
+if (-not $SkipKafka) {
+    Write-Host "==> [1/5] Cluster Kafka (3 brokers KRaft)"
+    & (Join-Path $PSScriptRoot "deploy-kafka-cluster.ps1") @scriptArgs
+    Write-Host ""
+}
+
+Write-Host "==> [2/5] Cluster RabbitMQ (rabbit1 + rabbit2)"
 & (Join-Path $PSScriptRoot "deploy-rabbit-cluster.ps1") @scriptArgs
 
 Write-Host ""
-Write-Host "==> [2/4] rabbit-admin-service"
+Write-Host "==> [3/5] rabbit-admin-service"
 & (Join-Path $PSScriptRoot "deploy-rabbit-admin.ps1") @scriptArgs
 
 Write-Host ""
-Write-Host "==> [3/4] producto-service"
+Write-Host "==> [4/5] producto-service"
 & (Join-Path $PSScriptRoot "deploy-producto-service.ps1") @scriptArgs
 
 Write-Host ""
-Write-Host "==> [4/4] pedidos-service"
+Write-Host "==> [5/5] pedidos-service"
 & (Join-Path $PSScriptRoot "deploy-pedidos-service.ps1") @scriptArgs
 
 Write-Host ""
@@ -96,6 +107,11 @@ $rows = [ordered]@{
     "producto-service"     = "http://${productoIp}:8080"
     "RDS pedidos (jdbc)"   = $jdbcPedidos
     "RDS productos (jdbc)" = $jdbcProducto
+}
+
+if (-not $SkipKafka) {
+    $rows["Kafka UI"] = Get-TerraformOutput -Name "kafka_ui_url" -Exe $Exe -TerraformDir $TerraformDir
+    $rows["Kafka bootstrap"] = Get-TerraformOutput -Name "kafka_bootstrap_servers" -Exe $Exe -TerraformDir $TerraformDir
 }
 
 foreach ($key in $rows.Keys) {

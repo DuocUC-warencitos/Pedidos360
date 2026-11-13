@@ -93,3 +93,29 @@ output "spring_datasource_password_producto" {
   value     = local.db_password_producto_eff
   sensitive = true
 }
+
+# ---------- Kafka ----------
+output "ec2_kafka_public_ips" {
+  description = "IPs publicas de los 3 brokers Kafka (SSH y Kafka UI)"
+  value       = aws_instance.kafka[*].public_ip
+}
+
+output "ec2_kafka_private_ips" {
+  description = "IPs privadas de los 3 brokers Kafka (bootstrap interno)"
+  value       = aws_instance.kafka[*].private_ip
+}
+
+output "ec2_kafka_instance_ids" {
+  description = "IDs de las EC2 Kafka (para pruebas de caida controlada)"
+  value       = aws_instance.kafka[*].id
+}
+
+output "kafka_bootstrap_servers" {
+  description = "Bootstrap servers privados para producto-service y analytics-service"
+  value       = join(",", [for ip in aws_instance.kafka[*].private_ip : "${ip}:9092"])
+}
+
+output "kafka_ui_url" {
+  description = "Kafka UI en el broker 3 (solo accesible desde admin_cidr)"
+  value       = "http://${aws_instance.kafka[2].public_ip}:8080"
+}

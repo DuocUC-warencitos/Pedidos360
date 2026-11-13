@@ -91,6 +91,15 @@ function New-GeneratedSecret {
     return $sb.ToString()
 }
 
+function New-KafkaClusterId {
+    # Kafka espera un UUID base64 URL-safe de 22 caracteres (mismo formato que
+    # `kafka-storage.sh random-uuid`): 16 bytes -> base64 -> 22 sin padding.
+    $bytes = New-Object byte[] 16
+    $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+    $rng.GetBytes($bytes)
+    return ([Convert]::ToBase64String($bytes)).Replace('+', '-').Replace('/', '_').TrimEnd('=')
+}
+
 function Save-EnvValues {
     param(
         [Parameter(Mandatory)][string]$Path,
@@ -172,6 +181,10 @@ function Initialize-ComunEnv {
     if (-not $values["INTERNAL_API_KEY"]) {
         $values["INTERNAL_API_KEY"] = (New-GeneratedSecret -Length 32)
         $generated += "INTERNAL_API_KEY"
+    }
+    if (-not $values["KAFKA_CLUSTER_ID"]) {
+        $values["KAFKA_CLUSTER_ID"] = (New-KafkaClusterId)
+        $generated += "KAFKA_CLUSTER_ID"
     }
 
     if ($generated.Count -gt 0) {
@@ -364,6 +377,20 @@ function Get-TerraformOutput {
         throw "No se pudo obtener el output '$Name' de terraform (corre 'terraform apply' primero)."
     }
     return (($value -join "`n").Trim())
+}
+
+function Get-TerraformOutputJson {
+    param(
+        [Parameter(Mandatory)][string]$Name,
+        [Parameter(Mandatory)][string]$Exe,
+        [Parameter(Mandatory)][string]$TerraformDir
+    )
+
+    $raw = & $Exe "-chdir=$TerraformDir" "output" "-json" $Name 2>$null
+    if ($LASTEXITCODE -ne 0 -or -not $raw) {
+        throw "No se pudo obtener el output '$Name' de terraform (corre 'terraform apply' primero)."
+    }
+    return (($raw -join "`n") | ConvertFrom-Json)
 }
 
 function Assert-SshKey {

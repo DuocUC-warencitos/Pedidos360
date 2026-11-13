@@ -60,6 +60,19 @@ variable "ami_id" {
   default     = ""
 }
 
+# ---------- Kafka ----------
+variable "kafka_instance_type" {
+  description = "Tipo EC2 de cada broker Kafka (3 brokers KRaft)"
+  type        = string
+  default     = "t3.small"
+}
+
+variable "kafka_volume_size" {
+  description = "Tamaño (GB) del volumen raíz de cada broker Kafka"
+  type        = number
+  default     = 30
+}
+
 # ---------- RDS ----------
 variable "rds_instance_class" {
   description = "Clase RDS"
